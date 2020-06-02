@@ -1,0 +1,149 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+  margin-top: 0px;
+}
+
+#logo {
+  display: flex;
+  height: 80px;
+  margin: 0 auto;
+}
+
+.form-check-label .lbcolor {
+  color: #FFF;
+}
+
+div.login {
+  /* margin: 80px auto; */
+  display: flex;
+  width: 420px;
+  height: 530px;
+  flex-direction: column;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.8);
+  margin-top: 80px;
+  border-radius: 21px;
+  padding: 0 40px;
+}
+
+div.login > p {
+  font-size: 18px;
+  line-height: 30px;
+  margin-bottom: 30px;
+}
+
+div.login > form {
+  margin-top: 10px;
+  width: 95%;
+  height: 95%;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: -10px;
+}
+
+div.login div.botao {
+  align-self: center;
+}
+
+div.login form label {
+  font-weight: normal;
+  color: #FFF;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+div.login form input.login {
+  /* margin-bottom: 20px; */
+  border: 0px solid #ddd;
+  border-bottom: 2px solid #225378;
+  border-radius: 2px;
+  background: none;
+  height: 30px;
+  padding: 0 15px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  font-style: italic;
+}
+
+.logo {
+  margin-top: 100px;
+}
+
+div.login button.btn1 {
+  border: 0;
+  border-radius: 5px;
+  width: 200px;
+  height: 32px;
+  padding: 0 20px;
+  font-size: 16px;
+  font-weight: bold;
+  background: #225378;
+  color: #FFF;
+  cursor: pointer;
+}
+
+div.login button.btn1:hover {
+  background: #2393ac;
+}
+
+div.login label.form-label {
+  margin-top: 20px;
+  color: #225378;
+  font-style: italic;
+  font-size: 22px;
+}
+
+div.login label.form-title {
+  color: #225378;
+  font-family: "Montserrat", sans-serif;
+  font-weight: bold;
+  font-style: italic;
+  font-size: 28px;
+  text-align: center;
+}
+
+div.login label.ckbox {
+  color: #FFF;
+  font-weight: 300;
+  font-size: 14px;
+}
+
+.loginRodape {
+  margin-top: 20px;
+  border: 1px solid #3b6184;
+  width: 410px;
+  height: 25px;
+  text-align: center;
+  background-color: #3a5e7f;
+  margin-left: -40px;
+}
+
+.loginRodape a {
+  color: #bbb;
+  font-size: .9em;
+  text-decoration: none;
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+
+.btnRLogin {
+  border: 0;
+  border-radius: 2px;
+  height: 20px;
+  font-weight: bold;
+  font-size: 12px;
+  background: rgba(78, 212, 230, 0);
+  color: #2699FB;
+  cursor: pointer;
+}
+
+.btnRLogin:hover {
+  color: #225378;
+  background: rgba(78, 212, 230, 0);
+}

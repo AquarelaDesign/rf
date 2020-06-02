@@ -1,0 +1,11 @@
+@import url("https://fonts.googleapis.com/css?family=Montserrat");
+
+body {
+  display: flex;
+  margin: 0px;
+  /* flex-direction: row;
+  background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1)), url('./assets/background.png') no-repeat;
+  background-size: cover;
+  -webkit-font-smoothing: antialiased !important; */
+  /* width: 100%; */
+}
