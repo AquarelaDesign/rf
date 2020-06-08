@@ -7,6 +7,76 @@ export const Div = styled.div`
   margin: 0;
   height: 100%;
   width: 100%;
+  flex-direction: row;
+  flex-grow: 3;
+`;
+
+export const Topo = styled.div`
+  display: flex;
+  width: 100%;
+  height: 60px;
+  flex-direction: column;
+  align-items: center;
+  background-color: #225378;
+  top: 0px;
+  border-radius: 0px;
+  position: absolute;
+`;
+
+export const Rodape = styled.div`
+  display: flex;
+  width: 100%;
+  height: 150px;
+  flex-direction: row;
+  flex-grow: 3;
+  justify-content: space-between;
+  align-items: stretch;
+  background-color: #225378;
+  margin-bottom: 0px;
+  border-radius: 0px;
+  position: absolute;
+  bottom: 0px; 
+  line-height: 1.6;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.9em;
+`;
+
+export const RTitulo = styled.div`
+  float: left;
+  width: 30%;
+  text-align: right;
+  font-weight: bold;
+  padding: 25px 15px;
+`;
+
+export const RTexto = styled.div`
+  float: right;
+  width: 70%;
+  padding: 15px;
+`;
+
+export const RLeft = styled.div`
+  width: 33%;
+  height: 100%;
+  float: left;
+  padding: 20px;
+  color: #FFFFFF;
+`;
+
+export const RCenter = styled.div`
+  width: 34%;
+  height: 100%;
+  float: none;
+  padding: 20px;
+  color: #FFFFFF;
+`;
+
+export const RRight = styled.div`
+  width: 33%;
+  height: 100%;
+  float: right;
+  padding: 20px;
+  color: #FFFFFF;
 `;
 
 export const TituloLogin = styled.div`

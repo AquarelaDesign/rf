@@ -8,7 +8,19 @@ import { AccountCircle, Lock } from '@material-ui/icons'
 
 import api from '../../services/rf'
 import logo from '../../assets/logo.png'
-import { Loginsc, TituloLogin, FormLabel, Botao } from './styles'
+import { 
+  Loginsc, 
+  TituloLogin, 
+  FormLabel, 
+  Botao, 
+  Topo, 
+  Rodape, 
+  RLeft, 
+  RCenter, 
+  RRight, 
+  RTitulo, 
+  RTexto, 
+} from './styles'
 
 const Login = ({ history }) => {
   const [email, setEmail] = useState('')
@@ -48,12 +60,12 @@ const Login = ({ history }) => {
 
   return (
     <Container style={{height: '100%'}}>
+      <Topo/>
       <Loginsc>
         <Image id="logo" src={logo} alt="" style={{marginTop: 20, height: 150}} />
         <Form onSubmit={handleSubmit}>
           <TituloLogin>Login</TituloLogin>
-              
-          
+
           <FormLabel>
             <AccountCircle className="icone"/> Endereço de e-mail<br/>
             <input
@@ -104,6 +116,32 @@ const Login = ({ history }) => {
 
         </Form>
       </Loginsc>
+      <Rodape>
+        <RLeft>
+          <RTitulo>CONTATO</RTitulo>
+          <RTexto>
+            contato@arenatransautos.com.br<br/>
+            +55 (41)  3284-5252<br/>
+            +55 (41) 99165-5253
+          </RTexto>
+        </RLeft>
+        <RCenter>
+          <RTitulo>SOBRE</RTitulo>
+          <RTexto>
+            Quem Somos<br/>
+            Portal Transporte de Veículos<br/>
+            Política de Privacidade<br/>
+            Termos de Uso
+          </RTexto>
+        </RCenter>
+        <RRight>
+          <RTitulo>INFORMAÇÕES</RTitulo>
+          <RTexto>
+            Software para gestão de transporte de veículos,
+            para transportistas e transportadoras
+          </RTexto>
+        </RRight>
+      </Rodape>
     </Container>
   )
 }
