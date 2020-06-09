@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 
-import { Container, Label, Botao, Input } from './styles';
+import { Container, Label, Botao, Input } from './styles'
+
+import { FaIcon } from '../Icone'
 
 export default function Filter() {
   const [pedido, setPedido] = useState('')
@@ -56,7 +58,10 @@ export default function Filter() {
         onChange={event => setMotorista(event.target.value)}
       /> 
 
-      <Botao>Filtrar</Botao>
+      <Botao>
+        <FaIcon icon='FaFilter' size={16} />
+        FILTRAR
+      </Botao>
 
     </Container>
   )

@@ -1,6 +1,17 @@
 import React from 'react';
 
-import { FaTruck, FaBoxOpen, FaArrowAltCircleRight, FaBox, FaBell, FaDiscourse } from 'react-icons/fa';
+import { 
+  FaTruck, 
+  FaBoxOpen, 
+  FaArrowAltCircleRight, 
+  FaBox, 
+  FaBell, 
+  FaDiscourse,
+  FaFilter,
+  FaItalic,
+} from 'react-icons/fa';
+
+import { GiExitDoor } from 'react-icons/gi'
 
 export const FaIcon = ({ icon, size }) => {
   switch (icon) {
@@ -10,6 +21,8 @@ export const FaIcon = ({ icon, size }) => {
     case 'FaBox': return <FaBox size={size} style={{ paddingTop: 10 }} />
     case 'FaDiscourse': return <FaDiscourse size={size} style={{ marginLeft: 10, marginRight: 5 }} />
     case 'FaBell': return <FaBell size={size} style={{ marginLeft: 5, marginRight: 10 }} />
+    case 'FaFilter': return <FaFilter size={size} style={{ marginLeft: 0, marginRight: 5 }} />
+    case 'GiExitDoor': return <GiExitDoor size={size} style={{ marginLeft: 0, marginRight: 10 }} />
     default: return null
   }
 }

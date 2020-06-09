@@ -1,9 +1,9 @@
 import React, { useRef, useContext } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
-
+import StarRatings from 'react-star-ratings'
 import BoardContext from '../Board/context';
 
-import { Container, Label } from './styles';
+import { Container, RLeft, RRight, Texto } from './styles';
 
 export default function Card({ data, index, listIndex }) {
   const ref = useRef();
@@ -71,11 +71,32 @@ export default function Card({ data, index, listIndex }) {
 
   return (
     <Container ref={ref} isDragging={isDragging}>
-      <header>
+      <RLeft>
+        { data.user && <img src={data.user} alt=""/> }
+      </RLeft>
+      <RRight>
+        <Texto bgcolor='#E7E6E6' size={16} bold={true}>{data.nome}</Texto>
+        
+        <StarRatings
+          rating={data.rate}
+          starRatedColor="#F9D36B"
+          starDimension="14px"
+          starSpacing="1px"
+          // changeRating={this.changeRating}
+          numberOfStars={5}
+          name='rating'
+        />
+
+        <Texto color='#2699FB' size={12}>Tipo de veículo: {data.tipoveiculo}</Texto>
+        <Texto bgcolor='#E7E6E6' size={12}>Rota: {data.rota}</Texto>
+        <Texto bgcolor='#E7E6E6' size={12}>Vagas disponíveis: {data.vagas} vagas</Texto>
+        <Texto bgcolor='#90D284' size={12}>{data.localizacao}</Texto>
+      </RRight>
+      {/* <header>
         {data.labels.map(label => <Label key={label} color={label} />)}
-      </header>
-      <p>{data.content}</p>
-      { data.user && <img src={data.user} alt=""/> }
+      </header> 
+      <p>{data.nome}</p>
+      */}
     </Container>
   );
 }

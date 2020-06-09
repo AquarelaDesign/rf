@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import produce from 'immer';
 
-import { loadLists } from '../../services/api';
+import { 
+  loadMotoristas, 
+  loadCargas, 
+  loadTransportes, 
+  loadEntregas 
+} from '../../services/api';
 
 import BoardContext from './context';
 
@@ -9,13 +14,19 @@ import List from '../List';
 
 import { Container } from './styles';
 
-const data = loadLists();
+const motoristas = loadMotoristas();
+const cargas = loadCargas();
+const transportes = loadTransportes();
+const entregas = loadEntregas();
 
 export default function Board() {
-  const [lists, setLists] = useState(data);
+  const [motorista, setMotorista] = useState(motoristas);
+  const [carga, setCarga] = useState(cargas);
+  const [transporte, setTransporte] = useState(transportes);
+  const [entrega, setEntrega] = useState(entregas);
 
   function move(fromList, toList, from, to) {
-    setLists(produce(lists, draft => {
+    setMotorista(produce(motorista, draft => {
       const dragged = draft[fromList].cards[from];
 
       draft[fromList].cards.splice(from, 1);
@@ -24,15 +35,20 @@ export default function Board() {
   }
 
   function removeItem(fromList, from) {
-    setLists(produce(lists, draft => {
+    setMotorista(produce(motorista, draft => {
       draft[fromList].cards.splice(from, 1);
     }))
   }
 
   return (
-    <BoardContext.Provider value={{ lists, move, removeItem }}>
+    <BoardContext.Provider value={{ 
+      motorista, carga, transporte, entrega, move, removeItem 
+      }}>
       <Container>
-        {lists.map((list, index) => <List key={list.title} index={index} data={list} />)}
+        <List key={motoristas.title} index={0} data={motoristas} />
+        <List key={cargas.title} index={1} data={cargas} />
+        <List key={transportes.title} index={2} data={transportes} />
+        <List key={entregas.title} index={3} data={entregas} />
       </Container>
     </BoardContext.Provider>
   );
