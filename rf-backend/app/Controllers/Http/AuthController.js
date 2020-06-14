@@ -1,10 +1,10 @@
-"use strict";
+'use strict'
 
 const User = use("App/Models/User");
 
 class AuthController {
   async register({ request }) {
-    const data = request.only(["email", "password", "tipo"]);
+    const data = request.only(["email", "password"]);
 
     const user = await User.create(data);
 
@@ -20,4 +20,4 @@ class AuthController {
   }
 }
 
-module.exports = AuthController;
+module.exports = AuthController

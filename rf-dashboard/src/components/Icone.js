@@ -8,7 +8,6 @@ import {
   FaBell, 
   FaDiscourse,
   FaFilter,
-  FaItalic,
 } from 'react-icons/fa';
 
 import { GiExitDoor } from 'react-icons/gi'

@@ -21,16 +21,10 @@ Route.post("/register", "AuthController.register")
 Route.post("/authenticate", "AuthController.authenticate")
 
 Route.group(() => {
-  Route.resource("clientes", "ClienteController").apiOnly()
-  Route.resource("enderecos", "EnderecoController").apiOnly()
-  Route.get("/enderecos/list/:id", "EnderecoController.list")
-  Route.resource("cartaos", "CartaoController").apiOnly()
-  Route.get("/cartaos/list/:id", "CartaoController.list")
+  Route
+    .resource('usuarios', 'UsuarioController')
+    .validator( new Map([
+      [['usuarios.store'],['StoreUsuario']],
+    ]))
+    .apiOnly()
 }).middleware('auth')
-
-// room
-Route.group(() => {
-  Route.post('', 'RoomController.create')
-  Route.get(':id', 'RoomController.select')
-  Route.post(':id', 'RoomController.createMessage')
-}).prefix('/rooms')

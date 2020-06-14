@@ -33,7 +33,6 @@ export const Container = styled.div`
       /* background: #90D284; */
       border: 0;
       /* border-color: #31C417; */
-      borde
       cursor: pointer;
     }
   }

@@ -1,5 +1,6 @@
 'use strict'
 
+const path = require('path');
 /*
 |--------------------------------------------------------------------------
 | Providers
@@ -16,7 +17,8 @@ const providers = [
   '@adonisjs/bodyparser/providers/BodyParserProvider',
   '@adonisjs/cors/providers/CorsProvider',
   '@adonisjs/lucid/providers/LucidProvider',
-  '@adonisjs/websocket/providers/WsProvider'
+  '@adonisjs/validator/providers/ValidatorProvider',
+  path.join(__dirname, '..', 'providers', 'CadastroProvider')
 ]
 
 /*
@@ -44,7 +46,9 @@ const aceProviders = [
 |   { Route: 'Adonis/Src/Route' }
 |
 */
-const aliases = {}
+const aliases = {
+  Validator: 'Adonis/Addons/Validator'
+}
 
 /*
 |--------------------------------------------------------------------------
