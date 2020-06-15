@@ -22,6 +22,7 @@ class UsuariosSchema extends Schema {
       table.string('bairro').notNullable()
       table.string('cidade').notNullable()
       table.string('uf').notNullable()
+      table.string('pais').defaultTo('')
       table.string('foto').defaultTo('https://jakweb.com.br/rf/sem_foto.png')
       table.string('cep').notNullable()
       table.decimal('rate', 9, 6).defaultTo(0)

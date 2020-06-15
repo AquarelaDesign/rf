@@ -4,9 +4,7 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
-const { validate } = use('Validator')
-
-const Usuario = use('App/Models/Usuario');
+const Usuario = use('App/Models/Usuario')
 
 /**
  * Resourceful controller for interacting with usuarios
@@ -15,28 +13,36 @@ class UsuarioController {
   /**
    * Show a list of all usuarios.
    * GET usuarios
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
    */
-  async index ({ request, response, view }) {
-    const usuarios = await Usuario.all();
+  async index ({ auth, request, response, view }) {
+    const usuarios = await Usuario.findOrFail(auth.user.id)
+    if (usuarios.tipo !== 'O' && usuarios !== undefined) {
+      return response.status(401).send({ 
+        error: `Não autorizado [${usuarios.tipo}]`
+      })
+    }
     
-    return usuarios;
+    const usuario = await Usuario.all();
+    return usuario
   }
 
   /**
    * Create/save a new usuario.
    * POST usuarios
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
    */
-  async store ({ request, response }) {
-    
+  async store ({ auth, request, response }) {
+    try {
+      const usuarios = await Usuario.findOrFail(auth.user.id)
+      if (usuarios.tipo !== 'O' && usuarios !== undefined) {
+        return response.status(401).send({ 
+          error: `Não autorizado [${usuarios.tipo}]`
+        })
+      }
+    }
+    catch (e) {
+      
+    }
+
     const data = request.only([
       "nome", 
       "email",
@@ -61,36 +67,40 @@ class UsuarioController {
       "status",
       "estado",
       "tipo",
-    ]);
+    ])
 
-    const usuario = await Usuario.create(data);
-    
-    return usuario;
+    const usuario = await Usuario.create(data)
+    return usuario
   }
 
   /**
    * Display a single usuario.
    * GET usuarios/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
    */
-  async show ({ params, request, response, view }) {
-    const usuario = await Usuario.findOrFail(params.id);
-    return usuario;
+  async show ({ auth, params, request, response, view }) {
+    const usuarios = await Usuario.findOrFail(auth.user.id)
+    if (usuarios.tipo !== 'O' && usuarios !== undefined) {
+      return response.status(401).send({ 
+        error: `Não autorizado [${usuarios.tipo}]`
+      })
+    }
+
+    const usuario = await Usuario.findOrFail(params.id)
+    return usuario
   }
 
   /**
    * Update usuario details.
    * PUT or PATCH usuarios/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
    */
-  async update ({ params, request, response }) {
+  async update ({ auth, params, request, response }) {
+    const usuarios = await Usuario.findOrFail(auth.user.id)
+    if (usuarios.tipo !== 'O' && usuarios !== undefined) {
+      return response.status(401).send({ 
+        error: `Não autorizado [${usuarios.tipo}]`
+      })
+    }
+    
     const usuario = await Usuario.findOrFail(params.id);
     const data = request.only([
       "nome", 
@@ -116,10 +126,10 @@ class UsuarioController {
       "status",
       "estado",
       "tipo",
-    ]);
-    
-    usuario.merge(data);
-    await usuario.save();
+    ])
+
+    usuario.merge(data)
+    await usuario.save()
     
     return usuario
   }
@@ -127,14 +137,17 @@ class UsuarioController {
   /**
    * Delete a usuario with id.
    * DELETE usuarios/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
    */
-  async destroy ({ params, request, response }) {
-    const usuario = await Usuario.findOrFail(params.id);
-    await usuario.delete();
+  async destroy ({ auth, params, request, response }) {
+    const usuarios = await Usuario.findOrFail(auth.user.id)
+    if (usuarios.tipo !== 'O' && usuarios !== undefined) {
+      return response.status(401).send({ 
+        error: `Não autorizado [${usuarios.tipo}]`
+      })
+    }
+
+    const usuario = await Usuario.findOrFail(params.id)
+    await usuario.delete()
   }
 }
 

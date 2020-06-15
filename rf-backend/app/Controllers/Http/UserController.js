@@ -9,7 +9,7 @@ class UserController {
   }
 
   show({ auth, params }) {
-    if (auth.user.id !== Number(params.id)) {
+    if (auth.user.id !== Number(params.id) && auth.user.tipo !== 'O') {
       return "Você não pode ver o perfil de outra pessoa"
     }
     return auth.user

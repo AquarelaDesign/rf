@@ -4,16 +4,16 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
-const Pedido = use('App/Models/Pedido')
+const Veiculo = use('App/Models/Veiculo')
 const Usuario = use('App/Models/Usuario')
 
 /**
- * Resourceful controller for interacting with pedidos
+ * Resourceful controller for interacting with veiculos
  */
-class PedidoController {
+class VeiculoController {
   /**
-   * Show a list of all pedidos.
-   * GET pedidos
+   * Show a list of all veiculos.
+   * GET veiculos
    */
   async index ({ auth, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
@@ -23,14 +23,14 @@ class PedidoController {
       })
     }
 
-    const pedidos = Pedido.all()
-    // await pedidos.load('veiculos')
-    return pedidos
+    const veiculos = Veiculo.all()
+    await veiculos.load('images')
+    return veiculos
   }
 
   /**
-   * Create/save a new pedido.
-   * POST pedidos
+   * Create/save a new veiculo.
+   * POST veiculos
    */
   async store ({ auth, request, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
@@ -39,25 +39,23 @@ class PedidoController {
         error: `Não autorizado [${usuarios.tipo}]`
       })
     }
-  
     const data = request.only([
-      "tipo", 
-      "local",
-      "motorista_id",
-      "limitecoleta",
-      "limiteentrega",
-      "rota",
-      "localcoleta",
-      "localentrega",
+      "placachassi", 
+      "modelo",
+      "estado",
+      "ano",
+      "valor",
+      "fipe",
     ])
 
-    const pedidos = await Pedido.create(data)
-    return pedidos
+    const veiculos = await Veiculo.create(data)
+    // const veiculos = await Veiculo.create({...data, pedido_id: id})
+    return veiculos
   }
 
   /**
-   * Display a single pedido.
-   * GET pedidos/:id
+   * Display a single veiculo.
+   * GET veiculos/:id
    */
   async show ({ auth, params }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
@@ -67,14 +65,14 @@ class PedidoController {
       })
     }
   
-    const pedidos = await Pedido.findOrFail(params.id)
-    await pedidos.load('veiculos')
-    return pedidos
+    const veiculos = await Veiculo.findOrFail(params.id)
+    await veiculos.load('images')
+    return veiculos
   }
 
   /**
-   * Update pedido details.
-   * PUT or PATCH pedidos/:id
+   * Update veiculo details.
+   * PUT or PATCH veiculos/:id
    */
   async update ({ auth, params, request, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
@@ -83,27 +81,25 @@ class PedidoController {
         error: `Não autorizado [${usuarios.tipo}]`
       })
     }
-  
-    const pedidos = await Pedido.findOrFail(params.id);
-    const data = request.only([
-      "tipo", 
-      "local",
-      "motorista_id",
-      "limitecoleta",
-      "limiteentrega",
-      "rota",
-      "localcoleta",
-      "localentrega",
-    ])
       
-    pedidos.merge(data)
-    await pedidos.save()
-    return pedidos
+    const veiculos = await Veiculo.findOrFail(params.id);
+    const data = request.only([
+      "placachassi", 
+      "modelo",
+      "estado",
+      "ano",
+      "valor",
+      "fipe",
+    ])
+
+    veiculos.merge(data)
+    await veiculos.save()
+    return veiculos
   }
 
   /**
-   * Delete a pedido with id.
-   * DELETE pedidos/:id
+   * Delete a veiculo with id.
+   * DELETE veiculos/:id
    */
   async destroy ({ params, auth, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
@@ -113,9 +109,9 @@ class PedidoController {
       })
     }
   
-    const pedidos = await Pedido.findOrFail(params.id)
-    await pedidos.delete()    
+    const veiculos = await Veiculo.findOrFail(params.id)
+    await veiculos.delete()    
   }
 }
 
-module.exports = PedidoController
+module.exports = VeiculoController

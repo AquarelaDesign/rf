@@ -4,6 +4,9 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
+const Rota = use('App/Models/Rota')
+const Usuario = use('App/Models/Usuario')
+
 /**
  * Resourceful controller for interacting with rotas
  */
@@ -11,82 +14,112 @@ class RotaController {
   /**
    * Show a list of all rotas.
    * GET rotas
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
    */
-  async index ({ request, response, view }) {
-  }
-
-  /**
-   * Render a form to be used for creating a new rota.
-   * GET rotas/create
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async create ({ request, response, view }) {
+  async index({ auth, response }) {
+    const usuarios = await Usuario.findOrFail(auth.user.id)
+    if (usuarios.tipo !== 'O') {
+      return response.status(401).send({ 
+        error: `Não autorizado [${usuarios.tipo}]`
+      })
+    }
+  
+    const rotas = Rota.all()
+    return rotas
   }
 
   /**
    * Create/save a new rota.
    * POST rotas
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
    */
-  async store ({ request, response }) {
+  async store({ auth, request, response }) {
+    const usuarios = await Usuario.findOrFail(auth.user.id)
+    if (usuarios.tipo !== 'O') {
+      return response.status(401).send({ 
+        error: `Não autorizado [${usuarios.tipo}]`
+      })
+    }
+  
+    const id = request.pedido_id
+    const data = request.only([
+      "descricao",
+      "logradouro",
+      "numero",
+      "complemento",
+      "bairro",
+      "cidade",
+      "uf",
+      "pais",
+      "cep",
+      "contato",
+      "celular",
+    ])
+
+    const rotas = await Rota.create({ ...data, pedido_id: id });
+    return rotas
   }
 
   /**
    * Display a single rota.
    * GET rotas/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
    */
-  async show ({ params, request, response, view }) {
-  }
-
-  /**
-   * Render a form to update an existing rota.
-   * GET rotas/:id/edit
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async edit ({ params, request, response, view }) {
+  async show({ auth, params }) {
+    const usuarios = await Usuario.findOrFail(auth.user.id)
+    if (usuarios.tipo !== 'O') {
+      return response.status(401).send({ 
+        error: `Não autorizado [${usuarios.tipo}]`
+      })
+    }
+  
+    const rotas = await Rota.findOrFail(params.id)
+    return rotas
   }
 
   /**
    * Update rota details.
    * PUT or PATCH rotas/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
    */
-  async update ({ params, request, response }) {
+  async update({ auth, params, request, response }) {
+    const usuarios = await Usuario.findOrFail(auth.user.id)
+    if (usuarios.tipo !== 'O') {
+      return response.status(401).send({ 
+        error: `Não autorizado [${usuarios.tipo}]`
+      })
+    }
+  
+    const rotas = await Rota.findOrFail(params.id);
+    const data = request.only([
+      "descricao",
+      "logradouro",
+      "numero",
+      "complemento",
+      "bairro",
+      "cidade",
+      "uf",
+      "pais",
+      "cep",
+      "contato",
+      "celular",
+    ])
+
+    rotas.merge(data)
+    await rotas.save()
+    return rotas
   }
 
   /**
    * Delete a rota with id.
    * DELETE rotas/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
    */
-  async destroy ({ params, request, response }) {
+  async destroy({ params, auth, response }) {
+    const usuarios = await Usuario.findOrFail(auth.user.id)
+    if (usuarios.tipo !== 'O') {
+      return response.status(401).send({ 
+        error: `Não autorizado [${usuarios.tipo}]`
+      })
+    }
+  
+    const rotas = await Rota.findOrFail(params.id)
+    await rotas.delete()
   }
 }
 
