@@ -7,8 +7,7 @@ class ImageSchema extends Schema {
   up () {
     this.create('images', (table) => {
       table.increments()
-      table
-        .integer('veiculo_id')
+      table.integer('veiculo_id')
         .unsigned()
         .references('id')
         .inTable('veiculos')

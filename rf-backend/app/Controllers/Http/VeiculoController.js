@@ -23,8 +23,7 @@ class VeiculoController {
       })
     }
 
-    const veiculos = Veiculo.all()
-    await veiculos.load('images')
+    const veiculos = Veiculo.query().with('images').fetch()
     return veiculos
   }
 
@@ -40,6 +39,7 @@ class VeiculoController {
       })
     }
     const data = request.only([
+      "pedido_id", 
       "placachassi", 
       "modelo",
       "estado",
@@ -66,7 +66,7 @@ class VeiculoController {
     }
   
     const veiculos = await Veiculo.findOrFail(params.id)
-    await veiculos.load('images')
+    // await veiculos.load('images')
     return veiculos
   }
 
@@ -84,6 +84,7 @@ class VeiculoController {
       
     const veiculos = await Veiculo.findOrFail(params.id);
     const data = request.only([
+      "pedido_id", 
       "placachassi", 
       "modelo",
       "estado",
@@ -109,8 +110,19 @@ class VeiculoController {
       })
     }
   
-    const veiculos = await Veiculo.findOrFail(params.id)
-    await veiculos.delete()    
+    try {
+      const veiculos = await Veiculo.findOrFail(params.id)
+      await veiculos.delete()    
+      return response.status(200).send({
+        status: 200,
+        message: `Registro excluído com sucesso`
+      })
+    } catch (e) {
+      return response.status(404).send({
+        status: 404,
+        message: `O registro não existe`
+      })
+    }
   }
 }
 

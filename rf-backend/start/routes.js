@@ -25,18 +25,20 @@ Route.group(() => {
     .resource('usuarios', 'UsuarioController')
     .validator( new Map([
       [['usuarios.store'],['StoreUsuario']],
-      [['usuarios.update'],['StoreUsuario']],
+      [['usuarios.update'],['UpdateUsuario']],
     ]))
     .apiOnly()
-  Route.resource('pedidos', 'PedidoController').apiOnly()
-  Route.resource('veiculos', 'VeiculoController').apiOnly()
+  Route.resource('pedidos', 'PedidoController')
+    .apiOnly()
+  Route.resource('veiculos', 'VeiculoController')
+    .apiOnly()
   Route.post('veiculos/:id/images', 'ImageController.store')
   Route.get('images/:path', 'ImageController.show')
   Route
     .resource('rotas', 'RotaController')
     .validator( new Map([
-      [['rotas.store'],['StoreUsuario']],
-      [['rotas.update'],['StoreUsuario']],
+      [['rotas.store'],['UpdateRota']],
+      [['rotas.update'],['UpdateRota']],
     ]))
     .apiOnly()
 

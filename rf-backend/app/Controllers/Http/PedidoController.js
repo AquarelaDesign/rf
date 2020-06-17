@@ -23,8 +23,12 @@ class PedidoController {
       })
     }
 
-    const pedidos = Pedido.all()
+    const pedidos = Pedido.query()
+                          .with('veiculos')
+                          .with('rotas')
+                          .fetch()
     // await pedidos.load('veiculos')
+    // await pedidos.load('rotas')
     return pedidos
   }
 
@@ -43,6 +47,7 @@ class PedidoController {
     const data = request.only([
       "tipo", 
       "local",
+      "cliente_id",
       "motorista_id",
       "limitecoleta",
       "limiteentrega",
@@ -69,6 +74,7 @@ class PedidoController {
   
     const pedidos = await Pedido.findOrFail(params.id)
     await pedidos.load('veiculos')
+    await pedidos.load('rotas')
     return pedidos
   }
 
@@ -88,6 +94,7 @@ class PedidoController {
     const data = request.only([
       "tipo", 
       "local",
+      "cliente_id",
       "motorista_id",
       "limitecoleta",
       "limiteentrega",
@@ -113,8 +120,19 @@ class PedidoController {
       })
     }
   
-    const pedidos = await Pedido.findOrFail(params.id)
-    await pedidos.delete()    
+    try {
+      const pedidos = await Pedido.findOrFail(params.id)
+      await pedidos.delete()    
+      return response.status(200).send({
+        status: 200,
+        message: `Registro excluído com sucesso`
+      })
+    } catch (e) {
+      return response.status(404).send({
+        status: 404,
+        message: `O registro não existe`
+      })
+    }
   }
 }
 

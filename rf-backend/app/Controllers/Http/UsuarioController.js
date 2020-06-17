@@ -67,6 +67,7 @@ class UsuarioController {
       "status",
       "estado",
       "tipo",
+      "user_id",
     ])
 
     const usuario = await Usuario.create(data)
@@ -101,37 +102,45 @@ class UsuarioController {
       })
     }
     
-    const usuario = await Usuario.findOrFail(params.id);
-    const data = request.only([
-      "nome", 
-      "email",
-      "cpfcnpj",
-      "ierg",
-      "contato",
-      "celular",
-      "telefone",
-      "whats",
-      "codigopush",
-      "logradouro",
-      "numero",
-      "complemento",
-      "bairro",
-      "cidade",
-      "uf",
-      "foto",
-      "cep",
-      "rate",
-      "latitude",
-      "longitude",
-      "status",
-      "estado",
-      "tipo",
-    ])
+    try {
+      const usuario = await Usuario.findOrFail(params.id);
+      const data = request.only([
+        "nome", 
+        "email",
+        "cpfcnpj",
+        "ierg",
+        "contato",
+        "celular",
+        "telefone",
+        "whats",
+        "codigopush",
+        "logradouro",
+        "numero",
+        "complemento",
+        "bairro",
+        "cidade",
+        "uf",
+        "foto",
+        "cep",
+        "rate",
+        "latitude",
+        "longitude",
+        "status",
+        "estado",
+        "tipo",
+        "user_id",
+      ])
 
-    usuario.merge(data)
-    await usuario.save()
-    
-    return usuario
+      usuario.merge(data)
+      await usuario.save()
+      return usuario
+    }
+    catch(e) {
+      return response.status(404).send({
+        status: 404,
+        message: `O registro não existe`
+      })
+    }
   }
 
   /**
@@ -146,8 +155,19 @@ class UsuarioController {
       })
     }
 
-    const usuario = await Usuario.findOrFail(params.id)
-    await usuario.delete()
+    try {
+      const usuario = await Usuario.findOrFail(params.id)
+      await usuario.delete()
+      return response.status(200).send({
+        status: 200,
+        message: `Registro excluído com sucesso`
+      })
+    } catch (e) {
+      return response.status(404).send({
+        status: 404,
+        message: `O registro não existe`
+      })
+    }
   }
 }
 

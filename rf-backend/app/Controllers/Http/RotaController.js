@@ -41,7 +41,9 @@ class RotaController {
   
     const id = request.pedido_id
     const data = request.only([
-      "descricao",
+      "pedido_id", 
+      "nome",
+      "cpfcnpj",
       "logradouro",
       "numero",
       "complemento",
@@ -52,9 +54,13 @@ class RotaController {
       "cep",
       "contato",
       "celular",
+      "telefone",
+      "whats",
+      "email",
     ])
 
-    const rotas = await Rota.create({ ...data, pedido_id: id });
+    const rotas = await Rota.create(data)
+    // const rotas = await Rota.create({ ...data, pedido_id: id });
     return rotas
   }
 
@@ -88,7 +94,9 @@ class RotaController {
   
     const rotas = await Rota.findOrFail(params.id);
     const data = request.only([
-      "descricao",
+      "pedido_id", 
+      "nome",
+      "cpfcnpj",
       "logradouro",
       "numero",
       "complemento",
@@ -99,6 +107,9 @@ class RotaController {
       "cep",
       "contato",
       "celular",
+      "telefone",
+      "whats",
+      "email",
     ])
 
     rotas.merge(data)
@@ -118,8 +129,19 @@ class RotaController {
       })
     }
   
-    const rotas = await Rota.findOrFail(params.id)
-    await rotas.delete()
+    try {
+      const rotas = await Rota.findOrFail(params.id)
+      await rotas.delete()
+      return response.status(200).send({
+        status: 200,
+        message: `Registro excluído com sucesso`
+      })
+    } catch (e) {
+      return response.status(404).send({
+        status: 404,
+        message: `O registro não existe`
+      })
+    }
   }
 }
 

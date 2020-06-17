@@ -7,16 +7,14 @@ class RotaSchema extends Schema {
   up () {
     this.create('rotas', (table) => {
       table.increments()
-      table
-        .integer('pedido_id')
+      table.integer('pedido_id')
         .unsigned()
-        .notNullable()
-        .references("id")
-        .inTable("pedidos")
-        .onUpdate("CASCADE")
-        .onDelete("CASCADE")
-
-      table.string('descricao').notNullable().defaultTo('')
+        .references('id')
+        .inTable('pedidos')
+        .onUpdate('CASCADE')
+        .onDelete('CASCADE')
+      table.string('nome').notNullable()
+      table.string('cpfcnpj').notNullable().defaultTo('')
       table.string('logradouro').notNullable()
       table.string('numero').defaultTo('')
       table.string('complemento').defaultTo('')
@@ -26,8 +24,10 @@ class RotaSchema extends Schema {
       table.string('pais').defaultTo('')
       table.string('cep').notNullable()
       table.string('contato').notNullable().defaultTo('')
-      table.integer('celular').notNullable()
-
+      table.string('celular').notNullable()
+      table.string('telefone')
+      table.string('whats')
+      table.string('email')
       table.timestamps()
     })
   }

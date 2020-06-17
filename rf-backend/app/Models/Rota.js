@@ -4,9 +4,6 @@
 const Model = use('Model')
 
 class Rota extends Model {
-  rotas() {
-    return this.belongsTo('App/Models/Pedido')
-  }
 }
 
 module.exports = Rota
