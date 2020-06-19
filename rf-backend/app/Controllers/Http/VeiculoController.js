@@ -57,7 +57,7 @@ class VeiculoController {
    * Display a single veiculo.
    * GET veiculos/:id
    */
-  async show ({ auth, params }) {
+  async show ({ auth, params, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
     if (usuarios.tipo !== 'O') {
       return response.status(401).send({ 
