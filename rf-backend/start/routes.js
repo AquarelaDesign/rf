@@ -15,12 +15,17 @@
 
 /** @type {typeof import('@adonisjs/framework/src/Route/Manager')} */
 const Route = use('Route')
+const Ws = use('Ws')
 
 Route.post("/register", "AuthController.register")
 
 Route.post("/authenticate", "AuthController.authenticate")
 
 Route.group(() => {
+  Route.get('/status', "UsuarioController.status")
+
+  Route.post("/buscausuarios", "UsuarioController.busca")
+  
   Route
     .resource('usuarios', 'UsuarioController')
     .validator( new Map([
@@ -33,6 +38,11 @@ Route.group(() => {
   Route.resource('veiculos', 'VeiculoController')
     .apiOnly()
   Route.post('veiculos/:id/images', 'ImageController.store')
+
+  Route.resource('veiculosm', 'VeiculosMotoristaController')
+    .apiOnly()
+  // Route.post('veiculosm/:id/images', 'ImagevmController.store')
+
   Route.get('images/:path', 'ImageController.show')
   Route
     .resource('rotas', 'RotaController')
