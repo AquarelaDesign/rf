@@ -4,7 +4,11 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
+const Database = use('Database')
 const Usuario = use('App/Models/Usuario')
+const Ws = use('Ws')
+const Event = use('Event')
+
 
 /**
  * Resourceful controller for interacting with usuarios
@@ -14,16 +18,102 @@ class UsuarioController {
    * Show a list of all usuarios.
    * GET usuarios
    */
-  async index ({ auth, request, response, view }) {
+  async index ({ auth, request, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
     if (usuarios.tipo !== 'O' && usuarios !== undefined) {
       return response.status(401).send({ 
         error: `Não autorizado [${usuarios.tipo}]`
       })
     }
-    
-    const usuario = await Usuario.all();
-    return usuario
+
+    const condicoes = request.only([
+      "status",
+      "estado",
+      "tipo",
+    ])
+
+    try {    
+      const usuario = await Usuario.query()
+                                   .with('veiculos')
+                                   .fetch()
+      return usuario
+    }
+    catch(e) {
+      return response.status(404).send({
+        status: 404,
+        message: `Nenhum registro encontrado`
+      })
+    }
+
+  }
+
+  async busca ({ auth, request, response }) {
+    const usuarios = await Usuario.findOrFail(auth.user.id)
+    if (usuarios.tipo !== 'O' && usuarios !== undefined) {
+      return response.status(401).send({ 
+        error: `Não autorizado [${usuarios.tipo}]`
+      })
+    }
+
+    const condicoes = request.only([
+      "status",
+      "estado",
+      "tipo",
+    ])
+
+    try {    
+      const usuario = await Usuario.query()
+        .where({ status: condicoes.status, estado: condicoes.estado, tipo: condicoes.tipo })
+        .with('veiculos')
+        .fetch()
+
+      return usuario
+    }
+    catch(e) {
+      return response.status(404).send({
+        status: 404,
+        message: `Nenhum registro encontrado`
+      })
+    }
+  }
+
+  async search({params, request, response}) {
+
+    // console.log(request.input('query'))
+    let query = request.input('query')
+
+    let usuarios = await Usuario.query().where('nome', 'like', '%' + query + '%')
+      .orWhere('cpfcnpj', 'like', '%' + query + '%').fetch()
+
+    Event.fire('search::results', usuarios.toJSON())
+
+    return response.json('ok')
+  }
+
+  async status({auth, request, response}) {
+    const usuarios = await Usuario.findOrFail(auth.user.id)
+    if (usuarios.tipo !== 'O' && usuarios !== undefined) {
+      return response.status(401).send({ 
+        error: `Não autorizado [${usuarios.tipo}]`
+      })
+    }
+
+    try {    
+
+      const usuario = await Usuario.query()
+        .where({ status: "A", estado: "", tipo: "M" })
+        .with('veiculos')
+        .fetch()
+      Event.fire('status::results', usuarios)
+      return usuario
+    }
+    catch(e) {
+      return response.status(404).send({
+        status: 404,
+        message: `Nenhum registro encontrado ${e}`
+      })
+    }
+
   }
 
   /**
@@ -64,6 +154,9 @@ class UsuarioController {
       "rate",
       "latitude",
       "longitude",
+      "localizacao",
+      "origem",
+      "destino",
       "status",
       "estado",
       "tipo",
@@ -87,6 +180,7 @@ class UsuarioController {
     }
 
     const usuario = await Usuario.findOrFail(params.id)
+    await usuario.load('veiculos')
     return usuario
   }
 
@@ -123,6 +217,9 @@ class UsuarioController {
         "foto",
         "cep",
         "rate",
+        "localizacao",
+        "origem",
+        "destino",
         "latitude",
         "longitude",
         "status",
@@ -133,12 +230,23 @@ class UsuarioController {
 
       usuario.merge(data)
       await usuario.save()
+
+      const topic = Ws.getChannel('chat').topic('chat')
+      console.log('topic', topic)
+      if (topic) {
+        if (data.status === 'A') {
+          topic.broadcast('message', {message: `Motorista ${usuario.nome} Conectado!`, tipo: 'info'})
+        } else {
+          topic.broadcast('message', {message: `Motorista ${usuario.nome} Desconectado!`, tipo: 'dark'})
+        }
+      }
+
       return usuario
     }
     catch(e) {
       return response.status(404).send({
         status: 404,
-        message: `O registro não existe`
+        message: `O registro não existe ${e}`
       })
     }
   }

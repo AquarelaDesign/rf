@@ -26,6 +26,9 @@ class UsuariosSchema extends Schema {
       table.string('foto').defaultTo('') // https://jakweb.com.br/rf/sem_foto.png
       table.string('cep').notNullable()
       table.decimal('rate', 9, 6).defaultTo(0)
+      table.string('localizacao').notNullable()
+      table.string('origem').notNullable()
+      table.string('destino').notNullable()
       table.decimal('latitude', 9, 6).defaultTo(0)
       table.decimal('longitude', 9, 6).defaultTo(0)
       table.enu('status', ['A','I','B'])
