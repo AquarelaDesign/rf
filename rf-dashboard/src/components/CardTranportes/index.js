@@ -1,7 +1,7 @@
-import React, { useRef, useContext } from 'react';
+import React, { useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import StarRatings from 'react-star-ratings'
-import BoardContext from '../Board/context';
+// import BoardContext from '../Board/context';
 
 import { Container, RLeft, RRight, Texto } from './styles';
 

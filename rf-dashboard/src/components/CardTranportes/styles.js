@@ -63,17 +63,23 @@ export const RRight = styled.div`
 `;
 
 export const Texto = styled.div`
-  width: 100%;
-  height: 16px;
+  width: ${props => props.width ? `${props.width}px` : '100%'};
+  height: ${props => props.height ? `${props.height}px` : 'auto'};
+  /* height: ${props => props.height ? props.height : props.size + 4}px; */
   border-radius: 4px;
   padding-left: 3px;
   padding-right: 3px;
-  vertical-align: middle;
-  display: inline-block;
+  margin: auto;
+  display: inline-flex;
   background: ${props => props.bgcolor};
-  color: ${props => props.color};
-  font-size: ${props => props.size};
-  font-weight: ${props => props.bold === true ? 500 : null};
-  /* font-weight: bold; */
+  color: ${props => props.estado === 'Funcionando' ? '#31C417' : 
+                    props.estado === 'Pane' ? '#0031FF' : 
+                    props.estado === 'Sinistrado' ? '#E6474D' : 
+                    props.color};
+  font-family: ${props => props.font};
+  font-size: ${props => props.size}px;
+  font-weight: ${props => props.bold ? 500 : null};
+  font-style: ${props => props.italic ? 'italic' : null};
+  margin-bottom: ${props => props.mb}px;
 `;
 

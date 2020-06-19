@@ -1,4 +1,4 @@
-import React, { useRef, useContext, useEffect, useState } from 'react'
+import React, { useRef, useContext } from 'react'
 import { useDrag, useDrop } from 'react-dnd'
 import BoardContext from '../Board/context'
 // import { Grid } from '@material-ui/core'
@@ -17,19 +17,17 @@ export default function CardTransportes({ data, index }) {
   const dataRotas = loadRotas()
 
   const localColeta = dataRotas.filter((dados) => {
-    if (data.localcoleta === null) {
-      return null
-    } else if (data.localcoleta === dados.id) {
+    if (data.localcoleta === dados.id) {
       return dados
     }
+    return null
   })
 
   const localEntrega = dataRotas.filter((dados) => {
-    if (data.localentrega === null) {
-      return null
-    } else if (data.localentrega === dados.id) {
+    if (data.localentrega === dados.id) {
       return dados
     }
+    return null
   })
 
   // useEffect(() => {

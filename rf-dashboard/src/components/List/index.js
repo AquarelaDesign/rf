@@ -52,7 +52,7 @@ export default function List({ data }) {
 
   return (
     <Container done={data.done}>
-      {console.log('Transporte-1', data)}
+      {/* {console.log('Transporte-1', data)} */}
 
       <header>
         <h2><FaIcon icon={data.icon} size={28} /> {data.title}</h2>

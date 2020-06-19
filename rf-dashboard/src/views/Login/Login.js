@@ -25,6 +25,7 @@ import {
 const Login = ({ history }) => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  // const [rememberMe, setRememberMe] = useState(false)
   
   const clickEsqueceuSenha = () => {
     console.log('clickEsqueceuSenha')
@@ -38,12 +39,12 @@ const Login = ({ history }) => {
         email, password
       })
       .then(res => {
-        console.log('res', res)
+        // console.log('res', res)
         const { token } = res.data
 
-        localStorage.setItem('@rf/email', this.state.email)
+        localStorage.setItem('@rf/email', email)
         localStorage.setItem('@rf/token', token)
-        localStorage.setItem('@rf/rememberMe', this.state.rememberMe)
+        // localStorage.setItem('@rf/rememberMe', rememberMe)
 
         history.push('/home')
       })
