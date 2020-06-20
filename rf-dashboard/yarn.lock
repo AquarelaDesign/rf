@@ -16,6 +16,18 @@
   resolved "https://registry.yarnpkg.com/@adonisjs/websocket-packet/-/websocket-packet-1.0.6.tgz#7b310c777fd66793149ff2de94c6b2be46302bdc"
   integrity sha512-4MlcnwfJ5fy9EGBA0gNDAUThfrK4JeisQzHkRg0Z/Y3WGeciSuzgRB8hdwi2YEFeNOsEFcKme4ubEZXTAF020g==
 
+"@ag-grid-community/client-side-row-model@^23.2.1":
+  version "23.2.1"
+  resolved "https://registry.yarnpkg.com/@ag-grid-community/client-side-row-model/-/client-side-row-model-23.2.1.tgz#b7f77b110f9a40b0e62c8ed486ecdd8fd98af70b"
+  integrity sha512-riL5IIyK+NL+PS5XUTEF3R0wZR8xnOrlp0M5rJJpAa2iiN2KITiu8rJENMNFm5F7o42B0vReLpf4SBkyCefR5w==
+  dependencies:
+    "@ag-grid-community/core" "~23.2.0"
+
+"@ag-grid-community/core@~23.2.0":
+  version "23.2.1"
+  resolved "https://registry.yarnpkg.com/@ag-grid-community/core/-/core-23.2.1.tgz#532104da04dcc636bf01364116bcb66804d6de04"
+  integrity sha512-ZW4r6mICsCDX3xME2CpXLf+/EsKYO/EO1hq0QInBXJVFp7FC9/VPSpplo2iy8pPFZjkLQ5gb1yg9WcMo50+9CA==
+
 "@babel/code-frame@7.0.0", "@babel/code-frame@^7.0.0":
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.0.0.tgz#06e2ab19bdb535385559aabb5ba59729482800f8"
@@ -1727,6 +1739,18 @@ address@^1.0.1:
   resolved "https://registry.yarnpkg.com/address/-/address-1.1.0.tgz#ef8e047847fcd2c5b6f50c16965f924fd99fe709"
   integrity sha512-4diPfzWbLEIElVG4AnqP+00SULlPzNuyJFNnmMrLgyaxG6tZXJ1sn7mjBu4fHrJE+Yp/jgylOweJn2xsLMFggQ==
 
+ag-grid-community@^23.2.1:
+  version "23.2.1"
+  resolved "https://registry.yarnpkg.com/ag-grid-community/-/ag-grid-community-23.2.1.tgz#0cf2beb7ba2fcf66a4865e45faabdbea173d59b6"
+  integrity sha512-WHfDV7mFsd6eQJ5yOu26nnpnW7Gd02zcp9LHHfKQky8lfgTEo382qcja7MibHzB2f5vOCBdQnOPsWrbBNKRzhQ==
+
+ag-grid-react@^23.2.1:
+  version "23.2.1"
+  resolved "https://registry.yarnpkg.com/ag-grid-react/-/ag-grid-react-23.2.1.tgz#da5d72d50d7fe1c1936860ea4690bc407811d606"
+  integrity sha512-tLbgIyjea5Alt2WsPWVDlfCNkI4gIxg8kWcpl1yTsVboVSwAnagpzFpNpIKsjbf/y4WAuKIQFfA0YXPVw4YRSg==
+  dependencies:
+    prop-types "^15.6.2"
+
 ajv-errors@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/ajv-errors/-/ajv-errors-1.0.1.tgz#f35986aceb91afadec4102fbd85014950cefa64d"
@@ -2324,6 +2348,11 @@ braces@^2.3.1, braces@^2.3.2:
     snapdragon-node "^2.0.1"
     split-string "^3.0.2"
     to-regex "^3.0.1"
+
+brazilian-values@^0.7.5:
+  version "0.7.5"
+  resolved "https://registry.yarnpkg.com/brazilian-values/-/brazilian-values-0.7.5.tgz#007eed4b947f5b7794b4a89b9a05626667ee7ccb"
+  integrity sha512-D0PmDoVtHOriHvF6Ub85wNyFmuyxb52NXtuu46SGSejJxmcrt6YKhQtIeimzafSG785N508GojSJXiTIPuptcQ==
 
 brorand@^1.0.1:
   version "1.1.0"
