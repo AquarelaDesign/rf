@@ -86,7 +86,6 @@ const List = ({ data }) => {
   const handleClick = async (tipo, e) => {
     e.preventDefault()
     // console.log('handleClick', tipo, e)
-
     setTipo(tipo)
 
     switch (tipo) {
@@ -108,19 +107,6 @@ const List = ({ data }) => {
         break
       default: return null
     }
-
-    /*
-    switch (tipo) {
-      case 'M':
-        // alert('Cadastro de Usuários')
-        handleOpen()
-        break
-      case 'C':
-        alert('Cadastro de Pedidos')
-        break
-      default: return null
-    }
-    */
   }
 
   return (

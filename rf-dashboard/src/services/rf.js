@@ -8,7 +8,7 @@ const api = axios.create({
 
 
 api.interceptors.request.use(async config => {
-  console.log('*** config', config)
+  // console.log('*** config', config)
   const token = getToken()
 
   if (token) {
@@ -20,7 +20,7 @@ api.interceptors.request.use(async config => {
 })
 
 axios.interceptors.response.use(response => {
-  console.log('*** response', response)
+  // console.log('*** response', response)
   return response
 }, error => {
   console.log('*** response-error', error)
@@ -31,7 +31,7 @@ axios.interceptors.response.use(response => {
 })
 
 axios.interceptors.response.use(undefined, err => {
-  console.log('*** undefined', undefined, err)
+  // console.log('*** undefined', undefined, err)
   const error = err.response
   error.status = 401
   // if error is 401 
@@ -43,7 +43,7 @@ axios.interceptors.response.use(undefined, err => {
 
 const UNAUTHORIZED = 401
 axios.interceptors.response.use(response => response, error => {
-  console.log('*** response-2', error)
+  // console.log('*** response-2', error)
   const { status } = error.response
   if (status === UNAUTHORIZED) {
     error.response.status = 401

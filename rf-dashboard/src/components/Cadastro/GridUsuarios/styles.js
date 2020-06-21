@@ -11,7 +11,7 @@ export const Container = styled.div`
   height: 95%;
   /* box-shadow: 0 1px 4px 0 rgba(192, 208, 230, 0.8); */
   /* border-top: 20px solid rgba(230, 236, 245, 0.4); */
-  cursor: grab;
+  /* cursor: grab; */
 
   header {
     position: absolute;
@@ -38,7 +38,7 @@ export const Container = styled.div`
     border-radius: 0;
     background: transparent;
     box-shadow: none;
-    cursor: grabbing;
+    /* cursor: grabbing; */
 
     p, img, header {
       opacity: 0;
@@ -63,6 +63,8 @@ export const RRight = styled.div`
   display: flex;
   width: 10%;
   float: right;
+  /* margin-right: -130px;
+  padding-right: 0px; */
   align-items: flex-end;
   align-self: flex-end;
   vertical-align: middle;
@@ -181,6 +183,8 @@ export const Botao = styled.button`
   color: #225378;
   cursor: pointer;
   margin-left: 10px;
+  padding: 0px;
+  margin-right: 0px;
 
   &:hover {
     /* background: #225378;

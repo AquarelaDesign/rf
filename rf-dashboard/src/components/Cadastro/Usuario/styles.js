@@ -2,14 +2,16 @@ import styled, { css } from 'styled-components';
 
 export const Container = styled.div`
   position: relative;
-  background: #FFF;
+  /* background: #FFFFFF; */
   border-radius: 5px;
+  border: transparent;
   margin-bottom: 10px;
   padding: 5px;
-  height: auto;
-  box-shadow: 0 1px 4px 0 rgba(192, 208, 230, 0.8);
+  width: 100%;
+  height: 95%;
+  /* box-shadow: 0 1px 4px 0 rgba(192, 208, 230, 0.8); */
   /* border-top: 20px solid rgba(230, 236, 245, 0.4); */
-  cursor: grab;
+  /* cursor: grab; */
 
   header {
     position: absolute;
@@ -36,7 +38,7 @@ export const Container = styled.div`
     border-radius: 0;
     background: transparent;
     box-shadow: none;
-    cursor: grabbing;
+    /* cursor: grabbing; */
 
     p, img, header {
       opacity: 0;
@@ -53,13 +55,19 @@ export const Label = styled.span`
 `;
 
 export const RLeft = styled.div`
-  width: 30%;
+  width: 90%;
   float: left;
 `;
 
 export const RRight = styled.div`
-  width: 70%;
+  display: flex;
+  width: 10%;
   float: right;
+  /* margin-right: -130px;
+  padding-right: 0px; */
+  align-items: flex-end;
+  align-self: flex-end;
+  vertical-align: middle;
 `;
 
 export const BoxTitulo = styled.div`
@@ -70,10 +78,12 @@ export const BoxTitulo = styled.div`
   width: 100%;
   height: ${props => props.size + 2}px;
   border-radius: 4px;
+  border: ${props => props.border};
   background: ${props => props.bgcolor};
   color: ${props => props.color};
   font-size: ${props => props.size}px;
   font-weight: bold;
+  margin-bottom: ${props => props.mb}px;
 `;
 
 export const Grid = styled.div`
@@ -98,10 +108,21 @@ export const Item = styled.div`
 
 `;
 
+export const BoxStatus = styled.div`
+  display: flex;
+  margin: 0px;
+  width: 18px;
+  height: 18px;
+  margin-top: 10px;
+  border-radius: 15px;
+  border-color: '#FFFFFF';
+  background: ${props => props.color};
+`;
+
 export const Box = styled.div`
   display: flex;
   flex-direction: column;
-  flex-flow: row wrap;
+  flex-flow: row;
   margin: auto;
   width: 100%;
   height: ${props => props.height ? props.height : props.size + 2}px;
@@ -134,7 +155,8 @@ export const Texto = styled.div`
   padding-left: 3px;
   padding-right: 3px;
   margin: auto;
-  display: inline-flex;
+  /* display: inline-flex;
+  justify-content: left; */
   background: ${props => props.bgcolor};
   color: ${props => props.estado === 'Funcionando' ? '#31C417' : 
                     props.estado === 'Pane' ? '#0031FF' : 
@@ -142,7 +164,34 @@ export const Texto = styled.div`
                     props.color};
   font-family: ${props => props.font};
   font-size: ${props => props.size}px;
-  font-weight: ${props => props.bold ? 500 : null};
+  font-weight: ${props => props.bold ? props.bold : null};
   font-style: ${props => props.italic ? 'italic' : null};
+  text-shadow: ${props => props.shadow ? '#B5B5B5 2px 3px 3px' : null};
   margin-bottom: ${props => props.mb}px;
+  margin-top: ${props => props.mt}px;
 `;
+
+export const Botao = styled.button`
+  border: 0;
+  border-radius: 3px;
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  font-style: italic;
+  background: #FFFFFF;
+  color: #225378;
+  cursor: pointer;
+  margin-left: 10px;
+  padding: 0px;
+  margin-right: 0px;
+
+  &:hover {
+    /* background: #225378;
+    color: #FFFFFF; */
+    background: #FFFFFF;
+    /* color: #0031FF; */
+    text-shadow: #B5B5B5 2px 3px 3px;
+  }
+`;
+

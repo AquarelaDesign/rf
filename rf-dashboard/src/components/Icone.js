@@ -14,6 +14,7 @@ import {
   FaTruckLoading,
   FaHandPaper,
   FaRegThumbsUp,
+  FaCircle,
 } from 'react-icons/fa';
 
 import { GrDeliver } from 'react-icons/gr'
@@ -41,6 +42,7 @@ export const FaIcon = ({ icon, size }) => {
     case 'FaHandPaper': return <FaHandPaper size={size} style={{ marginTop: 10 }} />
     case 'FaRegThumbsUp': return <FaRegThumbsUp size={size} style={{ marginTop: 10 }} />
     case 'GrDeliver': return <GrDeliver size={size} style={{ marginTop: 10 }} />
+    case 'FaCircle': return <FaCircle size={size} style={{ marginTop: 10 }} />
     default: return null
   }
 }

@@ -4,18 +4,27 @@ import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
 import { AgGridReact, gridApi } from 'ag-grid-react'
+import { AllCommunityModules } from '@ag-grid-community/all-modules'
 import 'ag-grid-community/dist/styles/ag-grid.css'
 import 'ag-grid-community/dist/styles/ag-theme-alpine.css'
+import { makeStyles } from '@material-ui/core/styles'
+import Modal from '@material-ui/core/Modal'
 
 import { formatToPhone } from 'brazilian-values'
 import StarRatings from 'react-star-ratings'
 
-
-import { Container, BoxTitulo, Texto, Grid, Botao, RLeft, RRight, BoxStatus } from './styles'
+import { Container, BoxTitulo, Texto, Grid, Botao, RLeft, RRight } from './styles'
 import { FaIcon } from '../../Icone'
 
 import { msgerror } from '../../../globais'
 import api from '../../../services/rf'
+
+import Usuario from '../Usuario'
+
+import PartialMatchFilter from './PartialMatchFilter'
+import StatusFilter from './StatusFilter'
+import TipoFilter from './TipoFilter'
+import EstadoFilter from './EstadoFilter'
 
 const rowData = [
   {make: "Toyota", model: "Celica", price: 35000}, 
@@ -23,10 +32,42 @@ const rowData = [
   {make: "Porsche", model: "Boxter", price: 72000}
 ]
 
+const getModalStyle = () => {
+  const top = 50
+  const left = 50
+
+  return {
+    top: `${top}%`,
+    left: `${left}%`,
+    transform: `translate(-${top}%, -${left}%)`,
+    // background: 'none',
+    borderRadius: '5px',
+    padding: '20px',
+    backgroundColor: '#2699F8',
+  }
+}
+
+const useStyles = makeStyles((theme) => ({
+  paper: {
+    position: 'absolute',
+    width: '80%',
+    height: '80%',
+    backgroundColor: theme.palette.background.paper,
+    border: '1px solid #000',
+    boxShadow: theme.shadows[5],
+    padding: theme.spacing(2, 4, 3),
+  },
+}))
+
 const GridUsuarios = () => {
+  const classes = useStyles()
+  
   const [usuarios, setUsuarios] = useState(rowData)
   const [vgridApi, setVgridApi] = useState(gridApi)
   const [mensagem, setMensagem] = useState('')
+  const [modalStyle] = React.useState(getModalStyle)
+  const [open, setOpen] = React.useState(false)
+  const [body, setBody] = React.useState('')
 
   useEffect(() => {
     try {
@@ -63,21 +104,75 @@ const GridUsuarios = () => {
     formatTipo: FormatTipo,
     formatEstado: FormatEstado,
     toolStatus: ToolStatus,
+    partialMatchFilter: PartialMatchFilter,
+    statusFilter: StatusFilter,
+    tipoFilter: TipoFilter,
+    estadoFilter: EstadoFilter,
   }
 
   const columnDefs = [
-    {headerName: "", field: "status", width: 40, filter: true, sortable: true, cellRenderer: 'formatStatus', tooltipField: 'status', tooltipComponent: 'toolStatus'},
-    {headerName: "", field: "tipo", width: 40, filter: true, sortable: true, cellRenderer: 'formatTipo'},
-    {headerName: "Nome", field: "nome", width: 385, sortable: true, filter: true}, 
-    {headerName: "Celular", field: "celular", width: 170, valueFormatter: celFormatter},
-    {headerName: "Localização", field: "localizacao", width: 320, filter: true, sortable: true},
-    {headerName: "", field: "estado", width: 40, filter: true, sortable: true, cellRenderer: 'formatEstado'},
-    {headerName: "Rate", field: "rate", width: 100, sortable: true, cellRenderer: 'stRatings'},
+    {
+      headerName: "S", 
+      field: "status", 
+      width: 40, 
+      sortable: true, 
+      // tooltipField: 'status', 
+      // tooltipComponent: 'toolStatus',
+      cellRenderer: 'formatStatus', 
+      filter: 'statusFilter', 
+      menuTabs: ['filterMenuTab'], 
+    },
+    {
+      headerName: "T", 
+      field: "tipo", 
+      width: 40, 
+      sortable: true,
+      cellRenderer: 'formatTipo',
+      filter: 'tipoFilter', 
+      menuTabs: ['filterMenuTab'], 
+    },
+    {
+      headerName: "Nome", 
+      field: "nome", 
+      width: 385, 
+      sortable: true, 
+      filter: 'partialMatchFilter', 
+      menuTabs: ['filterMenuTab'],
+    }, 
+    {
+      headerName: "Celular", 
+      field: "celular", 
+      width: 170, 
+      valueFormatter: celFormatter,
+    },
+    {
+      headerName: "Localização", 
+      field: "localizacao", 
+      width: 320, 
+      sortable: true, 
+      filter: 'partialMatchFilter', 
+      menuTabs: ['filterMenuTab'],
+    },
+    {
+      headerName: "E", 
+      field: "estado", 
+      width: 40, 
+      sortable: true, 
+      cellRenderer: 'formatEstado',
+      filter: 'estadoFilter', 
+      menuTabs: ['filterMenuTab'],
+    },
+    {
+      headerName: "Rate", 
+      field: "rate", 
+      width: 100, 
+      sortable: true, 
+      cellRenderer: 'stRatings',
+    },
   ]
   
   function FormatEstado(params) {
     // '[] Disponível, Aguardando A[P]rovacao, [A]guardando Coleta, Em [T]ransporte'
-    console.log('*** formatEstado', params.value)
     switch (params.value) {
       case '': return (<span style={{ color:'green' }}><FaIcon icon='FaRegThumbsUp' size={20} /></span>)
       case 'P': return (<span style={{ color:'blue' }}><FaIcon icon='FaTruckLoading' size={20} /></span>)
@@ -98,8 +193,8 @@ const GridUsuarios = () => {
   
   function FormatStatus(params) {
     switch (params.value) {
-      case 'A': return (<BoxStatus color='green'/>)
-      case 'I': return (<BoxStatus color='gray'/>)
+      case 'A': return (<span style={{ color:'green' }}><FaIcon icon='FaCircle' size={20} /></span>)
+      case 'I': return (<span style={{ color:'gray' }}><FaIcon icon='FaCircle' size={20} /></span>)
       default:  return (<></>)
     }
   } 
@@ -144,11 +239,36 @@ const GridUsuarios = () => {
       .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
   }
   
-  const onButtonClick = (e) => {
+  const onButtonClick = async (tipo, e) => {
+    e.preventDefault()
+    
     const selectedNodes = vgridApi.getSelectedNodes()
-    const selectedData = selectedNodes.map( node => node.data )
-    const selectedDataStringPresentation = selectedData.map( node => node.make + ' ' + node.model).join(', ')
-    alert(`Selected nodes: ${selectedDataStringPresentation}`)
+    // const selectedData = selectedNodes.map( node => node.data )
+    // const selectedDataStringPresentation = selectedData.map( node => node.make + ' ' + node.model).join(', ')
+    // alert(`Selected nodes: ${selectedDataStringPresentation}`)
+
+    if (selectedNodes.length === 0 && tipo==='E'){
+      toast('Você deve selecionar um registro para editar!', { type: 'error' })
+      return
+    }
+
+    console.log('*** onButtonClick', selectedNodes[0].data.id)
+
+    setBody(
+      <div style={modalStyle} className={classes.paper}>
+        <Usuario tipo={tipo} usuario_id={selectedNodes[0].data.id} />
+      </div>
+    )
+    handleOpen()
+
+  }
+
+  const handleOpen = () => {
+    setOpen(true)
+  };
+
+  const handleClose = () => {
+    setOpen(false)
   }
 
   return (
@@ -164,15 +284,16 @@ const GridUsuarios = () => {
             </Texto>
           </RLeft>
           <RRight>
-            <Botao onClick={onButtonClick}><FaIcon icon='RiSearchLine' size={20} /> </Botao>
-            <Botao onClick={onButtonClick}><FaIcon icon='FaRegEdit' size={20} /> </Botao>
-            <Botao onClick={onButtonClick}><FaIcon icon='FcPlus' size={20} /> </Botao>
+            {/* <Botao onClick={onButtonClick}><FaIcon icon='RiSearchLine' size={20} /> </Botao> */}
+            <Botao onClick={(e) => onButtonClick('E', e)}><FaIcon icon='FaRegEdit' size={20} /> </Botao>
+            <Botao onClick={(e) => onButtonClick('N', e)}><FaIcon icon='FcPlus' size={20} /> </Botao>
           </RRight>
         </Grid>
       </BoxTitulo>
 
-      <div className="ag-theme-alpine" style={ {height: '92%', width: '100%', borderRadius: '10px'} }>
+      <div className="ag-theme-alpine" style={{height: '92%', width: '100%', borderRadius: '10px', backgroundColor: '#FFFFFF'}}>
         <AgGridReact
+            modules={AllCommunityModules}
             rowSelection="multiple"
             onGridReady={ (params) => {setVgridApi(params.api)} }
             columnDefs={columnDefs}
@@ -189,6 +310,15 @@ const GridUsuarios = () => {
             {mensagem}
         </Texto>
       </BoxTitulo>
+
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="simple-modal-title"
+        aria-describedby="simple-modal-description"
+      >
+        {body}
+      </Modal>
 
     </Container>
   );
