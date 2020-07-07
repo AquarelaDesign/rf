@@ -1,4 +1,5 @@
-import React from 'react';
+import React from 'react'
+import { Image } from 'react-bootstrap'
 
 import { 
   FaTruck, 
@@ -15,14 +16,20 @@ import {
   FaHandPaper,
   FaRegThumbsUp,
   FaCircle,
-} from 'react-icons/fa';
+  FaSave,
+} from 'react-icons/fa'
 
 import { GrDeliver } from 'react-icons/gr'
 import { GiExitDoor } from 'react-icons/gi'
 import { RiSearchLine } from 'react-icons/ri'
-import { FcPlus } from 'react-icons/fc'
+import { FcPlus, FcCancel } from 'react-icons/fc'
+import { FiAlertOctagon, FiAlertTriangle } from 'react-icons/fi'
+import { MdDeleteForever, MdAddCircle, MdBlock } from 'react-icons/md'
 
-export const FaIcon = ({ icon, size }) => {
+import blank from '../assets/transparent.png'
+import supplier from '../assets/supplier.png'
+
+export const FaIcon = ({ icon, size, height, width }) => {
   switch (icon) {
     case 'FaTruck': return <FaTruck size={size} style={{ paddingTop: 10 }} />
     case 'FaBoxOpen': return <FaBoxOpen size={size} style={{ paddingTop: 10 }} />
@@ -42,7 +49,18 @@ export const FaIcon = ({ icon, size }) => {
     case 'FaHandPaper': return <FaHandPaper size={size} style={{ marginTop: 10 }} />
     case 'FaRegThumbsUp': return <FaRegThumbsUp size={size} style={{ marginTop: 10 }} />
     case 'GrDeliver': return <GrDeliver size={size} style={{ marginTop: 10 }} />
+    case 'FcCancel': return <FcCancel size={size} style={{ marginTop: 10 }} />
+    case 'FiAlertOctagon': return <FiAlertOctagon size={size} style={{ marginTop: 10 }} />
+    case 'FiAlertTriangle': return <FiAlertTriangle size={size} style={{ marginTop: 10 }} />
     case 'FaCircle': return <FaCircle size={size} style={{ marginTop: 10 }} />
+    case 'blank': return <Image src={blank} alt="" height={size} width={size} />
+    case 'supplier': return <Image src={supplier} alt="" style={{ height: 20, width: 20 }} />
+    case 'Deletar': return <MdDeleteForever size={size} />
+    case 'Add': return <MdAddCircle size={size} />
+    case 'Save': return <FaSave size={size} />
+    case 'Bloqueado': return <MdBlock size={size} />
+    case 'Recusado': return <FiAlertOctagon size={size} />
+    case 'Suspenso': return <FiAlertTriangle size={size} />
     default: return null
   }
 }

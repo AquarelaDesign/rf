@@ -21,6 +21,9 @@ Route.post("/register", "AuthController.register")
 
 Route.post("/authenticate", "AuthController.authenticate")
 
+Route.post('images/:id/:iid', 'ImageController.store')
+Route.delete('images/:id', 'ImageController.destroy')
+
 Route.group(() => {
   Route.get('/status', "UsuarioController.status")
 
@@ -37,13 +40,13 @@ Route.group(() => {
     .apiOnly()
   Route.resource('veiculos', 'VeiculoController')
     .apiOnly()
-  Route.post('veiculos/:id/images', 'ImageController.store')
+  // Route.post('veiculos/:id/images', 'ImageController.store')
 
   Route.resource('veiculosm', 'VeiculosMotoristaController')
     .apiOnly()
   // Route.post('veiculosm/:id/images', 'ImagevmController.store')
 
-  Route.get('images/:path', 'ImageController.show')
+  // Route.get('images/:path', 'ImageController.show')
   Route
     .resource('rotas', 'RotaController')
     .validator( new Map([

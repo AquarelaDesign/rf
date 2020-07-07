@@ -191,3 +191,20 @@ export const Label = styled.span`
   display: inline-block;
   background: ${props => props.color};
 `;
+
+export const CLeft = styled.div`
+  width: 70%;
+  height: 100%;
+  float: left;
+  padding: 20px;
+  /* color: #FFFFFF; */
+`;
+
+export const CRight = styled.div`
+  width: 30%;
+  height: 100%;
+  float: right;
+  padding: 20px;
+  /* color: #FFFFFF; */
+`;
+

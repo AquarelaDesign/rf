@@ -47,6 +47,10 @@ class UsuarioController {
 
   }
 
+  /**
+   * Show a list of usuarios with parameters.
+   * GET usuarios
+   */
   async busca ({ auth, request, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
     if (usuarios.tipo !== 'O' && usuarios !== undefined) {
@@ -62,10 +66,24 @@ class UsuarioController {
     ])
 
     try {    
+      /*
       const usuario = await Usuario.query()
         .where({ status: condicoes.status, estado: condicoes.estado, tipo: condicoes.tipo })
         .with('veiculos')
         .fetch()
+      */
+      const query = Usuario.query()
+      if (condicoes.tipo !== null){
+        query.where('tipo','=',condicoes.tipo)
+      }
+      if (condicoes.status !== null){
+        query.andWhere('status','=',condicoes.status)
+      }
+      if (condicoes.estado !== null){
+        query.andWhere('estado','=',condicoes.estado)
+      }
+      query.with('veiculos')
+      const usuario = await query.fetch()
 
       return usuario
     }
@@ -77,6 +95,10 @@ class UsuarioController {
     }
   }
 
+  /**
+   * Search usuarios with parameters.
+   * GET usuarios
+   */
   async search({params, request, response}) {
 
     // console.log(request.input('query'))
@@ -90,6 +112,10 @@ class UsuarioController {
     return response.json('ok')
   }
 
+  /**
+   * Show a list of usuarios with status.
+   * GET usuarios
+   */
   async status({auth, request, response}) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
     if (usuarios.tipo !== 'O' && usuarios !== undefined) {
@@ -99,11 +125,20 @@ class UsuarioController {
     }
 
     try {    
-
+      /*
       const usuario = await Usuario.query()
         .where({ status: "A", estado: "", tipo: "M" })
         .with('veiculos')
         .fetch()
+      */
+      const query = Usuario.query()
+      query.where('tipo','=',"M")
+      query.andWhere('status','=',"A")
+      query.andWhere('estado','='," ")
+      query.with('veiculos')
+      const usuario = await query.fetch()
+  
+
       Event.fire('status::results', usuarios)
       return usuario
     }
@@ -149,8 +184,25 @@ class UsuarioController {
       "bairro",
       "cidade",
       "uf",
-      "foto",
       "cep",
+      "codbanco",
+      "banco",
+      "agencia",
+      "conta",
+      "tipoconta",
+      "foto",
+      "habilitacao",
+      "habilitacaoimg",
+      "habilitacaovct",
+      "cavalo",
+      "cavaloimg",
+      "cavalovct",
+      "cavalo1",
+      "cavalo1img",
+      "cavalo1vct",
+      "ANTT",
+      "ANTTimg",
+      "ANTTvct",
       "rate",
       "latitude",
       "longitude",
@@ -214,14 +266,31 @@ class UsuarioController {
         "bairro",
         "cidade",
         "uf",
-        "foto",
         "cep",
+        "codbanco",
+        "banco",
+        "agencia",
+        "conta",
+        "tipoconta",
+        "foto",
+        "habilitacao",
+        "habilitacaoimg",
+        "habilitacaovct",
+        "cavalo",
+        "cavaloimg",
+        "cavalovct",
+        "cavalo1",
+        "cavalo1img",
+        "cavalo1vct",
+        "ANTT",
+        "ANTTimg",
+        "ANTTvct",
         "rate",
+        "latitude",
+        "longitude",
         "localizacao",
         "origem",
         "destino",
-        "latitude",
-        "longitude",
         "status",
         "estado",
         "tipo",
@@ -230,7 +299,7 @@ class UsuarioController {
 
       usuario.merge(data)
       await usuario.save()
-
+      /*
       const topic = Ws.getChannel('chat').topic('chat')
       console.log('topic', topic)
       if (topic) {
@@ -240,7 +309,8 @@ class UsuarioController {
           topic.broadcast('message', {message: `Motorista ${usuario.nome} Desconectado!`, tipo: 'dark'})
         }
       }
-
+      */
+      await usuario.load('veiculos')
       return usuario
     }
     catch(e) {

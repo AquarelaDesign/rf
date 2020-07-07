@@ -74,7 +74,7 @@ export default function CardMotoristas({ data, index }) {
   return (
     <Container ref={ref} isDragging={isDragging}>
       <RLeft>
-        { data.foto && <img src={data.foto} alt=""/> }
+        { data.foto && <img src={`../images/${data.foto}`} alt=""/> }
       </RLeft>
       <RRight>
         <Texto bgcolor='#E7E6E6' size={16} bold={true}>{data.nome}</Texto>
@@ -88,11 +88,18 @@ export default function CardMotoristas({ data, index }) {
           numberOfStars={5}
           name='rating'
         />
-
-        <Texto color='#2699FB' size={12}>Tipo de veículo: {data.veiculos[0].tipo}</Texto>
-        <Texto bgcolor='#E7E6E6' size={10}>RT: {`${data.origem} x ${data.destino}`}</Texto>
-        <Texto bgcolor='#E7E6E6' size={12}>Vagas disponíveis: {data.veiculos[0].vagas} vagas</Texto>
-        <Texto bgcolor='#90D284' size={12}>{data.localizacao}</Texto>
+        <Texto color='#2699FB' size={12}>
+          Tipo de veículo: {data.veiculos.length > 0 ? data.veiculos[0].tipo : ''}
+        </Texto>
+        <Texto bgcolor='#E7E6E6' size={10}>
+          RT: {`${data.origem} x ${data.destino}`}
+        </Texto>
+        <Texto bgcolor='#E7E6E6' size={12}>
+          Vagas disponíveis: {data.veiculos.length > 0 ? data.veiculos[0].vagas : 0} vagas
+        </Texto>
+        <Texto bgcolor='#90D284' size={12}>
+          {data.localizacao}
+        </Texto>
       </RRight>
       {/* <header>
         {data.labels.map(label => <Label key={label} color={label} />)}

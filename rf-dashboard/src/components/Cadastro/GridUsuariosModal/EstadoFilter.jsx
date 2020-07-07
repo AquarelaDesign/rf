@@ -7,7 +7,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 
 import { FaIcon } from '../../Icone'
 
-export default class TipoFilter extends Component {
+export default class EstadoFilter extends Component {
   constructor(props) {
     super(props);
 
@@ -47,7 +47,10 @@ export default class TipoFilter extends Component {
   }
 
   setModel(model) {
-    this.state.text = model ? model.value : '';
+    // this.state.text = model ? model.value : '';
+    this.setState({
+      text: model ? model.value : '',
+    })
   }
 
   afterGuiAttached(params) {
@@ -97,31 +100,54 @@ export default class TipoFilter extends Component {
     return (
       <div style={style}>
         <FormControl style={{ margin: '1px', height: '30px', width: '150px' }}>
+          {/* <InputLabel id="status-label">Status</InputLabel> */}
           <Select
             labelId="status-label"
             id="status"
             value={this.state.text}
             onChange={this.onChange}
           >
-            <MenuItem value='O'>
+            <MenuItem value='P'>
               <ListItemIcon>
-                <FaIcon icon='FaHeadphonesAlt' size={20} />
+                <span style={{ color: 'blue' }}><FaIcon icon='FaTruckLoading' size={20} /></span>
               </ListItemIcon>
-              Operador
+              Aprovação
             </MenuItem>
-            <MenuItem value='M'>
+            <MenuItem value='A'>
               <ListItemIcon>
-                <FaIcon icon='FaTruck1' size={20} />
+                <span style={{ color: 'orange' }}><FaIcon icon='FaHandPaper' size={20} /></span>
               </ListItemIcon>
-              Mecânico
+              Coleta
             </MenuItem>
-            <MenuItem value='C'>
+            <MenuItem value='T'>
               <ListItemIcon>
-                <FaIcon icon='FaUserTie' size={20} />
+                <span style={{ color: 'red' }}><FaIcon icon='GrDeliver' size={20} /></span>
               </ListItemIcon>
-              Cliente
+              Transporte
+            </MenuItem>
+
+            <MenuItem value='B'>
+              <ListItemIcon>
+                <span style={{ color: 'red' }}><FaIcon icon='FcCancel' size={20} /></span>
+              </ListItemIcon>
+              Bloqueado
+            </MenuItem>
+            <MenuItem value='R'>
+              <ListItemIcon>
+                <span style={{ color: 'red' }}><FaIcon icon='FiAlertOctagon' size={20} /></span>
+              </ListItemIcon>
+              Recusado
+            </MenuItem>
+            <MenuItem value='7'>
+              <ListItemIcon>
+                <span style={{ color: 'orange' }}><FaIcon icon='FiAlertTriangle' size={20} /></span>
+              </ListItemIcon>
+              Suspenso 7 dias
             </MenuItem>
             <MenuItem value=''>
+              <ListItemIcon>
+                <span style={{ color: 'green' }}><FaIcon icon='FaRegThumbsUp' size={20} /></span>
+              </ListItemIcon>
               Todos
             </MenuItem>
           </Select>

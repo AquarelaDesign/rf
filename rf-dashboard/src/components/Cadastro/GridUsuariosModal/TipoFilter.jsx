@@ -7,7 +7,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 
 import { FaIcon } from '../../Icone'
 
-export default class EstadoFilter extends Component {
+export default class TipoFilter extends Component {
   constructor(props) {
     super(props);
 
@@ -47,7 +47,10 @@ export default class EstadoFilter extends Component {
   }
 
   setModel(model) {
-    this.state.text = model ? model.value : '';
+    // this.state.text = model ? model.value : '';
+    this.setState({
+      text: model ? model.value : '',
+    })
   }
 
   afterGuiAttached(params) {
@@ -97,35 +100,37 @@ export default class EstadoFilter extends Component {
     return (
       <div style={style}>
         <FormControl style={{ margin: '1px', height: '30px', width: '150px' }}>
-          {/* <InputLabel id="status-label">Status</InputLabel> */}
           <Select
             labelId="status-label"
             id="status"
             value={this.state.text}
             onChange={this.onChange}
           >
-            <MenuItem value='P'>
+            <MenuItem value='O'>
               <ListItemIcon>
-                <span style={{ color: 'blue' }}><FaIcon icon='FaTruckLoading' size={20} /></span>
+                <FaIcon icon='FaHeadphonesAlt' size={20} />
               </ListItemIcon>
-              Aprovação
+              Operador
             </MenuItem>
-            <MenuItem value='A'>
+            <MenuItem value='M'>
               <ListItemIcon>
-                <span style={{ color: 'orange' }}><FaIcon icon='FaHandPaper' size={20} /></span>
+                <FaIcon icon='FaTruck1' size={20} />
               </ListItemIcon>
-              Coleta
+              Mecânico
             </MenuItem>
-            <MenuItem value='T'>
+            <MenuItem value='C'>
               <ListItemIcon>
-                <span style={{ color: 'red' }}><FaIcon icon='GrDeliver' size={20} /></span>
+                <FaIcon icon='FaUserTie' size={20} />
               </ListItemIcon>
-              Transporte
+              Cliente
+            </MenuItem>
+            <MenuItem value='F'>
+              <ListItemIcon>
+                <FaIcon icon='supplier' size={20} />
+              </ListItemIcon>
+              Fornecedor
             </MenuItem>
             <MenuItem value=''>
-              <ListItemIcon>
-                <span style={{ color: 'green' }}><FaIcon icon='FaRegThumbsUp' size={20} /></span>
-              </ListItemIcon>
               Todos
             </MenuItem>
           </Select>

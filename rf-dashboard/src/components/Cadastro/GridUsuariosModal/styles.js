@@ -2,7 +2,7 @@ import styled, { css } from 'styled-components';
 
 export const Container = styled.div`
   position: relative;
-  /* background: #FFFFFF; */
+  background: #2699F8;
   border-radius: 5px;
   border: transparent;
   margin-bottom: 10px;
@@ -24,21 +24,19 @@ export const Container = styled.div`
     line-height: 20px;
   }
 
-  img {
+  /* img {
     width: 90px;
     height: 90px;
     border-radius: 2px;
     margin-top: 5px;
-    /* margin-left: -5px; */
   }
-
+ */
   ${props => props.isDragging && css`
     border: 2px dashed rgba(0, 0, 0, 0.2);
     padding-top: 31px;
     border-radius: 0;
     background: transparent;
     box-shadow: none;
-    /* cursor: grabbing; */
 
     p, img, header {
       opacity: 0;
@@ -63,8 +61,6 @@ export const RRight = styled.div`
   display: flex;
   width: 10%;
   float: right;
-  /* margin-right: -130px;
-  padding-right: 0px; */
   align-items: flex-end;
   align-self: flex-end;
   vertical-align: middle;
@@ -76,14 +72,15 @@ export const BoxTitulo = styled.div`
   justify-content: left;
   margin: auto;
   width: 100%;
-  height: ${props => props.size + 2}px;
+  height: ${props => props.height ? `${props.height + 2}px` : '100%'};
   border-radius: 4px;
   border: ${props => props.border};
   background: ${props => props.bgcolor};
   color: ${props => props.color};
   font-size: ${props => props.size}px;
   font-weight: bold;
-  margin-bottom: ${props => props.mb}px;
+  margin-bottom: ${props => props.mb ? `${props.mb + 2}px` : '0'};
+  margin: ${props => props.mg}px;
 `;
 
 export const Grid = styled.div`

@@ -1,11 +1,12 @@
 .container {
   display: flex;
-  flex-direction: row;
-  padding-right: 15px;
+  margin: 0px;
+  /* flex-direction: row; */
+  /* padding-right: 15px;
   padding-left: 15px;
-  margin-right: auto;
-  margin-left: auto;
-  margin-top: 0px;
+  margin-right: auto; */
+  /* margin-left: 0px; */
+  /* margin-top: 0px; */
 }
 
 #logo {

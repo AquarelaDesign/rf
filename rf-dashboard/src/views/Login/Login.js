@@ -60,7 +60,7 @@ const Login = ({ history }) => {
   }
 
   return (
-    <Container style={{height: '100%'}}>
+    <Container style={{height: '100%', margin: '0px', width: '100%', padding: '0px'}}>
       <Topo/>
       <Loginsc>
         <Image id="logo" src={logo} alt="" style={{marginTop: 20, height: 150}} />

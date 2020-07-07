@@ -47,7 +47,10 @@ export default class StatusFilter extends Component {
   }
 
   setModel(model) {
-    this.state.text = model ? model.value : '';
+    // this.state.text = model ? model.value : '';
+    this.setState({
+      text: model ? model.value : '',
+    })
   }
 
   afterGuiAttached(params) {

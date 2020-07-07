@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react'
 import produce from 'immer'
 import { toast } from 'react-toastify'
@@ -7,7 +8,7 @@ import Pusher from 'pusher-js'
 // import pushid from 'pushid'
 
 import {
-  loadMotoristas,
+  // loadMotoristas,
   loadCargas,
   loadTransportes,
   loadEntregas
@@ -21,12 +22,13 @@ import List from '../List'
 
 import { Container } from './styles'
 
-const dataM = loadMotoristas()
+// const dataM = loadMotoristas()
 const dataC = loadCargas()
 const dataT = loadTransportes()
 const dataE = loadEntregas()
 
 const ws = Ws('ws://localhost:3333')
+ws.connect()
 
 const Board = ({ history }) => {
   const [isConnected, setIsConnected] = useState(false)
@@ -45,21 +47,21 @@ const Board = ({ history }) => {
 
   useEffect(() => {
     try {
-      ws.connect()
 
       ws.on('open', () => {
         setIsConnected(true)
       })
 
-      ws.on('close', () => {
-        setIsConnected(false)
-      })
+      // ws.on('close', () => {
+      //   console.log('*** ws.close')
+      //   setIsConnected(false)
+      // })
 
       if (isConnected) {
         const chat = ws.subscribe('chat')
 
         chat.on('ready', () => {
-          // chat.emit('message', 'hello client')
+          chat.emit('message', '*** Client ready')
         })
 
         chat.on('message', (data) => {
@@ -71,10 +73,12 @@ const Board = ({ history }) => {
         })
 
         chat.on('error', (error) => {
-          console.log('*** ', error)
+          console.log('*** ws.error', error)
         })
 
         chat.on('close', () => {
+          console.log('*** ws.close')
+          setIsConnected(false)
         })
       }
     } catch (error) {
@@ -134,7 +138,7 @@ const Board = ({ history }) => {
         status: 'A',
         estado: ' ',
       }).then(res => {
-        console.log('*** buscausuarios', res)
+        // console.log('*** buscausuarios', res)
         // const { token } = res.data
         const loadMotorista = {
           title: "MOTORISTAS ONLINE",
@@ -179,7 +183,7 @@ const Board = ({ history }) => {
     try {
       api.get('/status', {})
         .then(res => {
-          console.log('*** status', res)
+          // console.log('*** status', res)
           // const { token } = res.data
           const loadMotorista = {
             title: "MOTORISTAS ONLINE",
