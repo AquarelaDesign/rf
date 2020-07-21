@@ -8,10 +8,11 @@ import Login from './views/Login'
 const Routes = () => {
   return (
     <Switch>
-      <Route exact path="/login" name="Login" render={props => <Login {...props}/>} />
-      <Route exact path="/home" name="Home" render={props => <Dashboard {...props}/>} />
-      <Route exact path="/404" name="Page 404" render={props => <NotFound {...props}/>} />
-      <Route path="/" name="Login" render={props => <Login {...props}/>} />
+      <Route path="/rf/login" name="Login" render={props => <Login {...props}/>} />
+      <Route path="/rf/home" name="Home" render={props => <Dashboard {...props}/>} />
+      <Route path="/rf/404" name="Page 404" render={props => <NotFound {...props}/>} />
+      <Route exact path="/rf" name="Login" render={props => <Login {...props}/>} />
+      <Route exact path="/" name="Login" render={props => <Login {...props}/>} />
     </Switch>
   )
 }
