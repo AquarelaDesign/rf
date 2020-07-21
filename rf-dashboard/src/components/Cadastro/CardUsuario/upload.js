@@ -39,7 +39,7 @@ function Dropzone(props) {
         props.input.value !== undefined && 
         props.input.value !== "")
     {
-      setPrev(`../images/${props.input.value}`)
+      setPrev(`images/${props.input.value}`)
     }
   }, [props.input.value])
 

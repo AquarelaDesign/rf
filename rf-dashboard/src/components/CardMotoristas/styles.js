@@ -6,10 +6,8 @@ export const Container = styled.div`
   border-radius: 5px;
   margin-bottom: 10px;
   padding: 5px;
-  /* height: auto; */
   min-height: 130px;
   box-shadow: 0 1px 4px 0 rgba(192, 208, 230, 0.8);
-  /* border-top: 20px solid rgba(230, 236, 245, 0.4); */
   cursor: grab;
 
   header {
@@ -28,7 +26,6 @@ export const Container = styled.div`
     height: 90px;
     border-radius: 2px;
     margin-top: 5px;
-    /* margin-left: -5px; */
   }
 
   ${props => props.isDragging && css`
@@ -51,6 +48,16 @@ export const Label = styled.span`
   border-radius: 2px;
   display: inline-block;
   background: ${props => props.color};
+`;
+
+export const Botoes = styled.div`
+  position: 'absolute';
+  top: 2;
+  justify-content: right;
+  float: right;
+  width: 100%;
+  border: 2px dashed rgba(0, 0, 0, 1);
+  z-index: 10;
 `;
 
 export const RLeft = styled.div`

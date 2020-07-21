@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { makeStyles } from '@material-ui/core/styles'
@@ -15,27 +15,37 @@ import { Form, Field } from 'react-final-form'
 import './agGrid.scss'
 import { AgGridReact, gridApi } from 'ag-grid-react'
 
-import { 
-  withStyles, 
-  Tabs, 
-  Tab, 
-  Box, 
-  MenuItem, 
+import { AiOutlineSearch } from 'react-icons/ai'
+import {
+  Box,
+  InputAdornment,
+  MenuItem,
+  Tabs,
+  Tab,
   Tooltip,
+  Typography,
+  withStyles,
 } from '@material-ui/core'
 
 import {
   TextField,
 } from 'final-form-material-ui'
 
+import DocsModal from '../DocsModal'
+import useModalDocs from '../DocsModal/useModal'
+
 import { msgerror } from '../../../globais'
 import api from '../../../services/rf'
 import { FaIcon } from '../../Icone'
 
-import cadBancos from '../../../services/bancos.json'
+import cadBancos from '../../../services/json/bancos.json'
+// import cadEstados from '../../../services/json/estados.json'
+import cadTipoVeiculo from '../../../services/json/tipoveiculo.json'
+
 import Upload from './upload'
 import DatePicker from './datepicker'
 import { values } from 'lodash'
+// import useModal from '../../Email/useModal'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -74,6 +84,11 @@ const useStyles = makeStyles((theme) => ({
     top: 60,
     right: 32,
   },
+  botoesvei: {
+    position: 'absolute',
+    top: 110,
+    right: 32,
+  },
 }))
 
 const CssTextField = withStyles({
@@ -100,7 +115,6 @@ const CssTextField = withStyles({
     '& .MuiFormHelperText-contained': {
       justifyContent: 'left',
     },
-    
   },
 })(TextField)
 
@@ -149,7 +163,7 @@ function formatCpfCnpj(props) {
   // }
 
   const clearValue = clearNumber(value)
-  let sMask = [/[0-9]/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '-', /\d/, /\d/]
+  let sMask = [/[0-9]/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/, /\d/]
   if (clearValue.length > 11) {
     sMask = [/[0-9]/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '/', /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/]
   }
@@ -246,14 +260,21 @@ export default function CardUsuario({ tipo, usuarioId }) {
   const [ultimoCep, setUltimoCep] = useState('')
   const [dadosBancarios, setDadosBancarios] = useState('visible')
   const [tipoCadastro, setTipoCadastro] = useState('')
-  // const [uploadedFiles, setUploadedFiles] = useState([])
+  const [flag, setFlag] = useState(false)
   const [userID, setUserID] = useState(usuarioId)
   const [vgridApi, setVgridApi] = useState(gridApi)
   const [veiculos, setVeiculos] = useState([])
+  const [atualizaCEP, setAtualizaCEP] = useState(false)
+
+  const [isOpen, setIsOpen] = useState(false)
+  const { isShowDocs, toggleDocs } = useModalDocs()
+
+  const [veiculoId, setVeiculoId] = useState(0)
 
   useEffect(() => {
+    // toggleCep()
     try {
-    
+
       if (tipo !== 'N' && tipo !== 'E') {
         setDisableEdit(true)
       }
@@ -261,7 +282,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
       if (userID !== null && tipo !== 'N') {
         buscaUsuario()
       }
-      console.log('*** tipo', tipo, tipoCadastro)
+      // console.log('*** tipo', tipo, tipoCadastro)
       if (tipo === 'N' && tipoCadastro === '') {
         setTipoCadastro('M')
         valTipoCadastro('M')
@@ -300,11 +321,12 @@ export default function CardUsuario({ tipo, usuarioId }) {
   }
 
   function onRowEditingStopped() {
-    vgridApi.forEachNode((node, index) => {
-      salvaVeiculo(node.data)
-    })
+    if (flag === false) {
+      vgridApi.forEachNode((node, index) => {
+        salvaVeiculo(node.data)
+      })
+    }
   }
-
 
   const buscaUsuario = async () => {
     await api
@@ -329,13 +351,27 @@ export default function CardUsuario({ tipo, usuarioId }) {
   function Estado(estado) {
     // [] Disponível, Aguardando A[P]rovacao, [A]guardando Coleta, Em [T]ransporte, 
     // [B]loqueado, [R]ecusado, [7]Suspensão de 7 dias
+    /*
+    if (estado !== undefined) {
+      cadEstados.map((item) => {
+        console.log('*** cadEstados', item.id, estado)
+        if (item.id === estado) {
+          return (<span style={{ color: `${item.id}` }}><FaIcon icon={item.icon} size={item.size} />{item.description}</span>)
+        }
+        return (<></>)
+      })
+    }
+    return (<></>)
+    // cadEstados.filter(est => est.id === estado)
+    */
+    
     switch (estado) {
       case ' ': return (
         <span style={{ color: 'green' }}>
-          <FaIcon icon='FaRegThumbsUp' size={20} /> 
-          { tipoCadastro === 'M' ? ' DISPONÍVEL' : ' ATIVO'}
+          <FaIcon icon='FaRegThumbsUp' size={20} />
+          {tipoCadastro === 'M' ? ' DISPONÍVEL' : ' ATIVO'}
         </span>
-        )
+      )
       case 'P': return (<span style={{ color: 'blue' }}><FaIcon icon='FaTruckLoading' size={20} /> AGUARDANDO APROVAÇÃO</span>)
       case 'A': return (<span style={{ color: 'orange' }}><FaIcon icon='FaHandPaper' size={20} /> AGUARDANDO COLETA</span>)
       case 'T': return (<span style={{ color: 'red' }}><FaIcon icon='GrDeliver' size={20} /> EM TRANSPORTE</span>)
@@ -344,6 +380,16 @@ export default function CardUsuario({ tipo, usuarioId }) {
       case '7': return (<span style={{ color: 'orange' }}><FaIcon icon='FiAlertTriangle' size={20} /> SUSPENÇÃO 7 DIAS</span>)
       default: return (<></>)
     }
+  }
+
+  function TipoVeiculo() {
+    let arrTipo = []
+    // eslint-disable-next-line array-callback-return
+    cadTipoVeiculo.map((item) => {
+      // console.log('*** cadTipoVeiculo', item.id, item.tipo)
+      arrTipo.push(item.tipo)
+    })
+    return arrTipo
   }
 
   function Tipo(tipo) {
@@ -381,21 +427,21 @@ export default function CardUsuario({ tipo, usuarioId }) {
     function isCharNumeric(charStr) {
       return !!/\d/.test(charStr)
     }
-    
+
     function isKeyPressedNumeric(event) {
       var charCode = getCharCodeFromEvent(event);
       var charStr = String.fromCharCode(charCode);
       return isCharNumeric(charStr)
     }
-    
+
     function getCharCodeFromEvent(event) {
       event = event || window.event
       return typeof event.which === 'undefined' ? event.keyCode : event.which
     }
-    
-    function NumericCellEditor() {}
 
-    NumericCellEditor.prototype.init = function(params) {
+    function NumericCellEditor() { }
+
+    NumericCellEditor.prototype.init = function (params) {
       this.focusAfterAttached = params.cellStartedEdit
       this.eInput = document.createElement('input')
       this.eInput.style.width = '100%'
@@ -404,7 +450,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
         ? params.charPress
         : params.value
       var that = this
-      this.eInput.addEventListener('keypress', function(event) {
+      this.eInput.addEventListener('keypress', function (event) {
         if (!isKeyPressedNumeric(event)) {
           that.eInput.focus()
           if (event.preventDefault) event.preventDefault()
@@ -412,35 +458,35 @@ export default function CardUsuario({ tipo, usuarioId }) {
       })
     }
 
-    NumericCellEditor.prototype.getGui = function() {
+    NumericCellEditor.prototype.getGui = function () {
       return this.eInput
     }
 
-    NumericCellEditor.prototype.afterGuiAttached = function() {
+    NumericCellEditor.prototype.afterGuiAttached = function () {
       if (this.focusAfterAttached) {
         this.eInput.focus()
         this.eInput.select()
       }
     }
 
-    NumericCellEditor.prototype.isCancelBeforeStart = function() {
+    NumericCellEditor.prototype.isCancelBeforeStart = function () {
       return this.cancelBeforeStart
     }
 
-    NumericCellEditor.prototype.isCancelAfterEnd = function() {}
+    NumericCellEditor.prototype.isCancelAfterEnd = function () { }
 
-    NumericCellEditor.prototype.getValue = function() {
+    NumericCellEditor.prototype.getValue = function () {
       return this.eInput.value
     }
 
-    NumericCellEditor.prototype.focusIn = function() {
+    NumericCellEditor.prototype.focusIn = function () {
       var eInput = this.getGui()
       eInput.focus()
       eInput.select()
       console.log('NumericCellEditor.focusIn()')
     }
 
-    NumericCellEditor.prototype.focusOut = function() {
+    NumericCellEditor.prototype.focusOut = function () {
       console.log('NumericCellEditor.focusOut()')
     }
 
@@ -465,16 +511,26 @@ export default function CardUsuario({ tipo, usuarioId }) {
     onBtStartEditing(null, null, null, vgridApi.getLastDisplayedRow())
   }
 
+  const onDocs = (props, e) => {
+    e.preventDefault()
+    const selectedData = props.api.getSelectedRows()
+    setVeiculoId(selectedData[0].id)
+    toggleDocs()
+    setFlag(true)
+  }
+
   const handleDeleteRow = async (props, e) => {
     e.preventDefault()
     const selectedData = props.api.getSelectedRows()
-    
+
     await sleep(300)
     api.delete(`/veiculosm/${selectedData[0].id}`,
-      {headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      }}
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
+      }
     ).then(response => {
       if (response.status === 200) {
         toast('Veículo removido com sucesso!',
@@ -529,7 +585,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
       editable: true,
       cellEditor: 'agSelectCellEditor',
       cellEditorParams: {
-        values: ['CEGONHA', 'PLATAFORMA', 'OUTRO'],
+        values: TipoVeiculo(), // ['CARRETA', 'CAVALO', 'PLATAFORMA'],
       },
     },
     {
@@ -547,16 +603,40 @@ export default function CardUsuario({ tipo, usuarioId }) {
       editable: false,
       cellRendererFramework: (props) => {
         return (
-          <button onClick={(e) => handleDeleteRow(props, e)}
-            style={{ backgroundColor:'transparent' }}
+          <button onClick={(e) => onDocs(props, e)}
+            style={{ backgroundColor: 'transparent' }}
           >
-            <Tooltip title="Excluir veículo">
-              <span style={{ 
-                alignItems: 'center', 
-                color:'#FF0000', 
+            <Tooltip title="Documentos">
+              <span style={{
+                alignItems: 'center',
+                color: '#000000',
                 marginLeft: '-18px',
                 marginTop: '3px',
-                }}>
+              }}>
+                <FaIcon icon='Documentos' size={20} />
+              </span>
+            </Tooltip>
+          </button>
+        )
+      },
+    },
+    {
+      headerName: "",
+      width: 30,
+      sortable: false,
+      editable: false,
+      cellRendererFramework: (props) => {
+        return (
+          <button onClick={(e) => handleDeleteRow(props, e)}
+            style={{ backgroundColor: 'transparent' }}
+          >
+            <Tooltip title="Excluir veículo">
+              <span style={{
+                alignItems: 'center',
+                color: '#FF0000',
+                marginLeft: '-18px',
+                marginTop: '3px',
+              }}>
                 <FaIcon icon='Deletar' size={20} />
               </span>
             </Tooltip>
@@ -569,12 +649,31 @@ export default function CardUsuario({ tipo, usuarioId }) {
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   const onSubmit = async (values) => {
+    if (atualizaCEP) {
+      return
+    }
+
     await sleep(300)
 
     if (userID !== null && tipo === 'E') {
-      // console.log('*** onSubmit', JSON.stringify(values))
-      await api.put(`/usuarios/${userID}`, 
-        JSON.stringify(values),
+      values.cep.replace('-', '')
+
+      let newValues = {}
+      for (let key in values) {
+        if (values[key] && typeof values[key] === 'string') {
+          if (key !== 'email' && key !== 'foto') {
+            newValues[key] = values[key].toUpperCase()
+          } else {
+            newValues[key] = values[key]
+          }
+        } else {
+          newValues[key] = values[key]
+        }
+      }
+
+      // console.log('*** newValues', newValues)
+      await api.put(`/usuarios/${userID}`,
+        JSON.stringify(newValues),
         {
           headers: {
             'Content-Type': 'application/json',
@@ -588,7 +687,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
         setTipoCadastro(data.tipo)
         valTipoCadastro(data.tipo)
         setVeiculos(data.veiculos)
-        
+
         toast(response.status === 200
           ? 'Registro atualizado com sucesso!'
           : response.data[0].message,
@@ -616,22 +715,23 @@ export default function CardUsuario({ tipo, usuarioId }) {
       if (veiculo.id === null) {
         delete veiculo['id']
         url = { url: `/veiculosm`, method: 'post', data: veiculo }
-      } 
+      }
 
-      api(url, 
-        {headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        }}
+      api(url,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          }
+        }
       ).then(response => {
         if (response.status !== 200) {
           toast(`Ocorreu um erro no processamento da placa [${placa}]!`,
-          { type: 'error' })
+            { type: 'error' })
           return
         }
       }).catch((error) => {
-        toast(`Ocorreu um erro no processamento da placa [${placa}]!`,
-        { type: 'error' })
+        // toast(`Ocorreu um erro no processamento da placa [${placa}]!`,{ type: 'error' })
 
         if (error.response) {
           console.error('*** bu-1.1', error)
@@ -657,155 +757,95 @@ export default function CardUsuario({ tipo, usuarioId }) {
     } else {
       setDadosBancarios('visible')
     }
-    
+
     setTipoCadastro(value)
 
     return undefined
   }
 
-  const CpfCnpjValido = (value) => (
-    !isCPF(value) ?
-      !isCNPJ(value) ? 'CPF/CNPJ Inválido!' : undefined
-      : undefined
-  )
-
-  const buscaCEP = async (value) => {
+  const CpfCnpjValido = (value) => {
     if (!value) {
       return value
     }
 
-    const cep = value.replace('-','')
+    const valor = value
+      .replace('.', '')
+      .replace('-', '')
+      .replace('/', '')
+    
+    if (valor.trim().length === 11) {
+      if (!isCPF(value)) {
+        return 'CPF Inválido!'
+      }
+    } else if (valor.trim().length === 14) {
+      if (!isCNPJ(value)) {
+        return 'CNPJ Inválido!'
+      }
+    } else {
+      return undefined
+    }
+  }
+
+  const validaCEP = async (value) => {
+    setAtualizaCEP(true)
+    console.log('*** value', value)
+    if (!value) {
+      setAtualizaCEP(false)
+      return value
+    }
+
+    const cep = value.replace('-', '')
     if (cep.trim().length < 8) {
+      setAtualizaCEP(false)
       return value
     }
 
     if (ultimoCep === cep) {
+      setAtualizaCEP(false)
       return
     }
     setUltimoCep(cep)
 
-    const service = `http://wservice.procyon.com.br:3003/api/cep/${cep}`
+    const service = `http://31.220.50.222:3003/api/cep/${cep}`
 
     Axios.get(service, {})
-    .then(response => {
-      const { data } = response.data
-      if (response.data.error) {
-        toast(response.data.message, { type: 'error' })
-        return
-      }
+      .then(response => {
+        const { data } = response.data
+        if (response.data.error) {
+          // toast(response.data.message, { type: 'error' })
+          setAtualizaCEP(false)
+          return
+        }
 
-      const Logradouro = `${data[0].data[0].Tipo_Logradouro} ${data[0].data[0].Logradouro}`
-      const Bairro = data[0].data[0].Bairro
-      const Cidade = data[0].data[0].Cidade
-      const UF = data[0].data[0].UF
+        const Logradouro = `${data[0].data[0].Tipo_Logradouro} ${data[0].data[0].Logradouro}`
+        const Bairro = data[0].data[0].Bairro
+        const Cidade = data[0].data[0].Cidade
+        const UF = data[0].data[0].UF
 
-      console.log('*** buscaCep', values.logradouro)
-      if (values.logradouro === '' || 
-          values.logradouro === null || 
-          values.logradouro === undefined) 
-      {
-        window.setFormValue('logradouro', Logradouro.toUpperCase())
-        window.setFormValue('bairro', Bairro.toUpperCase())
-        window.setFormValue('cidade', Cidade.toUpperCase())
-        window.setFormValue('uf', UF.toUpperCase())
-      }
-
-    }).catch((error) => {
-      if (error.response) {
-        console.error('*** u-1.1', error)
-      } else if (error.request) {
-        console.error('*** u-1.2', error)
-      } else {
-        console.error('*** u-1.3')
-      }
-    })
-  }
-
-/*  
-  const handleUpload = files => {
-    const UploadedFiles = files.map(file => ({
-      file,
-      id: uniqueId(),
-      name: file.name,
-      readableSize: filesize(file.size),
-      preview: URL.createObjectURL(file),
-      progress: 0,
-      uploaded: false,
-      error: false,
-      url: null,
-    }))
-
-    console.log('*** UploadedFiles', UploadedFiles)
-
-    setUploadedFiles(uploadedFiles.concat(UploadedFiles))
-    
-    console.log('*** handleUpload', uploadedFiles)
-    uploadedFiles.forEach(processUpload)
-  }
-
-  const updateFile = (id, data) => {
-    setUploadedFiles(
-      uploadedFiles.map(uploadedFile => {
-
-        console.log('*** uploadedFile', id, uploadedFile.id)
-        
-        return id === uploadedFile.id 
-          ? {...updateFile, ...data} 
-          : uploadedFile
+        // console.log('*** buscaCep', values.logradouro)
+        if (values.logradouro === '' ||
+          values.logradouro === null ||
+          values.logradouro === undefined) {
+          window.setFormValue('logradouro', Logradouro.toUpperCase())
+          window.setFormValue('bairro', Bairro.toUpperCase())
+          window.setFormValue('cidade', Cidade.toUpperCase())
+          window.setFormValue('uf', UF.toUpperCase())
+        }
+        setAtualizaCEP(false)
+      }).catch((error) => {
+        if (error.response) {
+          console.error('*** u-1.1', error)
+        } else if (error.request) {
+          console.error('*** u-1.2', error)
+        } else {
+          console.error('*** u-1.3')
+        }
+        setAtualizaCEP(false)
       })
-    )
   }
 
-  const processUpload = (file) => {
-    const data = new FormData()
-
-    data.append('file', file.file, file.name)
-
-    api.post(`/images/${userID}/${file.id}`, data, {
-      onUploadProgress: e => {
-        const progress = parseInt(Math.round((e.loaded * 100) / e.total))
-        updateFile(file.id, {
-          progress,
-        })
-      }
-    }).then(response => {
-
-      updateFile(file.id, {
-        id: response.data.id,
-        url: response.data.name,
-        uploaded: true,
-      })
-    }).catch(() => {
-      console.log('*** error', file.id)
-
-      updateFile(file.id, {
-        error: true,
-      })
-    })
-  }
-
-  const handleDelete = async file => {
-    await api.delete(`images/${file}`)
-
-    setUploadedFiles(
-      uploadedFiles.filter(file => file.url !== file)
-    )
-  }
-  */
-
-  const composeValidators = (...validators) => value => 
+  const composeValidators = (...validators) => value =>
     validators.reduce((error, validator) => error || validator(value), undefined)
-  
-
-  /*
-  const Documentos = () => {
-    if (tipoCadastro === 'M') { 
-      return (<Tab label="Documentos" {...a11yProps(1)} />)
-    } else {
-      return (null)
-    }
-  }
-  */
 
   return (
     <div
@@ -820,11 +860,11 @@ export default function CardUsuario({ tipo, usuarioId }) {
             changeValue(state, field, () => value)
           }
         }}
-        render={({ 
-          handleSubmit, 
+        render={({
+          handleSubmit,
           form,
-          submitting, 
-          pristine, 
+          submitting,
+          pristine,
           values,
           props,
         }) => {
@@ -834,24 +874,27 @@ export default function CardUsuario({ tipo, usuarioId }) {
             <form onSubmit={handleSubmit} noValidate>
               <Tabs value={value} onChange={handleChange} aria-label="Dados do Usuário">
                 <Tab label="Usuário" {...a11yProps(0)} />
-                  {tipoCadastro === 'M' ? 
-                    <Tab label="Documentos" {...a11yProps(1)} />
+
+                {tipoCadastro === 'M' ?
+                  <Tab label="Veículos" {...a11yProps(2)} />
                   : null}
-                  {tipoCadastro !== 'O' && tipoCadastro !== 'F' && tipoCadastro !== '' ? 
-                    <Tab label="Veículos" {...a11yProps(2)} />
-                  : null}
-                {/* <Tab label="Observações" {...a11yProps(3)} /> */}
+                {/* <Tab label="Observações" {...a11yProps(1)} /> */}
+
+                {/* {tipoCadastro === 'M' ?
+                  <Tab label="Documentos" {...a11yProps(2)} />
+                : null} */}
+
               </Tabs>
 
               <div className={classes.botoes}>
                 <button onClick={() => {
-                  window.setFormValue('estado',values.estado === 'B' ? ' ' : 'B')
+                  window.setFormValue('estado', values.estado === 'B' ? ' ' : 'B')
                 }}
-                  style={{ backgroundColor:'transparent' }}
+                  style={{ backgroundColor: 'transparent' }}
                 >
                   <Tooltip title={values.estado !== 'B' ? "Bloquear" : "Desbloquear"}>
-                    <span style={{ 
-                      alignItems: 'center', 
+                    <span style={{
+                      alignItems: 'center',
                       color: `${values.estado !== 'B' ? 'red' : 'green'}`,
                       cursor: 'pointer',
                       marginTop: '3px',
@@ -862,13 +905,13 @@ export default function CardUsuario({ tipo, usuarioId }) {
                 </button>
 
                 <button onClick={() => {
-                  window.setFormValue('estado',values.estado === 'R' ? ' ' : 'R')
+                  window.setFormValue('estado', values.estado === 'R' ? ' ' : 'R')
                 }}
-                  style={{ backgroundColor:'transparent' }}
+                  style={{ backgroundColor: 'transparent' }}
                 >
                   <Tooltip title={values.estado !== 'R' ? "Recusar" : "Liberar"}>
-                    <span style={{ 
-                      alignItems: 'center', 
+                    <span style={{
+                      alignItems: 'center',
                       color: `${values.estado !== 'R' ? 'red' : 'green'}`,
                       cursor: 'pointer',
                       marginTop: '3px',
@@ -879,13 +922,13 @@ export default function CardUsuario({ tipo, usuarioId }) {
                 </button>
 
                 <button onClick={() => {
-                  window.setFormValue('estado',values.estado === '7' ? ' ' : '7')
+                  window.setFormValue('estado', values.estado === '7' ? ' ' : '7')
                 }}
-                  style={{ backgroundColor:'transparent' }}
+                  style={{ backgroundColor: 'transparent' }}
                 >
                   <Tooltip title={values.estado !== '7' ? "Suspender por 7 dias" : "Liberar"}>
-                    <span style={{ 
-                      alignItems: 'center', 
+                    <span style={{
+                      alignItems: 'center',
                       color: `${values.estado !== '7' ? 'orange' : 'green'}`,
                       cursor: 'pointer',
                       marginTop: '3px',
@@ -896,12 +939,12 @@ export default function CardUsuario({ tipo, usuarioId }) {
                 </button>
 
                 <button type="submit"
-                  style={{ backgroundColor:'transparent' }}
+                  style={{ backgroundColor: 'transparent' }}
                 >
                   <Tooltip title="Salvar">
-                    <span style={{ 
-                      alignItems: 'center', 
-                      color:'#0000FF',
+                    <span style={{
+                      alignItems: 'center',
+                      color: '#0000FF',
                       cursor: 'pointer',
                       marginTop: '3px',
                     }}>
@@ -911,17 +954,21 @@ export default function CardUsuario({ tipo, usuarioId }) {
                 </button>
               </div>
 
-              <TabPanel value={value} index={0}>
+              <TabPanel
+                value={value}
+                index={0}
+                id='cadUsu'
+              >
                 <Grid fluid>
                   <Row>
                     <Col xs={2}>
-                      <Field 
+                      <Field
                         name="foto"
                         userID={userID}
                       >
-                        { props => (
+                        {props => (
                           <div>
-                            <Upload {...props}/>
+                            <Upload {...props} />
                           </div>
                         )}
                       </Field>
@@ -1018,7 +1065,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                               size="small"
                               fullWidth
                               margin="dense"
-                              pattern="[\d|.|-|/]{11,14}"
+                              // pattern="[\d|.|-|/]{11,14}"
                               InputProps={{
                                 inputComponent: formatCpfCnpj,
                               }}
@@ -1031,7 +1078,6 @@ export default function CardUsuario({ tipo, usuarioId }) {
                               name="celular"
                               component={CssTextField}
                               type="text"
-                              validate={required}
                               label="Celular"
                               variant="outlined"
                               fullWidth
@@ -1050,6 +1096,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                               name="whats"
                               component={CssTextField}
                               type="text"
+                              validate={required}
                               label="WhatsApp"
                               variant="outlined"
                               fullWidth
@@ -1137,7 +1184,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                         name="cep"
                         component={CssTextField}
                         type="text"
-                        validate={composeValidators(required, buscaCEP)}
+                        validate={tipoCadastro !== 'C' && tipoCadastro !== 'F' ? false : required}
                         label="CEP"
                         variant="outlined"
                         fullWidth
@@ -1146,8 +1193,17 @@ export default function CardUsuario({ tipo, usuarioId }) {
                         pattern="[\d|-]{8}"
                         InputProps={{
                           inputComponent: formatCep,
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <button type="button" onClick={() => validaCEP(values.cep)}
+                                style={{ backgroundColor: 'transparent', cursor: 'pointer' }}
+                              >
+                                <AiOutlineSearch />
+                              </button>
+                            </InputAdornment>
+                          ),
                         }}
-                />
+                      />
                     </Col>
                     <Col xs={10}>
                       <Grid xs={12}>
@@ -1158,14 +1214,15 @@ export default function CardUsuario({ tipo, usuarioId }) {
                               name="logradouro"
                               component={CssTextField}
                               type="text"
+                              validate={tipoCadastro !== 'C' && tipoCadastro !== 'F' ? false : required}
                               label="Endereço"
                               variant="outlined"
                               fullWidth
                               size="small"
                               margin="dense"
-                              // InputProps={{
-                              //   readOnly: true,
-                              // }}
+                            // InputProps={{
+                            //   readOnly: true,
+                            // }}
                             />
                           </Col>
                           <Col xs={3}>
@@ -1174,7 +1231,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                               name="numero"
                               component={CssTextField}
                               type="text"
-                              // validate={required}
+                              validate={tipoCadastro !== 'C' && tipoCadastro !== 'F' ? false : required}
                               label="Número"
                               variant="outlined"
                               fullWidth
@@ -1209,14 +1266,15 @@ export default function CardUsuario({ tipo, usuarioId }) {
                               name="bairro"
                               component={CssTextField}
                               type="text"
+                              validate={tipoCadastro !== 'C' ? false : required}
                               label="Bairro"
                               variant="outlined"
                               fullWidth
                               size="small"
                               margin="dense"
-                              // InputProps={{
-                              //   readOnly: true,
-                              // }}
+                            // InputProps={{
+                            //   readOnly: true,
+                            // }}
                             />
                           </Col>
                           <Col xs={5}>
@@ -1225,15 +1283,12 @@ export default function CardUsuario({ tipo, usuarioId }) {
                               name="cidade"
                               component={CssTextField}
                               type="text"
-                              // validate={required}
+                              validate={tipoCadastro === 'O' ? false : required}
                               label="Cidade"
                               variant="outlined"
                               fullWidth
                               size="small"
                               margin="dense"
-                              // InputProps={{
-                              //   readOnly: true,
-                              // }}
                             />
                           </Col>
                           <Col xs={2}>
@@ -1242,15 +1297,15 @@ export default function CardUsuario({ tipo, usuarioId }) {
                               name="uf"
                               component={CssTextField}
                               type="text"
-                              // validate={required}
+                              validate={tipoCadastro === 'O' ? false : required}
                               label="UF"
                               variant="outlined"
                               fullWidth
                               size="small"
                               margin="dense"
-                              // InputProps={{
-                              //   readOnly: true,
-                              // }}
+                            // InputProps={{
+                            //   readOnly: true,
+                            // }}
                             />
                           </Col>
                         </Row>
@@ -1264,7 +1319,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                         name="tipoconta"
                         component={CssTextField}
                         type="select"
-                        // validate={required}
+                        validate={tipoCadastro === 'O' || tipoCadastro === 'C' ? false : required}
                         label="Tp Conta"
                         variant="outlined"
                         fullWidth
@@ -1286,7 +1341,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                               name="banco"
                               component={CssTextField}
                               type="select"
-                              // validate={required}
+                              validate={tipoCadastro === 'O' || tipoCadastro === 'C' ? false : required}
                               label="Banco"
                               variant="outlined"
                               fullWidth
@@ -1307,7 +1362,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                               name="agencia"
                               component={CssTextField}
                               type="text"
-                              // validate={required}
+                              validate={tipoCadastro === 'O' || tipoCadastro === 'C' ? false : required}
                               label="Agência"
                               variant="outlined"
                               fullWidth
@@ -1321,7 +1376,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                               name="conta"
                               component={CssTextField}
                               type="text"
-                              // validate={required}
+                              validate={tipoCadastro === 'O' || tipoCadastro === 'C' ? false : required}
                               label="Conta"
                               variant="outlined"
                               fullWidth
@@ -1335,20 +1390,90 @@ export default function CardUsuario({ tipo, usuarioId }) {
                   </Row>
                 </Grid>
               </TabPanel>
-              
-              {tipoCadastro === 'M' ? 
+
+              {tipoCadastro === 'M' ?
                 <TabPanel value={value} index={1}>
+                  <Grid fluid style={{ marginTop: '40px' }}>
+                    <Row>
+                      <Col xs={11}></Col>
+                      <Col xs={1}>
+                        <div 
+                          className={classes.botoesvei}
+                        >
+                          {/* <button onClick={onDocs}
+                            style={{ backgroundColor: 'transparent' }}
+                          >
+                            <Tooltip title="Teste">
+                              <span style={{
+                                alignItems: 'center',
+                                color: '#FFC417',
+                                cursor: 'pointer',
+                                marginTop: '3px',
+                              }}>
+                                <FaIcon icon='Add' size={30} />
+                              </span>
+                            </Tooltip>
+                          </button> */}
+
+                          <button onClick={handleAddRow}
+                            style={{ backgroundColor: 'transparent' }}
+                          >
+                            <Tooltip title="Adicionar um novo veículo">
+                              <span style={{
+                                alignItems: 'center',
+                                color: '#31C417',
+                                cursor: 'pointer',
+                                marginTop: '3px',
+                              }}>
+                                <FaIcon icon='Add' size={30} />
+                              </span>
+                            </Tooltip>
+                          </button>
+                        </div>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col xs={12}>
+                        <div className="ag-theme-custom-react" style={{
+                          height: '370px',
+                          width: '100%',
+                          borderRadius: '10px',
+                          backgroundColor: '#FFFFFF'
+                        }}>
+                          <AgGridReact
+                            id='agVeiculos'
+                            name='agVeiculos'
+                            rowSelection="single"
+                            onGridReady={(params) => { setVgridApi(params.api) }}
+                            columnDefs={columnDefs}
+                            rowData={veiculos}
+                            singleClickEdit={true}
+                            stopEditingWhenGridLosesFocus={true}
+                            editType='fullRow'
+                            components={{ numericCellEditor: getNumericCellEditor() }}
+                            tooltipShowDelay={0}
+                          >
+                          </AgGridReact>
+                        </div>
+                      </Col>
+                    </Row>
+                  </Grid>
+                </TabPanel>
+              : null}
+
+              {/* {tipoCadastro === 'M' ?
+                <TabPanel value={value} index={2}>
                   <Grid fluid style={{ marginTop: '15px' }}>
                     <Row>
                       <Col xs={3}>
                         <div style={{ border: '1px dashed #ddd', padding: '5px' }}>
-                          <Field 
+                          <Field
                             name="habilitacaoimg"
                             userID={userID}
                           >
-                            { props => (
+                            {props => (
                               <div>
-                                <Upload {...props}/>
+                                <Upload {...props} />
                               </div>
                             )}
                           </Field>
@@ -1363,16 +1488,16 @@ export default function CardUsuario({ tipo, usuarioId }) {
                             size="small"
                             margin="dense"
                           />
-                          <Field 
+                          <Field
                             label="Vencimento"
                             name="habilitacaovct"
                             variant="outlined"
                             // component={CssTextField}
                             type="text"
                           >
-                            { props => (
+                            {props => (
                               <div>
-                                <DatePicker {...props}/>
+                                <DatePicker {...props} />
                               </div>
                             )}
                           </Field>
@@ -1380,13 +1505,13 @@ export default function CardUsuario({ tipo, usuarioId }) {
                       </Col>
                       <Col xs={3}>
                         <div style={{ border: '1px dashed #ddd', padding: '5px' }}>
-                          <Field 
+                          <Field
                             name="ANTTimg"
                             userID={userID}
                           >
-                            { props => (
+                            {props => (
                               <div>
-                                <Upload {...props}/>
+                                <Upload {...props} />
                               </div>
                             )}
                           </Field>
@@ -1401,15 +1526,15 @@ export default function CardUsuario({ tipo, usuarioId }) {
                             size="small"
                             margin="dense"
                           />
-                          <Field 
+                          <Field
                             label="Vencimento"
                             name="ANTT"
                             variant="outlined"
                             type="text"
                           >
-                            { props => (
+                            {props => (
                               <div>
-                                <DatePicker {...props}/>
+                                <DatePicker {...props} />
                               </div>
                             )}
                           </Field>
@@ -1417,13 +1542,13 @@ export default function CardUsuario({ tipo, usuarioId }) {
                       </Col>
                       <Col xs={3}>
                         <div style={{ border: '1px dashed #ddd', padding: '5px' }}>
-                          <Field 
+                          <Field
                             name="cavaloimg"
                             userID={userID}
                           >
-                            { props => (
+                            {props => (
                               <div>
-                                <Upload {...props}/>
+                                <Upload {...props} />
                               </div>
                             )}
                           </Field>
@@ -1438,15 +1563,15 @@ export default function CardUsuario({ tipo, usuarioId }) {
                             size="small"
                             margin="dense"
                           />
-                          <Field 
+                          <Field
                             label="Vencimento"
                             name="cavalo"
                             variant="outlined"
                             type="text"
                           >
-                            { props => (
+                            {props => (
                               <div>
-                                <DatePicker {...props}/>
+                                <DatePicker {...props} />
                               </div>
                             )}
                           </Field>
@@ -1454,13 +1579,13 @@ export default function CardUsuario({ tipo, usuarioId }) {
                       </Col>
                       <Col xs={3}>
                         <div style={{ border: '1px dashed #ddd', padding: '5px' }}>
-                          <Field 
+                          <Field
                             name="cavalo1img"
                             userID={userID}
                           >
-                            { props => (
+                            {props => (
                               <div>
-                                <Upload {...props}/>
+                                <Upload {...props} />
                               </div>
                             )}
                           </Field>
@@ -1475,15 +1600,15 @@ export default function CardUsuario({ tipo, usuarioId }) {
                             size="small"
                             margin="dense"
                           />
-                          <Field 
+                          <Field
                             label="Vencimento"
                             name="cavalo1"
                             variant="outlined"
                             type="text"
                           >
-                            { props => (
+                            {props => (
                               <div>
-                                <DatePicker {...props}/>
+                                <DatePicker {...props} />
                               </div>
                             )}
                           </Field>
@@ -1494,83 +1619,21 @@ export default function CardUsuario({ tipo, usuarioId }) {
                       <Col xs={12}>
                       </Col>
                     </Row>
-                  </Grid> 
+                  </Grid>
                 </TabPanel>
-              : null}
-              
-              {tipoCadastro !== 'O' && tipoCadastro !== '' ? 
-                <TabPanel value={value} index={2}>
-                <Grid fluid style={{ marginTop: '5px' }}>
-                  <Row>
-                    <Col xs={11}></Col>
-                    <Col xs={1}>
-                      <div style={{ 
-                        alignItems: 'right', 
-                        textAlign: 'end',
-                        marginRight: '0px',
-                        paddingRight: '0px',
-                      }}>
-                        <button onClick={handleAddRow}
-                          style={{ backgroundColor:'transparent' }}
-                        >
-                          <Tooltip title="Adicionar um novo veículo">
-                            <span style={{ 
-                              alignItems: 'center', 
-                              color:'#31C417',
-                              cursor: 'pointer',
-                              marginTop: '3px',
-                            }}>
-                              <FaIcon icon='Add' size={30} />
-                            </span>
-                          </Tooltip>
-                        </button>
-                      </div>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col xs={12}>
-                      <div className="ag-theme-custom-react" style={{ 
-                        height: '370px', 
-                        width: '100%', 
-                        borderRadius: '10px', 
-                        backgroundColor: '#FFFFFF'
-                      }}>
-                        <AgGridReact
-                          id='agVeiculos'
-                          name='agVeiculos'
-                          rowSelection="single"
-                          onGridReady={(params) => { setVgridApi(params.api) }}
-                          columnDefs={columnDefs}
-                          rowData={veiculos}
-                          singleClickEdit={true}
-                          stopEditingWhenGridLosesFocus={true}
-                          editType='fullRow'
-                          components={{numericCellEditor: getNumericCellEditor()}}
-                          tooltipShowDelay={0}
-                        >
-                        </AgGridReact>
-                      </div>
-                    </Col>
-                  </Row>
-                </Grid> 
-              </TabPanel>
-              : null}
-              
-              {/*
-              <TabPanel value={value} index={3}>
-                <Grid fluid style={{ marginTop: '15px' }}>
-                  <Row>
+              : null} */}
 
-                  </Row>
-                </Grid> 
-              </TabPanel>
-              <pre>{JSON.stringify(values, 0, 2)}</pre> 
-              */}
+              <DocsModal 
+                isShowDocs={isShowDocs}
+                hide={toggleDocs}
+                userID={usuarioId}
+                veiculoID={veiculoId}
+              />
+
             </form>
           )
         }}
       />
-
     </div>
   )
 }

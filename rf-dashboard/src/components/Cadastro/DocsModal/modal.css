@@ -1,4 +1,4 @@
-.modal-fundo {
+.modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -9,7 +9,7 @@
   opacity: .5;
 }
 
-.modal-container {
+.modal-wrapper {
   position: fixed;
   top: 0;
   left: 0;
@@ -21,39 +21,27 @@
   outline: 0;
 }
 
-.root {
+.modal-box {
   display: flex;
   flex-direction: row;
   flex-flow: row;
   align-items: flex-start;
   z-index: 100;
-  background: white;
   position: relative;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   border-radius: '5px';
   padding: '20px';
-  max-width: 300px;
-  height: 300px;
+  max-width: 1090px;
 }
 
-.modal-cabecalho {
+.modal-header {
   display: flex;
   justify-content: flex-end;
 }
 
-.modal-botao {
-  font-size: 1.4rem;
-  font-weight: 700;
-  line-height: 1;
-  color: #000;
-  opacity: .3;
-  cursor: pointer;
-  border: none;
-}
-
-.modal-botao-fechar {
+.modal-close-button {
   font-size: 1.4rem;
   font-weight: 700;
   line-height: 1;

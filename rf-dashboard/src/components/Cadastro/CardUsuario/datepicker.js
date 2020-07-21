@@ -1,10 +1,10 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 
 import { withStyles, makeStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 
-// import moment from "moment"
+import moment from "moment"
 // import 'moment/locale/pt-br'
 // moment.locale('pt-BR')
 
@@ -58,32 +58,43 @@ const CssTextField = withStyles({
 
 export default function datePicker(props) {
   const classes = useStyles()
-  // const dataAtual = moment().format('YYYY-MM-DD')
+  const dataAtual = moment().format('YYYY-MM-DD')
 
-  const [date, setDate] = useState(props.input.value ? props.input.value.substring(0, 10) : null)
+  const [data, setData] = useState(props.input.value ? props.input.value.substring(0, 10) : null)
+
+  useEffect(() => {
+    if (data === null) {
+      setData(props.input.value ? props.input.value.substring(0, 10) : null)
+    } 
+  },[data, dataAtual, props])
 
   const handleChange = (event) => {
     const { target: { value } } = event
     props.input.onChange(value)
-    setDate(value)
+    setData(value)
   }
 
-  return (
-    <CssTextField 
-      // id='dataTxt'
-      label={props.label}
-			name={props.input.name}
-      type="date"
-      format='dd/MM/yyyy'
-      onChange={handleChange}
-      variant="outlined"
-      size='small'
-      defaultValue={date}
-      className={classes.textField}
-      InputLabelProps={{
-        shrink: true,
-      }}
-    />
-  )
+  // if (data !== null) {
+    return (
+      <CssTextField 
+        // id='dataTxt'
+        label={props.label}
+        name={props.input.name}
+        type="date"
+        format='dd/MM/yyyy'
+        onChange={handleChange}
+        variant="outlined"
+        size='small'
+        defaultValue={data}
+        value={data}
+        className={classes.textField}
+        InputLabelProps={{
+          shrink: true,
+        }}
+      />
+    )
+  // } else {
+  //   return (<></>)
+  // }
 }
 

@@ -72,8 +72,12 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
   const { isShowUsuario, toggleUsuario } = useModal()
 
   useEffect(() => {
+    buscaUsuarios()
+  }, [])
+
+  const buscaUsuarios = async () => {
     try {
-      api.get(`/usuarios`, {})
+      await api.get(`/usuarios`, {})
         .then(response => {
           // console.log('*** GridUsuarios', response.data)
           setUsuarios(response.data)
@@ -98,7 +102,7 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
         toast(error, { type: 'error' })
       }
     }
-  }, [])
+  }
 
   const frameworkComponents = {
     stRatings: StRatings,
@@ -184,7 +188,7 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
       case 'B': return (<span style={{ color: 'red' }}><FaIcon icon='FcCancel' size={20} /></span>)
       case 'R': return (<span style={{ color: 'red' }}><FaIcon icon='FiAlertOctagon' size={20} /></span>)
       case '7': return (<span style={{ color: 'orange' }}><FaIcon icon='FiAlertTriangle' size={20} /></span>)
-   default: return (<></>)
+      default: return (<></>)
     }
   }
 
@@ -261,11 +265,20 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
       return
     }
 
-    if (tipo === 'E') {
-      setUsuarioId(selectedNodes[0].data.id)
-    } else {
-      setUsuarioId(null)
+    // if (tipo === 'E') {
+    //   setUsuarioId(selectedNodes[0].data.id)
+    // } else {
+    //   setUsuarioId(null)
+    // }
+
+    switch (tipo) {
+      case 'E': setUsuarioId(selectedNodes[0].data.id); break;
+      case 'A': 
+        buscaUsuarios(); 
+        return
+      default: setUsuarioId(null)
     }
+
 
     toggleUsuario()
 
@@ -289,6 +302,9 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
                     </Texto>
                   </RLeft>
                   <RRight>
+                    <Tooltip title="Atualizar Lista">
+                      <Botao onClick={(e) => onButtonClick('A', e)}><FaIcon icon='GrUpdate' size={18} /> </Botao>
+                    </Tooltip>
                     <Tooltip title="Editar">
                       <Botao onClick={(e) => onButtonClick('E', e)}><FaIcon icon='FaRegEdit' size={20} /> </Botao>
                     </Tooltip>
