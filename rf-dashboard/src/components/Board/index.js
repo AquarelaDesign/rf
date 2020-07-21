@@ -1,5 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react'
+import { useHistory } from 'react-router-dom'
 import produce from 'immer'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -27,10 +29,12 @@ const dataC = loadCargas()
 const dataT = loadTransportes()
 const dataE = loadEntregas()
 
-const ws = Ws('ws://localhost:3333')
+const ws = Ws('ws://31.220.50.222:3333')
 ws.connect()
 
-const Board = ({ history }) => {
+const Board = () => {
+  const history = useHistory()
+
   const [isConnected, setIsConnected] = useState(false)
   const [lastConnected, setLastConnected] = useState('')
 
@@ -45,11 +49,104 @@ const Board = ({ history }) => {
   const [transporte, setTransporte] = useState(dataT)
   const [entrega, setEntrega] = useState(dataE)
 
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+  const verificaStatus = async () => {
+    let delay = 10000
+
+    await sleep(delay)
+
+    const storeToken = localStorage.getItem('@rf/token')
+
+    if (storeToken === '') {
+      localStorage.removeItem('@rf/token')
+      history.push('/')
+    }
+
+    ws.on('open', () => {
+      setIsConnected(true)
+      console.log('*** ws open')
+    })
+
+    ws.on('pong', () => {
+      console.log('*** ws pong')
+    })
+
+    // ws.on('close', () => {
+    //   console.log('*** ws.close')
+    //   setIsConnected(false)
+    // })
+
+    if (isConnected) {
+      let chat = undefined
+      try {
+        chat = ws.subscribe('chat')
+      } catch (error) {
+        chat = ws.getSubscription('chat')
+      }
+
+      chat.on('ready', () => {
+        chat.emit('message', '*** Client ready')
+      })
+
+      chat.on('message', (data) => {
+        if (lastConnected !== data.message) {
+          setLastConnected(data.message)
+          // toast(data.message, { type: data.tipo })
+        }
+      })
+
+      chat.on('error', (error) => {
+        console.log('*** ws.error', error)
+      })
+
+      chat.on('close', () => {
+        console.log('*** ws.close')
+        setIsConnected(false)
+      })
+    }
+
+    await api.get('/status', {})
+      .then(res => {
+        const loadMotorista = {
+          title: "MOTORISTAS ONLINE",
+          icon: "FaTruck",
+          tipo: "M",
+          creatable: true,
+          cards: res.data
+        }
+        setMotorista(loadMotorista)
+      })
+      .catch(error => {
+        let timerId = setTimeout(function request() {
+          if (request) {
+            delay *= 2
+          }
+          timerId = setTimeout(request, delay)
+        }, delay)
+      })
+  }
+
+  verificaStatus()
+
+  /*
   useEffect(() => {
     try {
 
+      const storeToken = localStorage.getItem('@rf/token')
+
+      if (storeToken === '') {
+        localStorage.removeItem('@rf/token')
+        history.push('/')
+      }
+
       ws.on('open', () => {
         setIsConnected(true)
+        console.log('*** ws open')
+      })
+
+      ws.on('pong', () => {
+        console.log('*** ws pong')
       })
 
       // ws.on('close', () => {
@@ -68,7 +165,6 @@ const Board = ({ history }) => {
           if (lastConnected !== data.message) {
             setLastConnected(data.message)
             // toast(data.message, { type: data.tipo })
-            verificaStatus()
           }
         })
 
@@ -85,7 +181,8 @@ const Board = ({ history }) => {
       const { response } = error
       if (response !== undefined) {
         if (response.status === 401) {
-          volta()
+          // volta()
+          history.push('/')
         }
         // toast(response.status !== 401 ? response.data[0].message : 'Senha inválida!', {type: 'error'})
       } else {
@@ -93,7 +190,8 @@ const Board = ({ history }) => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConnected, lastConnected])
+  }, [isConnected, lastConnected, history])
+  */
 
   useEffect(() => {
     try {
@@ -134,6 +232,7 @@ const Board = ({ history }) => {
   useEffect(() => {
     try {
       api.post('/buscausuarios', {
+        email: '',
         tipo: 'M',
         status: 'A',
         estado: ' ',
@@ -166,7 +265,7 @@ const Board = ({ history }) => {
       const { response } = error
       if (response !== undefined) {
         if (response.status === 401) {
-          history.push('/')
+          volta()
         }
         // toast(response.status !== 401 ? response.data[0].message : 'Senha inválida!', {type: 'error'})
       } else {
@@ -176,10 +275,13 @@ const Board = ({ history }) => {
   }, [history])
 
   const volta = () => {
-    toast('Falha ao autenticar o usuário, por favor relogue no sistema', { type: 'error' })
+    // toast('Erro na autenticação do usuário!', { type: 'error' })
+    // localStorage.removeItem('@rf/token')
+    // history.push('/')
   }
 
-  const verificaStatus = () => {
+  /*
+  const verificaStatus = async () => {
     try {
       api.get('/status', {})
         .then(res => {
@@ -209,11 +311,11 @@ const Board = ({ history }) => {
         toast(error, { type: 'error' })
       }
     }
-
   }
+  */
 
   const move = (fromList, toList, from, to) => {
-    console.log('*** Board_move', fromList, toList, from, to)
+    // console.log('*** Board_move', fromList, toList, from, to)
     setMotorista(produce(motorista, draft => {
       const dragged = draft[fromList].cards[from];
       draft[fromList].cards.splice(from, 1);

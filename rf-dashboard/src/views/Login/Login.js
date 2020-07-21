@@ -39,14 +39,15 @@ const Login = ({ history }) => {
         email, password
       })
       .then(res => {
-        // console.log('res', res)
+        console.log('res', res)
         const { token } = res.data
 
         localStorage.setItem('@rf/email', email)
         localStorage.setItem('@rf/token', token)
         // localStorage.setItem('@rf/rememberMe', rememberMe)
+        buscaUsuario(email)
 
-        history.push('/home')
+        history.push('/rf/home')
       })
 
     } catch (error) {
@@ -59,6 +60,34 @@ const Login = ({ history }) => {
     }
   }
 
+  const buscaUsuario = async (email) => {
+    await api
+      .post('/buscausuarios', { 
+        email: email,
+        tipo: "", 
+    	  status: "",
+	      estado: "",
+      },{
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
+      })
+      .then(response => {
+        const { data } = response
+        // console.log('*** data', data)
+        localStorage.setItem('@rf/userID', data[0].id)
+      }).catch((error) => {
+        if (error.response) {
+          // console.error('*** bu-1.1', error)
+        } else if (error.request) {
+          // console.error('*** bu-1.2', error)
+        } else {
+          // console.error('*** bu-1.3')
+        }
+      })
+  }
+  
   return (
     <Container style={{height: '100%', margin: '0px', width: '100%', padding: '0px'}}>
       <Topo/>
