@@ -2,6 +2,7 @@
   "name": "rf-dashboard",
   "version": "1.0.0",
   "private": true,
+  "homepage": "http://31.220.50.222/rf",
   "dependencies": {
     "@adonisjs/websocket-client": "^1.0.9",
     "@ag-grid-community/all-modules": "^23.2.1",
@@ -34,6 +35,7 @@
     "react": "^16.8.6",
     "react-bootstrap": "^1.0.1",
     "react-circular-progressbar": "^2.0.3",
+    "react-cool-portal": "^1.0.14",
     "react-date-picker": "^8.0.1",
     "react-dnd": "^9.3.2",
     "react-dnd-html5-backend": "^9.3.2",
@@ -41,6 +43,7 @@
     "react-dropzone": "^11.0.1",
     "react-final-form": "^6.5.0",
     "react-flexbox-grid": "^2.1.2",
+    "react-hook-form": "^6.0.7",
     "react-icons": "^3.10.0",
     "react-perfect-scrollbar": "^1.5.8",
     "react-router-dom": "^5.2.0",
