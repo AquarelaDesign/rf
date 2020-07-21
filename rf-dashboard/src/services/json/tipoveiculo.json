@@ -1,0 +1,5 @@
+[
+  { "id": 0, "tipo": "CARRETA" },
+  { "id": 1, "tipo": "CAVALO" },
+  { "id": 2, "tipo": "PLATAFORMA" }
+]

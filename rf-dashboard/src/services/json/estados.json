@@ -1,0 +1,51 @@
+[
+  {
+    "id": "",
+    "color": "#00FF00",
+    "icon": "FaRegThumbsUp",
+    "size": 20,
+    "description": "DISPONÍVEL"
+  },
+  {
+    "id": "P",
+    "color": "#FF0000",
+    "icon": "FaTruckLoading",
+    "size": 20,
+    "description": "AGUARDANDO APROVAÇÃO"
+  },
+  {
+    "id": "A",
+    "color": "#FFA500",
+    "icon": "FaHandPaper",
+    "size": 20,
+    "description": "AGUARDANDO COLETA"
+  },
+  {
+    "id": "T",
+    "color": "#FF0000",
+    "icon": "GrDeliver",
+    "size": 20,
+    "description": "EM TRANSPORTE"
+  },
+  {
+    "id": "B",
+    "color": "#FF0000",
+    "icon": "FcCancel",
+    "size": 20,
+    "description": "BLOQUEADO"
+  },
+  {
+    "id": "R",
+    "color": "#FF0000",
+    "icon": "FiAlertOctagon",
+    "size": 20,
+    "description": "RECUSADO"
+  },
+  {
+    "id": "7",
+    "color": "#FFA500",
+    "icon": "FiAlertTriangle",
+    "size": 20,
+    "description": "SUSPENÇÃO 7 DIAS"
+  }
+]
