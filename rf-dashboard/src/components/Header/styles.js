@@ -17,6 +17,13 @@ export const Titulo = styled.div`
   text-align: right;
 `;
 
+export const Usuario = styled.div`
+  width: 100%;
+  font-size: 18px;
+  font-weight: 300;
+  text-align: left;
+`;
+
 export const Filtros = styled(Container)`
   background: #0078D7;
 `;
