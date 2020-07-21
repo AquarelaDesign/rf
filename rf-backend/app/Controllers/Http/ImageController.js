@@ -39,7 +39,8 @@ class ImageController {
     const UserID = ("00000" + params.id).slice(-5)
 
     // await images.move(Helpers.tmpPath('uploads'), {
-    await images.move(`${Helpers.appRoot()}/../rf-dashboard/public/images`, {
+    // await images.move(`${Helpers.appRoot()}/../rf-dashboard/public/images`, {
+    await images.move(`/var/www/html/rf/images`, {
       name: `${UserID}_${Date.now()}_${images.clientName}`,
       overwrite: true
     })

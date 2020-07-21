@@ -47,6 +47,21 @@ class VeiculosMotoristaController {
       "ano",
       "vagas",
       "tipo",
+      "habilitacao",
+      "habilitacaoimg",
+      "habilitacaovct",
+      "cavalo",
+      "cavaloimg",
+      "cavalovct",
+      "carreta",
+      "carretaimg",
+      "carretavct",
+      "carreta1",
+      "carreta1img",
+      "carreta1vct",
+      "ANTT",
+      "ANTTimg",
+      "ANTTvct",
     ])
 
     const veiculos = await Veiculo.create(data)
@@ -96,6 +111,21 @@ class VeiculosMotoristaController {
       "ano",
       "vagas",
       "tipo",
+      "habilitacao",
+      "habilitacaoimg",
+      "habilitacaovct",
+      "cavalo",
+      "cavaloimg",
+      "cavalovct",
+      "carreta",
+      "carretaimg",
+      "carretavct",
+      "carreta1",
+      "carreta1img",
+      "carreta1vct",
+      "ANTT",
+      "ANTTimg",
+      "ANTTvct",
     ])
 
     veiculos.merge(data)

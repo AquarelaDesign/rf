@@ -19,13 +19,14 @@ class UsuarioController {
    * GET usuarios
    */
   async index ({ auth, request, response }) {
+    /*
     const usuarios = await Usuario.findOrFail(auth.user.id)
     if (usuarios.tipo !== 'O' && usuarios !== undefined) {
       return response.status(401).send({ 
         error: `Não autorizado [${usuarios.tipo}]`
       })
     }
-
+    */
     const condicoes = request.only([
       "status",
       "estado",
@@ -52,14 +53,16 @@ class UsuarioController {
    * GET usuarios
    */
   async busca ({ auth, request, response }) {
+    /*
     const usuarios = await Usuario.findOrFail(auth.user.id)
     if (usuarios.tipo !== 'O' && usuarios !== undefined) {
       return response.status(401).send({ 
         error: `Não autorizado [${usuarios.tipo}]`
       })
     }
-
+    */
     const condicoes = request.only([
+      "email",
       "status",
       "estado",
       "tipo",
@@ -73,8 +76,11 @@ class UsuarioController {
         .fetch()
       */
       const query = Usuario.query()
+      if (condicoes.email !== null){
+        query.andWhere('email','=',condicoes.email)
+      }
       if (condicoes.tipo !== null){
-        query.where('tipo','=',condicoes.tipo)
+        query.andWhere('tipo','=',condicoes.tipo)
       }
       if (condicoes.status !== null){
         query.andWhere('status','=',condicoes.status)
@@ -117,13 +123,14 @@ class UsuarioController {
    * GET usuarios
    */
   async status({auth, request, response}) {
+    /*
     const usuarios = await Usuario.findOrFail(auth.user.id)
     if (usuarios.tipo !== 'O' && usuarios !== undefined) {
       return response.status(401).send({ 
         error: `Não autorizado [${usuarios.tipo}]`
       })
     }
-
+    */
     try {    
       /*
       const usuario = await Usuario.query()
@@ -139,7 +146,7 @@ class UsuarioController {
       const usuario = await query.fetch()
   
 
-      Event.fire('status::results', usuarios)
+      Event.fire('status::results', usuario)
       return usuario
     }
     catch(e) {
@@ -156,6 +163,7 @@ class UsuarioController {
    * POST usuarios
    */
   async store ({ auth, request, response }) {
+    /*
     try {
       const usuarios = await Usuario.findOrFail(auth.user.id)
       if (usuarios.tipo !== 'O' && usuarios !== undefined) {
@@ -164,10 +172,8 @@ class UsuarioController {
         })
       }
     }
-    catch (e) {
-      
-    }
-
+    catch (e) {}
+    */
     const data = request.only([
       "nome", 
       "email",
@@ -224,13 +230,14 @@ class UsuarioController {
    * GET usuarios/:id
    */
   async show ({ auth, params, request, response, view }) {
+    /*
     const usuarios = await Usuario.findOrFail(auth.user.id)
     if (usuarios.tipo !== 'O' && usuarios !== undefined) {
       return response.status(401).send({ 
         error: `Não autorizado [${usuarios.tipo}]`
       })
     }
-
+    */
     const usuario = await Usuario.findOrFail(params.id)
     await usuario.load('veiculos')
     return usuario
@@ -241,13 +248,14 @@ class UsuarioController {
    * PUT or PATCH usuarios/:id
    */
   async update ({ auth, params, request, response }) {
+    /*
     const usuarios = await Usuario.findOrFail(auth.user.id)
     if (usuarios.tipo !== 'O' && usuarios !== undefined) {
       return response.status(401).send({ 
         error: `Não autorizado [${usuarios.tipo}]`
       })
     }
-    
+    */
     try {
       const usuario = await Usuario.findOrFail(params.id);
       const data = request.only([
@@ -326,12 +334,14 @@ class UsuarioController {
    * DELETE usuarios/:id
    */
   async destroy ({ auth, params, request, response }) {
+    /*
     const usuarios = await Usuario.findOrFail(auth.user.id)
     if (usuarios.tipo !== 'O' && usuarios !== undefined) {
       return response.status(401).send({ 
         error: `Não autorizado [${usuarios.tipo}]`
       })
     }
+    */
 
     try {
       const usuario = await Usuario.findOrFail(params.id)
