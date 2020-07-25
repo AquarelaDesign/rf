@@ -131,7 +131,9 @@ export const Texto = styled.div`
   border-radius: 4px;
   padding-left: 3px;
   padding-right: 3px;
-  margin: auto;
+  justify-content: center;
+  align-items: center;
+  /* margin: auto; */
   /* display: inline-flex;
   justify-content: left; */
   background: ${props => props.bgcolor};
@@ -167,3 +169,27 @@ export const Imagem = styled.div`
   background-position: 50% 50%;
   /* margin-right: 10px; */
 `;
+
+export const ContainerCard = styled.div`
+  display: grid;
+  /* grid-gap: 1rem; */
+  grid-template-columns: repeat(2, 1fr);
+`;
+
+export const Card = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: lightpink;
+  /* padding: 0 0.5rem 0; */
+  padding-left: ${props => props.pe ? `${props.pl}px` : '0px'};
+  padding-right: ${props => props.pd ? `${props.pd}px` : '0px'};
+`;
+
+export const Visual = styled.div`
+  height: 370px;
+  width: 100%;
+  background: wheat;
+  /* margin: 0.5rem 0; */
+`;
+

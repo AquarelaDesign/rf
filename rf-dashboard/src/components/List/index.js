@@ -12,6 +12,9 @@ import CardTransporte from '../CardTranportes'
 import GridUsuariosModal from '../Cadastro/GridUsuariosModal'
 import useModal from '../Cadastro/GridUsuariosModal/useModal'
 
+import GridPedidosModal from '../Cadastro/GridPedidosModal'
+import useModalPedidos from '../Cadastro/GridPedidosModal/useModal'
+
 import { Container } from './styles'
 
 // const getModalStyle = () => {
@@ -43,6 +46,7 @@ import { Container } from './styles'
 
 const List = ({ data }) => {
   const { isShowing, toggleGridUsuarios } = useModal()
+  const { isShowPedido, toggleGridPedidos } = useModalPedidos()
 
   const Card = (card, id) => {
     switch (card.tipo) {
@@ -59,7 +63,6 @@ const List = ({ data }) => {
           data={card}
         />
       case 'T':
-        // console.log('Transporte', card)
         return <CardTransporte
           key={card.id}
           index={id}
@@ -77,7 +80,7 @@ const List = ({ data }) => {
         toggleGridUsuarios()
         break
       case 'C':
-        // toggleGridPedidos()
+        toggleGridPedidos()
         break
       default: return null
     }
@@ -106,6 +109,10 @@ const List = ({ data }) => {
       <GridUsuariosModal 
         isShowing={isShowing}
         hide={toggleGridUsuarios}
+      />
+      <GridPedidosModal
+        isShowing={isShowPedido}
+        hide={toggleGridPedidos}
       />
     </>
   )

@@ -1,3 +1,4 @@
+/* eslint-disable array-callback-return */
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useCallback } from 'react'
@@ -12,8 +13,10 @@ import Axios from 'axios'
 // import filesize from 'filesize'
 import { Grid, Row, Col } from 'react-flexbox-grid'
 import { Form, Field } from 'react-final-form'
-import './agGrid.scss'
+import '../../../assets/scss/agGrid.scss'
 import { AgGridReact, gridApi } from 'ag-grid-react'
+import agPtBr from '../../agPtBr'
+import moment from 'moment'
 
 import { AiOutlineSearch } from 'react-icons/ai'
 import {
@@ -23,13 +26,15 @@ import {
   Tabs,
   Tab,
   Tooltip,
-  Typography,
+  // Typography,
   withStyles,
 } from '@material-ui/core'
 
 import {
   TextField,
 } from 'final-form-material-ui'
+
+import { Texto } from './styles'
 
 import DocsModal from '../DocsModal'
 import useModalDocs from '../DocsModal/useModal'
@@ -43,7 +48,7 @@ import cadBancos from '../../../services/json/bancos.json'
 import cadTipoVeiculo from '../../../services/json/tipoveiculo.json'
 
 import Upload from './upload'
-import DatePicker from './datepicker'
+import DatePicker from '../../datepicker'
 import { values } from 'lodash'
 // import useModal from '../../Email/useModal'
 
@@ -259,14 +264,17 @@ export default function CardUsuario({ tipo, usuarioId }) {
   const [disableEdit, setDisableEdit] = useState(false)
   const [ultimoCep, setUltimoCep] = useState('')
   const [dadosBancarios, setDadosBancarios] = useState('visible')
+  const [tipoCad, setTipoCad] = useState(tipo)
+  const [tipoCadVei, setTipoCadVei] = useState('')
   const [tipoCadastro, setTipoCadastro] = useState('')
   const [flag, setFlag] = useState(false)
   const [userID, setUserID] = useState(usuarioId)
   const [vgridApi, setVgridApi] = useState(gridApi)
   const [veiculos, setVeiculos] = useState([])
   const [atualizaCEP, setAtualizaCEP] = useState(false)
+  const [mostraVeiculos, setMostraVeiculos] = useState(false)
 
-  const [isOpen, setIsOpen] = useState(false)
+  // const [isOpen, setIsOpen] = useState(false)
   const { isShowDocs, toggleDocs } = useModalDocs()
 
   const [veiculoId, setVeiculoId] = useState(0)
@@ -275,15 +283,15 @@ export default function CardUsuario({ tipo, usuarioId }) {
     // toggleCep()
     try {
 
-      if (tipo !== 'N' && tipo !== 'E') {
+      if (tipoCad !== 'N' && tipoCad !== 'E') {
         setDisableEdit(true)
       }
 
-      if (userID !== null && tipo !== 'N') {
+      if (userID !== null && tipoCad !== 'N') {
         buscaUsuario()
       }
-      // console.log('*** tipo', tipo, tipoCadastro)
-      if (tipo === 'N' && tipoCadastro === '') {
+
+      if (tipoCad === 'N' && tipoCadastro === '') {
         setTipoCadastro('M')
         valTipoCadastro('M')
         window.setFormValue('tipo', 'M')
@@ -291,17 +299,19 @@ export default function CardUsuario({ tipo, usuarioId }) {
         window.setFormValue('estado', ' ')
       }
     } catch (error) {
-      const { response } = error
-      if (response !== undefined) {
-        toast(response.status !== 401
-          ? response.data[0].message
-          : msgerror,
-          { type: 'error' })
+      if (error.response) {
+        const { data, status } = error.response
+        data.map(mensagem => {
+          toast(mensagem.message, { type: 'error' })
+        })
+      } else if (error.request) {
+        console.error('*** bu-1.2', error)
+        toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
       } else {
-        toast(error, { type: 'error' })
+        toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
     }
-  }, [userID, tipo, disableEdit])
+  }, [userID, tipoCad, disableEdit])
 
   useEffect(() => {
     if (vgridApi !== undefined) {
@@ -320,51 +330,70 @@ export default function CardUsuario({ tipo, usuarioId }) {
   function onRowEditingStarted() {
   }
 
-  function onRowEditingStopped() {
-    if (flag === false) {
-      vgridApi.forEachNode((node, index) => {
-        salvaVeiculo(node.data)
-      })
-    }
+  const onRowEditingStopped = async () => {
   }
 
   const buscaUsuario = async () => {
-    await api
-      .get(`/usuarios/${userID}`)
-      .then(response => {
-        const { data } = response
-        setInitialValues(data)
-        setTipoCadastro(data.tipo)
-        valTipoCadastro(data.tipo)
-        setVeiculos(data.veiculos)
-      }).catch((error) => {
-        if (error.response) {
-          console.error('*** bu-1.1', error)
-        } else if (error.request) {
-          console.error('*** bu-1.2', error)
-        } else {
-          console.error('*** bu-1.3')
-        }
-      })
+    if (userID) {
+      await api
+        .get(`/usuarios/${userID}`)
+        .then(response => {
+          const { data } = response
+          setInitialValues(data)
+          setTipoCadastro(data.tipo)
+          valTipoCadastro(data.tipo)
+          setVeiculos(data.veiculos)
+        }).catch((error) => {
+          if (error.response) {
+            const { data } = error.response
+            try {
+              data.map(mensagem => {
+                toast(mensagem.message, { type: 'error' })
+              })
+            }
+            catch (e) {
+              console.log('*** data', data)
+            }
+          } else if (error.request) {
+            toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          } else {
+            toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          }
+        })
+    }
+  }
+
+  const buscaVeiculosUsuario = async () => {
+    if (userID) {
+      await api
+        .post(`/buscaveiculosm/${userID}`)
+        .then(response => {
+          const { data } = response
+          setVeiculos(data)
+        })
+        .catch((error) => {
+          if (error.response) {
+            const { data } = error.response
+            try {
+              data.map(mensagem => {
+                toast(mensagem.message, { type: 'error' })
+              })
+            }
+            catch (e) {
+              console.log('*** data', data)
+            }
+          } else if (error.request) {
+            toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          } else {
+            toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          }
+        })
+    }
   }
 
   function Estado(estado) {
     // [] Disponível, Aguardando A[P]rovacao, [A]guardando Coleta, Em [T]ransporte, 
     // [B]loqueado, [R]ecusado, [7]Suspensão de 7 dias
-    /*
-    if (estado !== undefined) {
-      cadEstados.map((item) => {
-        console.log('*** cadEstados', item.id, estado)
-        if (item.id === estado) {
-          return (<span style={{ color: `${item.id}` }}><FaIcon icon={item.icon} size={item.size} />{item.description}</span>)
-        }
-        return (<></>)
-      })
-    }
-    return (<></>)
-    // cadEstados.filter(est => est.id === estado)
-    */
-    
     switch (estado) {
       case ' ': return (
         <span style={{ color: 'green' }}>
@@ -386,7 +415,6 @@ export default function CardUsuario({ tipo, usuarioId }) {
     let arrTipo = []
     // eslint-disable-next-line array-callback-return
     cadTipoVeiculo.map((item) => {
-      // console.log('*** cadTipoVeiculo', item.id, item.tipo)
       arrTipo.push(item.tipo)
     })
     return arrTipo
@@ -415,7 +443,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
       placachassi: "",
       modelo: "",
       ano: null,
-      tipo: "CEGONHA",
+      tipo: "CARRETA",
       vagas: 11,
       id: null,
       usuario_id: userID,
@@ -483,11 +511,9 @@ export default function CardUsuario({ tipo, usuarioId }) {
       var eInput = this.getGui()
       eInput.focus()
       eInput.select()
-      console.log('NumericCellEditor.focusIn()')
     }
 
     NumericCellEditor.prototype.focusOut = function () {
-      console.log('NumericCellEditor.focusOut()')
     }
 
     return NumericCellEditor
@@ -511,10 +537,25 @@ export default function CardUsuario({ tipo, usuarioId }) {
     onBtStartEditing(null, null, null, vgridApi.getLastDisplayedRow())
   }
 
-  const onDocs = (props, e) => {
+  const onDocs = async (e, tipo) => {
     e.preventDefault()
-    const selectedData = props.api.getSelectedRows()
-    setVeiculoId(selectedData[0].id)
+
+    if (tipo === 'E') {
+      const selectedData = vgridApi.getSelectedRows()
+
+      if (!selectedData) {
+        toast('Você deve selecionar um veículo para editar!', { type: 'alert' })
+        return
+      }
+
+      if (selectedData.length === 0) {
+        toast('Você deve selecionar um veículo para editar!', { type: 'alert' })
+        return
+      }
+      setVeiculoId(selectedData[0].id)
+    }
+    setTipoCadVei(tipo)
+
     toggleDocs()
     setFlag(true)
   }
@@ -541,15 +582,21 @@ export default function CardUsuario({ tipo, usuarioId }) {
           { type: 'error' })
       }
     }).catch((error) => {
-      toast('Ocorreu um erro no processamento!',
-        { type: 'error' })
-
       if (error.response) {
-        console.error('*** bu-1.1', error)
+        const { data } = error.response
+        try {
+          data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
+        }
+        catch (e) {
+          console.log('*** data', data)
+        }
       } else if (error.request) {
         console.error('*** bu-1.2', error)
+        toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
       } else {
-        console.error('*** bu-1.3')
+        toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
     })
 
@@ -561,64 +608,26 @@ export default function CardUsuario({ tipo, usuarioId }) {
       field: "placachassi",
       width: 120,
       sortable: true,
-      editable: true,
-    },
-    {
-      headerName: "Modelo",
-      field: "modelo",
-      flex: 1,
-      sortable: true,
-      editable: true,
-    },
-    {
-      headerName: "Ano",
-      field: "ano",
-      width: 100,
-      sortable: true,
-      editable: true,
+      // editable: true,
     },
     {
       headerName: "Tipo",
       field: "tipo",
-      width: 200,
+      flex: 1,
       sortable: true,
-      editable: true,
-      cellEditor: 'agSelectCellEditor',
-      cellEditorParams: {
-        values: TipoVeiculo(), // ['CARRETA', 'CAVALO', 'PLATAFORMA'],
-      },
+      // editable: true,
+      // cellEditor: 'agSelectCellEditor',
+      // cellEditorParams: {
+      //   values: TipoVeiculo(), // ['CARRETA', 'CAVALO', 'PLATAFORMA'],
+      // },
     },
     {
       headerName: "Vagas",
       field: "vagas",
       width: 100,
       sortable: true,
-      editable: true,
-      cellEditor: 'numericCellEditor',
-    },
-    {
-      headerName: "",
-      width: 30,
-      sortable: false,
-      editable: false,
-      cellRendererFramework: (props) => {
-        return (
-          <button onClick={(e) => onDocs(props, e)}
-            style={{ backgroundColor: 'transparent' }}
-          >
-            <Tooltip title="Documentos">
-              <span style={{
-                alignItems: 'center',
-                color: '#000000',
-                marginLeft: '-18px',
-                marginTop: '3px',
-              }}>
-                <FaIcon icon='Documentos' size={20} />
-              </span>
-            </Tooltip>
-          </button>
-        )
-      },
+      // editable: true,
+      // cellEditor: 'numericCellEditor',
     },
     {
       headerName: "",
@@ -652,96 +661,94 @@ export default function CardUsuario({ tipo, usuarioId }) {
     if (atualizaCEP) {
       return
     }
-
     await sleep(300)
 
-    if (userID !== null && tipo === 'E') {
-      values.cep.replace('-', '')
-
-      let newValues = {}
-      for (let key in values) {
-        if (values[key] && typeof values[key] === 'string') {
-          if (key !== 'email' && key !== 'foto') {
-            newValues[key] = values[key].toUpperCase()
+    let newValues = {}
+    for (let key in values) {
+      if (values[key] && typeof values[key] === 'string') {
+        if (key === 'habilitacaovct' || key === 'ANTTvct') {
+          if (values[key]) {
+            newValues[key] = moment(values[key]).format('YYYY-MM-DD')
           } else {
             newValues[key] = values[key]
           }
-        } else {
+        } else if (key === 'email' || key === 'foto' || key === 'habilitacaoimg' || key === 'ANTTimg') {
           newValues[key] = values[key]
+        } else if (key === 'cep' || key === 'cpfcnpj' || key === 'whats' || key === 'telefone' || key === 'celular') {
+          newValues[key] = values[key].replace(/\D/g, '')
+        } else {
+          newValues[key] = values[key].toUpperCase()
+        }
+      } else {
+        newValues[key] = values[key]
+      }
+    }
+
+    let apiParams = {}
+
+    if (userID !== null && tipoCad === 'E') {
+      apiParams = {
+        method: 'put',
+        url: `/usuarios/${userID}`,
+        data: JSON.stringify(newValues),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
         }
       }
-
-      // console.log('*** newValues', newValues)
-      await api.put(`/usuarios/${userID}`,
-        JSON.stringify(newValues),
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          }
+    } else {
+      apiParams = {
+        method: 'post',
+        url: `/usuarios`,
+        data: JSON.stringify(newValues),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
         }
-      )
+      }
+    }
+
+    await api(apiParams)
       .then(response => {
         const { data } = response
+
+        setTipoCad('E')
+        setUserID(data.id)
         setInitialValues(data)
         setTipoCadastro(data.tipo)
         valTipoCadastro(data.tipo)
         setVeiculos(data.veiculos)
 
-        toast(response.status === 200
-          ? 'Registro atualizado com sucesso!'
-          : response.data[0].message,
-          { type: response.status === 200 ? 'success' : 'error' })
-      }).catch((error) => {
-        toast('Ocorreu um erro no processamento!',
-          { type: 'error' })
-
-        if (error.response) {
-          console.error('*** bu-1.1', error)
-        } else if (error.request) {
-          console.error('*** bu-1.2', error)
+        if (response.status === 200) {
+          toast('Registro atualizado com sucesso!', { type: 'success' })
+        } else if (response.status === 400) {
+          response.data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
         } else {
-          console.error('*** bu-1.3')
+          response.data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
         }
       })
-    }
-  }
-
-  const salvaVeiculo = (veiculo) => {
-    if (userID !== null && tipo === 'E') {
-      sleep(300)
-      const placa = veiculo.placachassi
-      let url = { url: `/veiculosm/${veiculo.id}`, method: 'put', data: veiculo }
-      if (veiculo.id === null) {
-        delete veiculo['id']
-        url = { url: `/veiculosm`, method: 'post', data: veiculo }
-      }
-
-      api(url,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
+      .catch((error) => {
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
           }
-        }
-      ).then(response => {
-        if (response.status !== 200) {
-          toast(`Ocorreu um erro no processamento da placa [${placa}]!`,
-            { type: 'error' })
-          return
-        }
-      }).catch((error) => {
-        // toast(`Ocorreu um erro no processamento da placa [${placa}]!`,{ type: 'error' })
-
-        if (error.response) {
-          console.error('*** bu-1.1', error)
+          catch (e) {
+            console.log('*** data', data)
+          }
         } else if (error.request) {
           console.error('*** bu-1.2', error)
+          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
-          console.error('*** bu-1.3')
+          toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
       })
-    }
 
   }
 
@@ -772,7 +779,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
       .replace('.', '')
       .replace('-', '')
       .replace('/', '')
-    
+
     if (valor.trim().length === 11) {
       if (!isCPF(value)) {
         return 'CPF Inválido!'
@@ -788,7 +795,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
 
   const validaCEP = async (value) => {
     setAtualizaCEP(true)
-    console.log('*** value', value)
+
     if (!value) {
       setAtualizaCEP(false)
       return value
@@ -813,6 +820,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
         const { data } = response.data
         if (response.data.error) {
           // toast(response.data.message, { type: 'error' })
+          toast('O CEP informado não foi encontrado', { type: 'error' })
           setAtualizaCEP(false)
           return
         }
@@ -822,7 +830,6 @@ export default function CardUsuario({ tipo, usuarioId }) {
         const Cidade = data[0].data[0].Cidade
         const UF = data[0].data[0].UF
 
-        // console.log('*** buscaCep', values.logradouro)
         if (values.logradouro === '' ||
           values.logradouro === null ||
           values.logradouro === undefined) {
@@ -834,11 +841,19 @@ export default function CardUsuario({ tipo, usuarioId }) {
         setAtualizaCEP(false)
       }).catch((error) => {
         if (error.response) {
-          console.error('*** u-1.1', error)
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('*** data', data)
+          }
         } else if (error.request) {
-          console.error('*** u-1.2', error)
+          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
-          console.error('*** u-1.3')
+          toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
         setAtualizaCEP(false)
       })
@@ -875,7 +890,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
               <Tabs value={value} onChange={handleChange} aria-label="Dados do Usuário">
                 <Tab label="Usuário" {...a11yProps(0)} />
 
-                {tipoCadastro === 'M' ?
+                {tipoCadastro === 'M' && userID ?
                   <Tab label="Veículos" {...a11yProps(2)} />
                   : null}
                 {/* <Tab label="Observações" {...a11yProps(1)} /> */}
@@ -1391,31 +1406,31 @@ export default function CardUsuario({ tipo, usuarioId }) {
                 </Grid>
               </TabPanel>
 
-              {tipoCadastro === 'M' ?
+              {tipoCadastro === 'M' && userID ?
                 <TabPanel value={value} index={1}>
                   <Grid fluid style={{ marginTop: '40px' }}>
                     <Row>
                       <Col xs={11}></Col>
                       <Col xs={1}>
-                        <div 
+                        <div
                           className={classes.botoesvei}
                         >
-                          {/* <button onClick={onDocs}
+                          <button onClick={(e) => onDocs(e, 'E')}
                             style={{ backgroundColor: 'transparent' }}
                           >
-                            <Tooltip title="Teste">
+                            <Tooltip title="Documentos">
                               <span style={{
                                 alignItems: 'center',
-                                color: '#FFC417',
+                                color: '#000000',
                                 cursor: 'pointer',
                                 marginTop: '3px',
                               }}>
-                                <FaIcon icon='Add' size={30} />
+                                <FaIcon icon='Documentos' size={30} />
                               </span>
                             </Tooltip>
-                          </button> */}
+                          </button>
 
-                          <button onClick={handleAddRow}
+                          <button onClick={(e) => onDocs(e, 'N')}
                             style={{ backgroundColor: 'transparent' }}
                           >
                             <Tooltip title="Adicionar um novo veículo">
@@ -1433,7 +1448,102 @@ export default function CardUsuario({ tipo, usuarioId }) {
                       </Col>
                     </Row>
                     <Row>
-                      <Col xs={12}>
+                      <Col xs={6}>
+                        <Grid fluid style={{ margin: '0px' }}>
+                          <Row style={{ height: '65px' }}>
+                            <Texto
+                              size={22} height={24} italic={true} bold={700} font='Arial'
+                              mt={3}
+                              color='#2699FB' shadow={true}>
+                              DOCUMENTOS
+                            </Texto>
+                          </Row>
+                          <Row>
+                            <Col xs={6}>
+                              <div style={{ border: '1px dashed #ddd', padding: '5px' }}>
+
+                                <Field
+                                  name="habilitacaoimg"
+                                  userID={userID}
+                                >
+                                  {props => (
+                                    <div>
+                                      <Upload {...props} />
+                                    </div>
+                                  )}
+                                </Field>
+                                <Field
+                                  name="habilitacao"
+                                  validate={required}
+                                  message="Informe o Número da CNH"
+                                  component={CssTextField}
+                                  type="text"
+                                  label="Habilitação"
+                                  variant="outlined"
+                                  fullWidth
+                                  size="small"
+                                  margin="dense"
+                                ></Field>
+                                <Field
+                                  label="Vencimento"
+                                  name="habilitacaovct"
+                                  // validate={required}
+                                  message="Informe a Data de Vencimento da CNH"
+                                  variant="outlined"
+                                  type="text"
+                                >
+                                  {props => (
+                                    <div>
+                                      <DatePicker {...props} />
+                                    </div>
+                                  )}
+                                </Field>
+                              </div>
+                            </Col>
+                            <Col xs={6}>
+                              <div style={{ border: '1px dashed #ddd', padding: '5px' }}>
+                                <Field
+                                  name="ANTTimg"
+                                  userID={userID}
+                                >
+                                  {props => (
+                                    <div>
+                                      <Upload {...props} />
+                                    </div>
+                                  )}
+                                </Field>
+                                <Field
+                                  name="ANTT"
+                                  validate={required}
+                                  message="Informe o Número da ANTT"
+                                  component={CssTextField}
+                                  type="text"
+                                  label="ANTT"
+                                  variant="outlined"
+                                  fullWidth
+                                  size="small"
+                                  margin="dense"
+                                ></Field>
+                                <Field
+                                  label="Vencimento"
+                                  name="ANTTvct"
+                                  // validate={required}
+                                  message="Informe a Data de Vencimento da ANTT"
+                                  variant="outlined"
+                                  type="text"
+                                >
+                                  {props => (
+                                    <div>
+                                      <DatePicker {...props} />
+                                    </div>
+                                  )}
+                                </Field>
+                              </div>
+                            </Col>
+                          </Row>
+                        </Grid>
+                      </Col>
+                      <Col xs={6}>
                         <div className="ag-theme-custom-react" style={{
                           height: '370px',
                           width: '100%',
@@ -1449,9 +1559,12 @@ export default function CardUsuario({ tipo, usuarioId }) {
                             rowData={veiculos}
                             singleClickEdit={true}
                             stopEditingWhenGridLosesFocus={true}
-                            editType='fullRow'
+                            // editType='fullRow'
                             components={{ numericCellEditor: getNumericCellEditor() }}
                             tooltipShowDelay={0}
+                            pagination={true}
+                            paginationPageSize={50}
+                            localeText={agPtBr}
                           >
                           </AgGridReact>
                         </div>
@@ -1459,175 +1572,15 @@ export default function CardUsuario({ tipo, usuarioId }) {
                     </Row>
                   </Grid>
                 </TabPanel>
-              : null}
+                : null}
 
-              {/* {tipoCadastro === 'M' ?
-                <TabPanel value={value} index={2}>
-                  <Grid fluid style={{ marginTop: '15px' }}>
-                    <Row>
-                      <Col xs={3}>
-                        <div style={{ border: '1px dashed #ddd', padding: '5px' }}>
-                          <Field
-                            name="habilitacaoimg"
-                            userID={userID}
-                          >
-                            {props => (
-                              <div>
-                                <Upload {...props} />
-                              </div>
-                            )}
-                          </Field>
-                          <Field
-                            disabled={disableEdit}
-                            name="habilitacao"
-                            component={CssTextField}
-                            type="text"
-                            label="Habilitação"
-                            variant="outlined"
-                            fullWidth
-                            size="small"
-                            margin="dense"
-                          />
-                          <Field
-                            label="Vencimento"
-                            name="habilitacaovct"
-                            variant="outlined"
-                            // component={CssTextField}
-                            type="text"
-                          >
-                            {props => (
-                              <div>
-                                <DatePicker {...props} />
-                              </div>
-                            )}
-                          </Field>
-                        </div>
-                      </Col>
-                      <Col xs={3}>
-                        <div style={{ border: '1px dashed #ddd', padding: '5px' }}>
-                          <Field
-                            name="ANTTimg"
-                            userID={userID}
-                          >
-                            {props => (
-                              <div>
-                                <Upload {...props} />
-                              </div>
-                            )}
-                          </Field>
-                          <Field
-                            disabled={disableEdit}
-                            name="ANTT"
-                            component={CssTextField}
-                            type="text"
-                            label="ANTT"
-                            variant="outlined"
-                            fullWidth
-                            size="small"
-                            margin="dense"
-                          />
-                          <Field
-                            label="Vencimento"
-                            name="ANTT"
-                            variant="outlined"
-                            type="text"
-                          >
-                            {props => (
-                              <div>
-                                <DatePicker {...props} />
-                              </div>
-                            )}
-                          </Field>
-                        </div>
-                      </Col>
-                      <Col xs={3}>
-                        <div style={{ border: '1px dashed #ddd', padding: '5px' }}>
-                          <Field
-                            name="cavaloimg"
-                            userID={userID}
-                          >
-                            {props => (
-                              <div>
-                                <Upload {...props} />
-                              </div>
-                            )}
-                          </Field>
-                          <Field
-                            disabled={disableEdit}
-                            name="cavalo"
-                            component={CssTextField}
-                            type="text"
-                            label="Cavalo"
-                            variant="outlined"
-                            fullWidth
-                            size="small"
-                            margin="dense"
-                          />
-                          <Field
-                            label="Vencimento"
-                            name="cavalo"
-                            variant="outlined"
-                            type="text"
-                          >
-                            {props => (
-                              <div>
-                                <DatePicker {...props} />
-                              </div>
-                            )}
-                          </Field>
-                        </div>
-                      </Col>
-                      <Col xs={3}>
-                        <div style={{ border: '1px dashed #ddd', padding: '5px' }}>
-                          <Field
-                            name="cavalo1img"
-                            userID={userID}
-                          >
-                            {props => (
-                              <div>
-                                <Upload {...props} />
-                              </div>
-                            )}
-                          </Field>
-                          <Field
-                            disabled={disableEdit}
-                            name="cavalo1"
-                            component={CssTextField}
-                            type="text"
-                            label="Cavalo"
-                            variant="outlined"
-                            fullWidth
-                            size="small"
-                            margin="dense"
-                          />
-                          <Field
-                            label="Vencimento"
-                            name="cavalo1"
-                            variant="outlined"
-                            type="text"
-                          >
-                            {props => (
-                              <div>
-                                <DatePicker {...props} />
-                              </div>
-                            )}
-                          </Field>
-                        </div>
-                      </Col>
-                    </Row>
-                    <Row>
-                      <Col xs={12}>
-                      </Col>
-                    </Row>
-                  </Grid>
-                </TabPanel>
-              : null} */}
-
-              <DocsModal 
+              <DocsModal
                 isShowDocs={isShowDocs}
                 hide={toggleDocs}
                 userID={usuarioId}
                 veiculoID={veiculoId}
+                tipo={tipoCadVei}
+                callback={buscaVeiculosUsuario}
               />
 
             </form>

@@ -4,9 +4,10 @@ import ReactDOM from 'react-dom'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
-import '../CardUsuario/agGrid.scss'
+import '../../../assets/scss/agGrid.scss'
 import { AgGridReact, gridApi } from 'ag-grid-react'
 import { AllCommunityModules } from '@ag-grid-community/all-modules'
+import agPtBr from '../../agPtBr'
 
 import { formatToPhone } from 'brazilian-values'
 import StarRatings from 'react-star-ratings'
@@ -15,7 +16,7 @@ import { Tooltip,} from '@material-ui/core'
 import { Container, BoxTitulo, Texto, Grid, Botao, RLeft, RRight } from './styles'
 import { FaIcon } from '../../Icone'
 
-import { msgerror } from '../../../globais'
+// import { msgerror } from '../../../globais'
 import api from '../../../services/rf'
 
 import UsuarioModal from '../UsuarioModal'
@@ -76,32 +77,32 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
   }, [])
 
   const buscaUsuarios = async () => {
-    try {
-      await api.get(`/usuarios`, {})
-        .then(response => {
-          // console.log('*** GridUsuarios', response.data)
-          setUsuarios(response.data)
-        }).catch((error) => {
-          if (error.response) {
-            console.error('*** gu-1.1', error)
-          } else if (error.request) {
-            console.error('*** gu-1.2', error)
-          } else {
-            console.error('*** gu-1.3')
+    await api.get(`/usuarios`, {})
+      .then(response => {
+        if (response.status !== 200) {
+          toast(`Ocorreu um erro na busca dos usuários!`,
+            { type: 'error' })
+          return
+        }
+        setUsuarios(response.data)
+      }).catch((error) => {
+        if (error.response) {
+          const { data } = error.response
+          try {
+            // eslint-disable-next-line array-callback-return
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
           }
-        })
-    } catch (error) {
-      console.log('*** error', error)
-      const { response } = error
-      if (response !== undefined) {
-        toast(response.status !== 401
-          ? response.data[0].message
-          : msgerror,
-          { type: 'error' })
-      } else {
-        toast(error, { type: 'error' })
-      }
-    }
+          catch (e) {
+            console.log('*** data', data)
+          }
+        } else if (error.request) {
+          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        } else {
+          toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        }
+      })
   }
 
   const frameworkComponents = {
@@ -146,8 +147,31 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
       menuTabs: ['filterMenuTab'],
     },
     {
-      headerName: "Celular",
-      field: "celular",
+      headerName: "",
+      width: 30,
+      sortable: false,
+      editable: false,
+      cellRendererFramework: (props) => {
+        return (
+          <button onClick={(e) => FormatWhats(props, e)}
+            style={{ backgroundColor: 'transparent' }}
+          >
+            <Tooltip title={formatToPhone(props.data.whats)}>
+              <span style={{
+                alignItems: 'center',
+                marginLeft: '-18px',
+                marginTop: '3px',
+              }}>
+                <FaIcon icon='Whats' size={20} />
+              </span>
+            </Tooltip>
+          </button>
+        )
+      },
+    },
+    {
+      headerName: "WhatsApp",
+      field: "whats",
       width: 170,
       valueFormatter: celFormatter,
     },
@@ -189,6 +213,13 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
       case 'R': return (<span style={{ color: 'red' }}><FaIcon icon='FiAlertOctagon' size={20} /></span>)
       case '7': return (<span style={{ color: 'orange' }}><FaIcon icon='FiAlertTriangle' size={20} /></span>)
       default: return (<></>)
+    }
+  }
+
+  const FormatWhats = async (props, e) => {
+    e.preventDefault()
+    if (props.data.whats) {
+      window.open(`https://api.whatsapp.com/send?phone=55${props.data.whats}&text=`, "_blank")
     }
   }
 
@@ -243,6 +274,12 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
   function celFormatter(params) {
     return formatToPhone(formatNumber(params.value))
   }
+
+  // const onCellClicked = (params) => {
+  //   if (params.column.colId === 'whats') {
+  //     window.open(`https://api.whatsapp.com/send?phone=55${params.data.whats}&text=`, "_blank")
+  //   }
+  // }
 
   function formatNumber(number) {
     return Math.floor(number)
@@ -335,6 +372,10 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
                     rowData={usuarios}
                     frameworkComponents={frameworkComponents}
                     tooltipShowDelay={0}
+                    pagination={true}
+                    paginationPageSize={50}
+                    localeText={agPtBr}
+                    // onCellClicked={onCellClicked}
                   >
                   </AgGridReact>
                 </div>

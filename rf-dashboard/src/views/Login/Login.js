@@ -39,7 +39,6 @@ const Login = ({ history }) => {
         email, password
       })
       .then(res => {
-        console.log('res', res)
         const { token } = res.data
 
         localStorage.setItem('@rf/email', email)
@@ -75,15 +74,11 @@ const Login = ({ history }) => {
       })
       .then(response => {
         const { data } = response
-        // console.log('*** data', data)
         localStorage.setItem('@rf/userID', data[0].id)
       }).catch((error) => {
         if (error.response) {
-          // console.error('*** bu-1.1', error)
         } else if (error.request) {
-          // console.error('*** bu-1.2', error)
         } else {
-          // console.error('*** bu-1.3')
         }
       })
   }

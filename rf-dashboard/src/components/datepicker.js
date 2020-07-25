@@ -60,16 +60,19 @@ export default function datePicker(props) {
   const classes = useStyles()
   const dataAtual = moment().format('YYYY-MM-DD')
 
-  const [data, setData] = useState(props.input.value ? props.input.value.substring(0, 10) : null)
+  const [data, setData] = useState(props.input.value ? props.input.value.substring(0, 10) : undefined)
+  const [dataID, setDataID] = useState(props.input.value ? props.input.value.substring(0, 10) : undefined)
 
   useEffect(() => {
-    if (data === null) {
-      setData(props.input.value ? props.input.value.substring(0, 10) : null)
-    } 
+    if (data === undefined) {
+      setData(props.input.value ? props.input.value.substring(0, 10) : undefined)
+    }
+    setDataID(`dataTxt_${props.input.name}`)
   },[data, dataAtual, props])
 
   const handleChange = (event) => {
     const { target: { value } } = event
+    // console.log('*** datapicker value', value, props)
     props.input.onChange(value)
     setData(value)
   }
@@ -77,7 +80,7 @@ export default function datePicker(props) {
   // if (data !== null) {
     return (
       <CssTextField 
-        // id='dataTxt'
+        id={dataID}
         label={props.label}
         name={props.input.name}
         type="date"
@@ -86,10 +89,14 @@ export default function datePicker(props) {
         variant="outlined"
         size='small'
         defaultValue={data}
-        value={data}
+        // value={data}
         className={classes.textField}
         InputLabelProps={{
           shrink: true,
+        }}
+        inputProps={{
+          value: data,
+          validate: props.input.validate,
         }}
       />
     )

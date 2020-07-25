@@ -33,9 +33,7 @@ const Modal = ({
             className="modal-botao" 
             onClick={async () => {
               await sleep(300)
-              console.log('*** Modal-1', isUpdate)
               update()
-              console.log('*** Modal-2', isUpdate)
               hide()
               return confirm()
             }}

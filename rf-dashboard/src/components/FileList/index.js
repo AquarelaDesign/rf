@@ -10,8 +10,6 @@ const FileList = ({ files, onDelete }) => (
   <Container>
     {files.map(uploadedFile => (
       <li key={uploadedFile.id}>
-        {console.log('*** FileList', uploadedFile)}
-
         <FileInfo>
           <Preview src={uploadedFile.preview} />
           <div>

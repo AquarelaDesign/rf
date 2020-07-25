@@ -38,7 +38,6 @@ export default class TipoFilter extends Component {
         );
     }
     catch (e) {
-      // console.log('*** doesFilterPass-e', e);
     }
   }
 

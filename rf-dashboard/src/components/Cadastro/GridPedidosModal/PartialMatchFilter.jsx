@@ -40,6 +40,7 @@ export default class PartialMatchFilter extends Component {
   }
 
   setModel(model) {
+    // this.state.text = model ? model.value : '';
     this.setState({
       text: model ? model.value : '',
     })

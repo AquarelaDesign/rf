@@ -35,10 +35,9 @@ function Dropzone(props) {
   }, [prev])
 
   useEffect(() => {
-    if (props.input.value !== null && 
-        props.input.value !== undefined && 
-        props.input.value !== "")
-    {
+    if (props.input.value !== null &&
+      props.input.value !== undefined &&
+      props.input.value !== "") {
       setPrev(`images/${props.input.value}`)
     }
   }, [props.input.value])
@@ -49,12 +48,12 @@ function Dropzone(props) {
     noDrag: true,
     onDrop: acceptedFiles => {
       const files = acceptedFiles.map(file => {
-          setPrev(URL.createObjectURL(file))
-          return Object.assign(file, {
-            preview: URL.createObjectURL(file),
-            id: uniqueId(),
-          })
-        }
+        setPrev(URL.createObjectURL(file))
+        return Object.assign(file, {
+          preview: URL.createObjectURL(file),
+          id: uniqueId(),
+        })
+      }
       )
       setFiles(files)
       if (props.input.onChange) {
@@ -73,8 +72,8 @@ function Dropzone(props) {
   const updateFile = (id, data) => {
     setFiles(
       files.map(file => {
-        return id === file.id 
-          ? {...file, ...data} 
+        return id === file.id
+          ? { ...file, ...data }
           : file
       })
     )
@@ -105,10 +104,10 @@ function Dropzone(props) {
     <div className="d-inline-block mt-4">
       <div {...getRootProps({ className: "btn-dropzone" })}>
         <input {...getInputProps()} />
-        <img 
-          src={prev} 
-          style={props.name === 'foto' ? foto : img} 
-          alt="" 
+        <img
+          src={prev}
+          style={props.name === 'foto' ? foto : img}
+          alt=""
         />
       </div>
     </div>

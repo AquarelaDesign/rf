@@ -26,8 +26,6 @@ export default function Header() {
       .then(response => {
         const { data } = response
         setUserDados(data)
-        // console.log('*** data', data)
-        // console.log('*** userDados', userDados)
       }).catch((error) => {
         if (error.response) {
           console.error('*** bu-1.1', error)

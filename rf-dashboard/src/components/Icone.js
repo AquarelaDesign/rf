@@ -30,6 +30,7 @@ import { MdDeleteForever, MdAddCircle, MdBlock, MdCheckCircle, MdCancel } from '
 import blank from '../assets/transparent.png'
 import supplier from '../assets/supplier.png'
 import entregue from '../assets/entregue.png'
+import whats from '../assets/whatsApp.png'
 import pb_whats from '../assets/pb_whats.png'
 import pb_email from '../assets/pb_email.png'
 import pb_fone from '../assets/pb_fone.png'
@@ -76,6 +77,7 @@ export const FaIcon = ({ icon, size, height, width }) => {
     case 'Cancelado': return <MdCancel size={size} />
     case 'Manutencao': return <GrHostMaintenance size={size} />
     case 'Entregue': return <Image src={entregue} alt="" style={{ height: {size}, width: {size} }} />
+    case 'Whats': return <Image src={whats} alt="" style={{ height: 16, width: 16 }} />
     case 'pbWhats': return <Image src={pb_whats} alt="" style={{ height: 16, width: 16 }} />
     case 'pbEmail': return <Image src={pb_email} alt="" style={{ height: 16, width: 16 }} />
     case 'pbFone': return <Image src={pb_fone} alt="" style={{ height: 16, width: 16 }} />

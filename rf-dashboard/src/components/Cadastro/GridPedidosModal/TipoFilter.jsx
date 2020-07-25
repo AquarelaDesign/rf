@@ -7,7 +7,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 
 import { FaIcon } from '../../Icone'
 
-export default class StatusFilter extends Component {
+export default class TipoFilter extends Component {
   constructor(props) {
     super(props);
 
@@ -46,7 +46,6 @@ export default class StatusFilter extends Component {
   }
 
   setModel(model) {
-    // this.state.text = model ? model.value : '';
     this.setState({
       text: model ? model.value : '',
     })
@@ -105,17 +104,29 @@ export default class StatusFilter extends Component {
             value={this.state.text}
             onChange={this.onChange}
           >
-            <MenuItem value='A'>
+            <MenuItem value='O'>
               <ListItemIcon>
-                <span style={{ color: 'green' }}><FaIcon icon='FaCircle' size={20} /></span>
+                <FaIcon icon='FaHeadphonesAlt' size={20} />
               </ListItemIcon>
-              Online
+              Operador
             </MenuItem>
-            <MenuItem value='I'>
+            <MenuItem value='M'>
               <ListItemIcon>
-                <span style={{ color: 'gray' }}><FaIcon icon='FaCircle' size={20} /></span>
+                <FaIcon icon='FaTruck1' size={20} />
               </ListItemIcon>
-              Offline
+              Mecânico
+            </MenuItem>
+            <MenuItem value='C'>
+              <ListItemIcon>
+                <FaIcon icon='FaUserTie' size={20} />
+              </ListItemIcon>
+              Cliente
+            </MenuItem>
+            <MenuItem value='F'>
+              <ListItemIcon>
+                <FaIcon icon='supplier' size={20} />
+              </ListItemIcon>
+              Fornecedor
             </MenuItem>
             <MenuItem value=''>
               Todos

@@ -19,7 +19,7 @@ export default function Editor({ onSubmit, template }) {
       return onSubmit(editor.innerHTML)
     }
 
-    return console.log(undefined)
+    return
   }
 
   return (

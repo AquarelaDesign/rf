@@ -2,7 +2,7 @@ import React from 'react'
 import Modal from '@material-ui/core/Modal'
 
 const closeModal = ({ onCloseModal, body, open }) => {
-  console.log('Transporte-2', open, onCloseModal, body)
+  // console.log('Transporte-2', open, onCloseModal, body)
 
   return (
     <Modal

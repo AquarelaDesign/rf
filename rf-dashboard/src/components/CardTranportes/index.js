@@ -71,8 +71,6 @@ export default function CardMotoristas({ data, index }) {
 
   dragRef(dropRef(ref))
 
-  console.log('Transporte', data)
-
   return (
     <Container ref={ref} isDragging={isDragging}>
       <RLeft>

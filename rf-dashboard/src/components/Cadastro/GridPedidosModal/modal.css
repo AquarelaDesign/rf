@@ -21,11 +21,7 @@
   outline: 0;
 }
 
-.modal-box {
-  display: flex;
-  flex-direction: row;
-  flex-flow: row;
-  align-items: flex-start;
+.modal {
   z-index: 100;
   position: relative;
   top: 50%;
@@ -33,7 +29,7 @@
   transform: translate(-50%, -50%);
   border-radius: '5px';
   padding: '20px';
-  max-width: 545px;
+  max-width: 1110px;
 }
 
 .modal-header {
