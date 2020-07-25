@@ -1,13 +1,18 @@
+/* eslint-disable array-callback-return */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useHistory } from 'react-router-dom'
 import produce from 'immer'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+
 import Ws from '@adonisjs/websocket-client'
 import Pusher from 'pusher-js'
 // import pushid from 'pushid'
+import moment from 'moment'
+// import CountDown from '../CountDown'
+import formatDate from '../CountDown/format-date'
 
 import {
   // loadMotoristas,
@@ -17,11 +22,8 @@ import {
 } from '../../services/api'
 
 import api from '../../services/rf'
-
 import BoardContext from './context'
-
 import List from '../List'
-
 import { Container } from './styles'
 
 // const dataM = loadMotoristas()
@@ -45,18 +47,29 @@ const Board = () => {
     creatable: true,
     cards: []
   })
-  const [carga, setCarga] = useState(dataC)
+
+  const [carga, setCarga] = useState({
+    title: "CARGAS DISPONÍVEIS",
+    icon: "FaBoxOpen",
+    tipo: "C",
+    creatable: true,
+    cards: []
+  })
+
+  // const [carga, setCarga] = useState(dataC)
   const [transporte, setTransporte] = useState(dataT)
   const [entrega, setEntrega] = useState(dataE)
+  const [countdown, setCountdown] = useState(null)
+  const [dateInFuture, setDateInFuture] = useState(moment(moment().add(1, 'minute'), 'YYYY-MM-DD'))
+  const timer = useRef()
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-  const verificaStatus = async () => {
-    let delay = 10000
-
-    await sleep(delay)
-
+  useEffect(() => {
     const storeToken = localStorage.getItem('@rf/token')
+
+    verificaStatus()
+    verificaStatus()
 
     if (storeToken === '') {
       localStorage.removeItem('@rf/token')
@@ -65,17 +78,12 @@ const Board = () => {
 
     ws.on('open', () => {
       setIsConnected(true)
-      console.log('*** ws open')
+      // console.log('*** ws open')
     })
 
     ws.on('pong', () => {
       console.log('*** ws pong')
     })
-
-    // ws.on('close', () => {
-    //   console.log('*** ws.close')
-    //   setIsConnected(false)
-    // })
 
     if (isConnected) {
       let chat = undefined
@@ -106,114 +114,128 @@ const Board = () => {
       })
     }
 
-    await api.get('/status', {})
-      .then(res => {
-        const loadMotorista = {
-          title: "MOTORISTAS ONLINE",
-          icon: "FaTruck",
-          tipo: "M",
-          creatable: true,
-          cards: res.data
-        }
-        setMotorista(loadMotorista)
+    const pusher = new Pusher('802301f67a0437e55a19', {
+      cluster: 'us2',
+      encrypted: true,
+    })
+
+    // console.log('**** Pusher Motoristas')
+    const channel = pusher.subscribe('status-channel')
+    channel.bind('results', res => {
+      const loadMotorista = {
+        title: "MOTORISTAS ONLINE",
+        icon: "FaTruck",
+        tipo: "M",
+        creatable: true,
+        cards: res.data
+      }
+      setMotorista(loadMotorista)
+    })
+
+    // console.log('**** Pusher Pedidos')
+    const channelp = pusher.subscribe('statusp-channel')
+    channelp.bind('results', res => {
+      const loadPedidos = {
+        title: "CARGAS DISPONÍVEIS",
+        icon: "FaBoxOpen",
+        tipo: "C",
+        creatable: true,
+        cards: res.data
+      }
+      setCarga(loadPedidos)
+    })
+
+    return () => {
+      ws.on('close', () => {
+        console.log('*** ws.close')
+        setIsConnected(false)
       })
-      .catch(error => {
-        let timerId = setTimeout(function request() {
-          if (request) {
-            delay *= 2
-          }
-          timerId = setTimeout(request, delay)
-        }, delay)
-      })
+    }
+
+  }, [])
+
+  // const dateInFuture = moment(moment().add(1, 'minute'), 'YYYY-MM-DD')
+  const onCountdownEnd = () => {
+    // console.log('**** Contador Resetado', moment().format('HH:mm:ss'))
+    setDateInFuture(moment(moment().add(1, 'minute'), 'YYYY-MM-DD'))
+    verificaStatus()
   }
 
-  verificaStatus()
+  const onTick = (delta) => {
+    // console.log(delta)
+    // console.log('****', moment(delta).format('HH:mm:ss'))
+  }
 
-  /*
+  const tick = () => {
+    const [delta, lastCountdown] = formatDate(dateInFuture, 'HH:mm:ss', 'YYYY-MM-DD')
+
+    if (delta <= 0) {
+      clearInterval(timer.current)
+      timer.current = null
+
+      onCountdownEnd()
+    } else {
+      setCountdown(lastCountdown)
+      onTick(delta)
+    }
+  }
+
+  // componentDidMount, componentWillUmnount
   useEffect(() => {
+    tick()
+    timer.current = setInterval(tick, 10000)
+
+    return () => clearInterval(timer.current)
+  }, [dateInFuture])
+
+
+  const verificaStatus = async () => {
+    let delay = 5000
+
+    // await sleep(delay)
+
     try {
-
-      const storeToken = localStorage.getItem('@rf/token')
-
-      if (storeToken === '') {
-        localStorage.removeItem('@rf/token')
-        history.push('/')
-      }
-
-      ws.on('open', () => {
-        setIsConnected(true)
-        console.log('*** ws open')
-      })
-
-      ws.on('pong', () => {
-        console.log('*** ws pong')
-      })
-
-      // ws.on('close', () => {
-      //   console.log('*** ws.close')
-      //   setIsConnected(false)
-      // })
-
-      if (isConnected) {
-        const chat = ws.subscribe('chat')
-
-        chat.on('ready', () => {
-          chat.emit('message', '*** Client ready')
-        })
-
-        chat.on('message', (data) => {
-          if (lastConnected !== data.message) {
-            setLastConnected(data.message)
-            // toast(data.message, { type: data.tipo })
+      // console.log('**** Motoristas')
+      await api.get('/status', {})
+        .then(res => {
+          const loadMotorista = {
+            title: "MOTORISTAS ONLINE",
+            icon: "FaTruck",
+            tipo: "M",
+            creatable: true,
+            cards: res.data
           }
+          setMotorista(loadMotorista)
+        })
+        .catch(error => {
+          let timerId = setTimeout(function request() {
+            if (request) {
+              delay *= 2
+            }
+            timerId = setTimeout(request, delay)
+          }, delay)
         })
 
-        chat.on('error', (error) => {
-          console.log('*** ws.error', error)
+      // console.log('**** Pedidos')
+      await api.get('/statuspedidos', {})
+        .then(res => {
+          const loadPedidos = {
+            title: "CARGAS DISPONÍVEIS",
+            icon: "FaBoxOpen",
+            tipo: "C",
+            creatable: true,
+            cards: res.data
+          }
+          setCarga(loadPedidos)
         })
-
-        chat.on('close', () => {
-          console.log('*** ws.close')
-          setIsConnected(false)
+        .catch(error => {
+          let timerId = setTimeout(function request() {
+            if (request) {
+              delay *= 2
+            }
+            timerId = setTimeout(request, delay)
+          }, delay)
         })
-      }
-    } catch (error) {
-      const { response } = error
-      if (response !== undefined) {
-        if (response.status === 401) {
-          // volta()
-          history.push('/')
-        }
-        // toast(response.status !== 401 ? response.data[0].message : 'Senha inválida!', {type: 'error'})
-      } else {
-        // toast(error, {type: 'error'})
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConnected, lastConnected, history])
-  */
-
-  useEffect(() => {
-    try {
-      if (lastConnected === '') {
-        verificaStatus()
-      }
-      const pusher = new Pusher('802301f67a0437e55a19', {
-        cluster: 'us2',
-        encrypted: true,
-      })
-
-      const channel = pusher.subscribe('status-channel')
-      channel.bind('results', res => {
-        const loadMotorista = {
-          title: "MOTORISTAS ONLINE",
-          icon: "FaTruck",
-          tipo: "M",
-          creatable: true,
-          cards: res.data
-        }
-        setMotorista(loadMotorista)
-      })
 
     } catch (error) {
       const { response } = error
@@ -226,53 +248,7 @@ const Board = () => {
         toast(error, { type: 'error' })
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [history])
-
-  useEffect(() => {
-    try {
-      api.post('/buscausuarios', {
-        email: '',
-        tipo: 'M',
-        status: 'A',
-        estado: ' ',
-      }).then(res => {
-        // console.log('*** buscausuarios', res)
-        // const { token } = res.data
-        const loadMotorista = {
-          title: "MOTORISTAS ONLINE",
-          icon: "FaTruck",
-          tipo: "M",
-          creatable: true,
-          cards: res.data
-        }
-        setMotorista(loadMotorista)
-      }).catch((error) => {
-        if (error.response) {
-          console.error('*** c-1.1', error)
-          volta()
-        } else if (error.request) {
-          console.error('*** c-1.2', error)
-        } else {
-          console.error('*** c-1.3')
-        }
-        // console.error('c-1',error)
-        // history.push('/')
-      })
-
-    } catch (error) {
-      console.log('*** error', error)
-      const { response } = error
-      if (response !== undefined) {
-        if (response.status === 401) {
-          volta()
-        }
-        // toast(response.status !== 401 ? response.data[0].message : 'Senha inválida!', {type: 'error'})
-      } else {
-        toast(error, { type: 'error' })
-      }
-    }
-  }, [history])
+  }
 
   const volta = () => {
     // toast('Erro na autenticação do usuário!', { type: 'error' })
