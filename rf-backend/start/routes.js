@@ -26,9 +26,7 @@ Route.delete('images/:id', 'ImageController.destroy')
 
 Route.group(() => {
   Route.get('/status', "UsuarioController.status")
-
   Route.post("/buscausuarios", "UsuarioController.busca")
-  
   Route
     .resource('usuarios', 'UsuarioController')
     .validator( new Map([
@@ -36,12 +34,16 @@ Route.group(() => {
       [['usuarios.update'],['UpdateUsuario']],
     ]))
     .apiOnly()
+
+  Route.get('/statuspedidos', "PedidoController.status")
+  Route.post("/buscapedidos", "PedidoController.busca")
   Route.resource('pedidos', 'PedidoController')
     .apiOnly()
   Route.resource('veiculos', 'VeiculoController')
     .apiOnly()
   // Route.post('veiculos/:id/images', 'ImageController.store')
 
+  Route.post("/buscaveiculosm/:id", "VeiculosMotoristaController.busca")
   Route.resource('veiculosm', 'VeiculosMotoristaController')
     .apiOnly()
   // Route.post('veiculosm/:id/images', 'ImagevmController.store')

@@ -6,13 +6,11 @@ class StoreUsuario {
       nome: 'required',
       email: 'required|email|unique:usuarios,email',
       cpfcnpj: 'required|cpfcnpj|unique:usuarios,cpfcnpj',
-      celular: 'required|integer',
+      celular: 'integer',
       telefone: 'integer',
-      logradouro: 'required',
-      bairro: 'required',
       cidade: 'required',
       uf: 'required',
-      cep: 'required|cep|integer',
+      cep: 'cep|integer',
       tipo: 'required'
     }
   }

@@ -24,3 +24,11 @@ Event.when('search::results', async (usuarios) => {
     usuarios
   })
 })
+
+Event.when('statusp::results', async (pedidos) => {
+  console.log('statusp-channel','statusp::results')
+  pusher.trigger('statusp-channel', 'results', {
+    usuarios
+  })
+})
+
