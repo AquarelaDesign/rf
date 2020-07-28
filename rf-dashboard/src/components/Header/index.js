@@ -10,32 +10,35 @@ import logo from '../../assets/arenaLog.png'
 import api from '../../services/rf'
 
 export default function Header() {
-  const userID = localStorage.getItem('@rf/userID')
+  const [userID, setUserID] = useState(localStorage.getItem('@rf/userID'))
   const [userDados, setUserDados] = useState({})
 
   useEffect(() => {
-    if (userID !== null && userID !== undefined) {
-      buscaUsuario()
+    const buscaUsuario = async () => {
+      if (!userID) {
+        await sleep(1000)
+        setUserID(localStorage.getItem('@rf/userID'))
+      } else {
+        await api
+          .get(`/usuarios/${userID}`)
+          .then(response => {
+            const { data } = response
+            setUserDados(data)
+          }).catch((error) => {
+            if (error.response) {
+              console.error('*** Header-1.1', error)
+            } else if (error.request) {
+              console.error('*** Header-1.2', error)
+            } else {
+              console.error('*** Header-1.3')
+            }
+          })
+      }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    buscaUsuario()
   }, [userID])
 
-  const buscaUsuario = async () => {
-    await api
-      .get(`/usuarios/${userID}`)
-      .then(response => {
-        const { data } = response
-        setUserDados(data)
-      }).catch((error) => {
-        if (error.response) {
-          console.error('*** bu-1.1', error)
-        } else if (error.request) {
-          console.error('*** bu-1.2', error)
-        } else {
-          console.error('*** bu-1.3')
-        }
-      })
-  }
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   return (
     <>

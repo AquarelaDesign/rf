@@ -273,6 +273,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
   const [veiculos, setVeiculos] = useState([])
   const [atualizaCEP, setAtualizaCEP] = useState(false)
   const [mostraVeiculos, setMostraVeiculos] = useState(false)
+  const [status, setStatus] = useState('')
 
   // const [isOpen, setIsOpen] = useState(false)
   const { isShowDocs, toggleDocs } = useModalDocs()
@@ -394,20 +395,36 @@ export default function CardUsuario({ tipo, usuarioId }) {
   function Estado(estado) {
     // [] Disponível, Aguardando A[P]rovacao, [A]guardando Coleta, Em [T]ransporte, 
     // [B]loqueado, [R]ecusado, [7]Suspensão de 7 dias
-    switch (estado) {
-      case ' ': return (
-        <span style={{ color: 'green' }}>
-          <FaIcon icon='FaRegThumbsUp' size={20} />
-          {tipoCadastro === 'M' ? ' DISPONÍVEL' : ' ATIVO'}
-        </span>
-      )
-      case 'P': return (<span style={{ color: 'blue' }}><FaIcon icon='FaTruckLoading' size={20} /> AGUARDANDO APROVAÇÃO</span>)
-      case 'A': return (<span style={{ color: 'orange' }}><FaIcon icon='FaHandPaper' size={20} /> AGUARDANDO COLETA</span>)
-      case 'T': return (<span style={{ color: 'red' }}><FaIcon icon='GrDeliver' size={20} /> EM TRANSPORTE</span>)
-      case 'B': return (<span style={{ color: 'red' }}><FaIcon icon='FcCancel' size={20} /> BLOQUEADO</span>)
-      case 'R': return (<span style={{ color: 'red' }}><FaIcon icon='FiAlertOctagon' size={20} /> RECUSADO</span>)
-      case '7': return (<span style={{ color: 'orange' }}><FaIcon icon='FiAlertTriangle' size={20} /> SUSPENÇÃO 7 DIAS</span>)
-      default: return (<></>)
+    if (tipoCadastro === 'M') {
+      switch (estado) {
+        case ' ': {
+          if (status === 'A') {
+            return (
+              <span style={{ color: 'green' }}>
+                <FaIcon icon='FaRegThumbsUp' size={20} />
+                {tipoCadastro === 'M' ? ' DISPONÍVEL' : ' ATIVO'}
+              </span>
+            )
+          } else {
+            return (<></>)
+            // return (<span style={{ color: 'gray' }}><FaIcon icon='FaCircle' size={20} /></span>)
+          }
+        }
+        case 'P': return (<span style={{ color: 'blue' }}><FaIcon icon='FaTruckLoading' size={20} /> AGUARDANDO APROVAÇÃO</span>)
+        case 'A': return (<span style={{ color: 'orange' }}><FaIcon icon='FaHandPaper' size={20} /> AGUARDANDO COLETA</span>)
+        case 'T': return (<span style={{ color: 'red' }}><FaIcon icon='GrDeliver' size={20} /> EM TRANSPORTE</span>)
+        case 'B': return (<span style={{ color: 'red' }}><FaIcon icon='FcCancel' size={20} /> BLOQUEADO</span>)
+        case 'R': return (<span style={{ color: 'red' }}><FaIcon icon='FiAlertOctagon' size={20} /> RECUSADO</span>)
+        case '7': return (<span style={{ color: 'orange' }}><FaIcon icon='FiAlertTriangle' size={20} /> SUSPENÇÃO 7 DIAS</span>)
+        default: return (<></>)
+      }
+    } else {
+      if (estado === ' ' || !estado) {
+        return (<></>)
+        // return (<span style={{ color: 'gray' }}><FaIcon icon='FaCircle' size={20} /></span>)
+      } else {
+        return (<span style={{ color: 'green' }}><FaIcon icon='FaCircle' size={20} /></span>)
+      }
     }
   }
 
@@ -431,9 +448,10 @@ export default function CardUsuario({ tipo, usuarioId }) {
   }
 
   function Status(status) {
+    setStatus(status)
     switch (status) {
       case 'A': return (<span style={{ color: 'green' }}><FaIcon icon='FaCircle' size={20} /></span>)
-      case 'I': return (<span style={{ color: 'gray' }}><FaIcon icon='FaCircle' size={20} /></span>)
+      // case 'I': return (<span style={{ color: 'gray' }}><FaIcon icon='FaCircle' size={20} /></span>)
       default: return (<></>)
     }
   }
@@ -676,6 +694,8 @@ export default function CardUsuario({ tipo, usuarioId }) {
           newValues[key] = values[key]
         } else if (key === 'cep' || key === 'cpfcnpj' || key === 'whats' || key === 'telefone' || key === 'celular') {
           newValues[key] = values[key].replace(/\D/g, '')
+        } else if (key === 'status') {
+          
         } else {
           newValues[key] = values[key].toUpperCase()
         }

@@ -1,9 +1,10 @@
+/* eslint-disable array-callback-return */
 import React, { useState } from 'react'
 import { toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 import { Container, Form, Image } from 'react-bootstrap'
 
-import 'react-toastify/dist/ReactToastify.css'
 import { AccountCircle, Lock } from '@material-ui/icons'
 
 import api from '../../services/rf'
@@ -75,10 +76,56 @@ const Login = ({ history }) => {
       .then(response => {
         const { data } = response
         localStorage.setItem('@rf/userID', data[0].id)
+        atualizaStatus(data[0].id)
       }).catch((error) => {
         if (error.response) {
         } else if (error.request) {
         } else {
+        }
+      })
+  }
+
+  const atualizaStatus = async (userID) => {
+    await api
+      .put(`/usuarios/${userID}`, { 
+        status: "A",
+      },{
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
+      })
+      .then(response => {
+        const { data } = response
+
+        if (response.status === 200) {
+          toast(`Usuário ${data.nome} Online!`, { type: 'success' })
+        } else if (response.status === 400) {
+          response.data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
+        } else {
+          response.data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
+        }
+      })
+      .catch((error) => {
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('*** data', data)
+          }
+        } else if (error.request) {
+          console.error('*** l-1.2', error)
+          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        } else {
+          toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
       })
   }

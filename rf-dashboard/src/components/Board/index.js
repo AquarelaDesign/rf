@@ -73,7 +73,7 @@ const Board = () => {
 
     if (storeToken === '') {
       localStorage.removeItem('@rf/token')
-      history.push('/')
+      history.push('/rf')
     }
 
     ws.on('open', () => {
@@ -192,7 +192,12 @@ const Board = () => {
   const verificaStatus = async () => {
     let delay = 5000
 
-    // await sleep(delay)
+    const token = await localStorage.getItem('@rf/token')
+    console.log('**** userID', token, !token)
+
+    if (!token) {
+      history.push('/rf')
+    }
 
     try {
       // console.log('**** Motoristas')
@@ -253,7 +258,7 @@ const Board = () => {
   const volta = () => {
     // toast('Erro na autenticação do usuário!', { type: 'error' })
     // localStorage.removeItem('@rf/token')
-    // history.push('/')
+    // history.push('/rf')
   }
 
   /*
@@ -280,7 +285,7 @@ const Board = () => {
       const { response } = error
       if (response !== undefined) {
         if (response.status === 401) {
-          history.push('/')
+          history.push('/r')
         }
         // toast(response.status !== 401 ? response.data[0].message : 'Senha inválida!', {type: 'error'})
       } else {
