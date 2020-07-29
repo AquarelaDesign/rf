@@ -27,6 +27,10 @@ Route.delete('images/:id', 'ImageController.destroy')
 Route.group(() => {
   Route.get('/status', "UsuarioController.status")
   Route.post("/buscausuarios", "UsuarioController.busca")
+
+  Route.resource('users', 'UserController')
+    .apiOnly()
+
   Route
     .resource('usuarios', 'UsuarioController')
     .validator( new Map([
