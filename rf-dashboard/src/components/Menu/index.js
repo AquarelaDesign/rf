@@ -11,9 +11,11 @@ import { FaIcon } from '../Icone'
 
 export default function Menu() {
   const history = useHistory()
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   useEffect(() => {
-    window.onbeforeunload = confirmExit
+    window.onbeforeunload = (e) => confirmExit(e)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   
   const atualizaStatus = async (userID) => {
@@ -30,7 +32,7 @@ export default function Menu() {
         const { data } = response
 
         if (response.status === 200) {
-          toast(`Usuário ${data.nome} Offline!`, { type: 'success' })
+          toast(`Usuário ${data.nome} Offline!`, { type: 'warning' })
         } else if (response.status === 400) {
           response.data.map(mensagem => {
             toast(mensagem.message, { type: 'error' })
@@ -61,19 +63,19 @@ export default function Menu() {
       })
   }
 
-  const handleExit = async () => {
-    await confirmExit()
+  const handleExit = async (e) => {
+    await confirmExit(e)
   }
 
-  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
-
-  const confirmExit = async () => {
+  const confirmExit = async (e) => {
     const userID = await localStorage.getItem('@rf/userID')
-    console.log('**** userID', userID)
-
     atualizaStatus(userID)
 
-    await sleep(1000)    
+    await sleep(1000) 
+    if (e) {  
+      delete e['returnValue']
+    }
+
     localStorage.removeItem('@rf/token')
     localStorage.removeItem('@rf/userID')
     history.push('/rf')

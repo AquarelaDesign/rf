@@ -193,7 +193,6 @@ const Board = () => {
     let delay = 5000
 
     const token = await localStorage.getItem('@rf/token')
-    console.log('**** userID', token, !token)
 
     if (!token) {
       history.push('/rf')

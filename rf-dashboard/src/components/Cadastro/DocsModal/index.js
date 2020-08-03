@@ -127,10 +127,10 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
       return
     }
 
-    if (values.carretavct === "") {
-      toast(`Informe a Data de Vencimento da Carreta!`, { type: 'error' })
-      return
-    }
+    // if (values.carretavct === "") {
+    //   toast(`Informe a Data de Vencimento da Carreta!`, { type: 'error' })
+    //   return
+    // }
 
     let newValues = {}
     for (let key in values) {
@@ -184,11 +184,10 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
               { type: 'error' })
             return
           }
+          
           setVeiculo(data)
-          if (callback) {
-            callback()
-            hide()
-          }
+          fechar()
+
         }).catch((error) => {
           if (error.response) {
             const { data } = error.response
@@ -209,7 +208,19 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
     }
   }
 
-  const required = value => (value ? undefined : '*Campo obrigatório!')
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+  const fechar = async () => {
+    await sleep(1000)
+
+    if (callback) {
+      callback()
+      hide()
+    }
+  }
+
+
+  const required = value => (value ? undefined : '* Obrigatório!')
 
   if (isShowDocs) {
     return ReactDOM.createPortal(
@@ -297,6 +308,9 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
                                 fullWidth
                                 size="small"
                                 margin="dense"
+                                inputProps={{
+                                  inputProps: { maxLength: 7 },
+                                }}
                               />
                             </Col>
                             <Col xs={4}>
@@ -407,7 +421,7 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
                                     <Col xs={12}>
                                       <Field
                                         name="carreta"
-                                        validate={required}
+                                        // validate={required}
                                         message="Informe o Número da Carreta"
                                         component={CssTextField}
                                         type="text"
@@ -424,7 +438,7 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
                                       <Field
                                         label="Vencimento"
                                         name="carretavct"
-                                        validate={required}
+                                        // validate={required}
                                         message="Informe a Data de Vencimento do Carreta"
                                         variant="outlined"
                                         type="text"

@@ -1,7 +1,6 @@
 /* eslint-disable array-callback-return */
-/* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { makeStyles } from '@material-ui/core/styles'
@@ -39,13 +38,16 @@ import { Texto } from './styles'
 import DocsModal from '../DocsModal'
 import useModalDocs from '../DocsModal/useModal'
 
-import { msgerror } from '../../../globais'
+import UserModal from '../UserModal'
+import useModalUser from '../UserModal/useModal'
+
+// import { msgerror } from '../../../globais'
 import api from '../../../services/rf'
 import { FaIcon } from '../../Icone'
 
 import cadBancos from '../../../services/json/bancos.json'
 // import cadEstados from '../../../services/json/estados.json'
-import cadTipoVeiculo from '../../../services/json/tipoveiculo.json'
+// import cadTipoVeiculo from '../../../services/json/tipoveiculo.json'
 
 import Upload from './upload'
 import DatePicker from '../../datepicker'
@@ -267,18 +269,19 @@ export default function CardUsuario({ tipo, usuarioId }) {
   const [tipoCad, setTipoCad] = useState(tipo)
   const [tipoCadVei, setTipoCadVei] = useState('')
   const [tipoCadastro, setTipoCadastro] = useState('')
-  const [flag, setFlag] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
   const [userID, setUserID] = useState(usuarioId)
   const [vgridApi, setVgridApi] = useState(gridApi)
   const [veiculos, setVeiculos] = useState([])
   const [atualizaCEP, setAtualizaCEP] = useState(false)
-  const [mostraVeiculos, setMostraVeiculos] = useState(false)
+  // const [mostraVeiculos, setMostraVeiculos] = useState(false)
   const [status, setStatus] = useState('')
-
-  // const [isOpen, setIsOpen] = useState(false)
-  const { isShowDocs, toggleDocs } = useModalDocs()
-
   const [veiculoId, setVeiculoId] = useState(0)
+  
+  const { isShowDocs, toggleDocs } = useModalDocs()
+  const { isShowUser, toggleUser } = useModalUser()
+
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   useEffect(() => {
     // toggleCep()
@@ -301,7 +304,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
       }
     } catch (error) {
       if (error.response) {
-        const { data, status } = error.response
+        const { data } = error.response
         data.map(mensagem => {
           toast(mensagem.message, { type: 'error' })
         })
@@ -312,6 +315,10 @@ export default function CardUsuario({ tipo, usuarioId }) {
         toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
     }
+    setIsMounted(true)
+
+    return () => {setIsMounted(false)}
+
   }, [userID, tipoCad, disableEdit])
 
   useEffect(() => {
@@ -428,14 +435,13 @@ export default function CardUsuario({ tipo, usuarioId }) {
     }
   }
 
-  function TipoVeiculo() {
-    let arrTipo = []
-    // eslint-disable-next-line array-callback-return
-    cadTipoVeiculo.map((item) => {
-      arrTipo.push(item.tipo)
-    })
-    return arrTipo
-  }
+  // function TipoVeiculo() {
+  //   let arrTipo = []
+  //   cadTipoVeiculo.map((item) => {
+  //     arrTipo.push(item.tipo)
+  //   })
+  //   return arrTipo
+  // }
 
   function Tipo(tipo) {
     switch (tipo) {
@@ -450,24 +456,26 @@ export default function CardUsuario({ tipo, usuarioId }) {
   function Status(status) {
     setStatus(status)
     switch (status) {
-      case 'A': return (<span style={{ color: 'green' }}><FaIcon icon='FaCircle' size={20} /></span>)
+      case 'A': return (
+        <span style={{ color: 'green' }}><FaIcon icon='FaCircle' size={20} /></span>
+        )
       // case 'I': return (<span style={{ color: 'gray' }}><FaIcon icon='FaCircle' size={20} /></span>)
       default: return (<></>)
     }
   }
 
-  function createNewRowData() {
-    var newData = {
-      placachassi: "",
-      modelo: "",
-      ano: null,
-      tipo: "CARRETA",
-      vagas: 11,
-      id: null,
-      usuario_id: userID,
-    };
-    return newData
-  }
+  // function createNewRowData() {
+  //   var newData = {
+  //     placachassi: "",
+  //     modelo: "",
+  //     ano: null,
+  //     tipo: "CARRETA",
+  //     vagas: 11,
+  //     id: null,
+  //     usuario_id: userID,
+  //   };
+  //   return newData
+  // }
 
   function getNumericCellEditor() {
     function isCharNumeric(charStr) {
@@ -537,23 +545,23 @@ export default function CardUsuario({ tipo, usuarioId }) {
     return NumericCellEditor
   }
 
-  const onBtStartEditing = (key, char, pinned, row = 0) => {
-    vgridApi.setFocusedCell(0, 'placachassi', pinned)
-    vgridApi.startEditingCell({
-      rowIndex: row,
-      colKey: 'placachassi',
-      rowPinned: pinned,
-      keyPress: key,
-      charPress: char,
-    })
-  }
+  // const onBtStartEditing = (key, char, pinned, row = 0) => {
+  //   vgridApi.setFocusedCell(0, 'placachassi', pinned)
+  //   vgridApi.startEditingCell({
+  //     rowIndex: row,
+  //     colKey: 'placachassi',
+  //     rowPinned: pinned,
+  //     keyPress: key,
+  //     charPress: char,
+  //   })
+  // }
 
-  const handleAddRow = (e) => {
-    e.preventDefault()
-    const rowDataItem = createNewRowData()
-    vgridApi.applyTransaction({ add: [rowDataItem] })
-    onBtStartEditing(null, null, null, vgridApi.getLastDisplayedRow())
-  }
+  // const handleAddRow = (e) => {
+  //   e.preventDefault()
+  //   const rowDataItem = createNewRowData()
+  //   vgridApi.applyTransaction({ add: [rowDataItem] })
+  //   onBtStartEditing(null, null, null, vgridApi.getLastDisplayedRow())
+  // }
 
   const onDocs = async (e, tipo) => {
     e.preventDefault()
@@ -575,7 +583,16 @@ export default function CardUsuario({ tipo, usuarioId }) {
     setTipoCadVei(tipo)
 
     toggleDocs()
-    setFlag(true)
+  }
+
+  const onAcesso = async (e) => {
+    e.preventDefault()
+    
+    if (!usuarioId) {
+      toast(`O registro do usuário ainda não foi criado, por favor salve o registro e tente novamente!`, { type: 'error' })
+      return
+    }
+    toggleUser()
   }
 
   const handleDeleteRow = async (props, e) => {
@@ -673,8 +690,6 @@ export default function CardUsuario({ tipo, usuarioId }) {
     },
   ]
 
-  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
-
   const onSubmit = async (values) => {
     if (atualizaCEP) {
       return
@@ -717,6 +732,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
         }
       }
     } else {
+      newValues['status'] = 'I'
       apiParams = {
         method: 'post',
         url: `/usuarios`,
@@ -776,7 +792,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
     setValue(newValue)
   }
 
-  const required = value => (value ? undefined : '*Campo obrigatório!')
+  const required = value => (value ? undefined : '* Obrigatório!')
 
   const valTipoCadastro = (value) => {
     if (value === 'O' || value === 'C') {
@@ -922,57 +938,79 @@ export default function CardUsuario({ tipo, usuarioId }) {
               </Tabs>
 
               <div className={classes.botoes}>
-                <button onClick={() => {
-                  window.setFormValue('estado', values.estado === 'B' ? ' ' : 'B')
-                }}
-                  style={{ backgroundColor: 'transparent' }}
-                >
-                  <Tooltip title={values.estado !== 'B' ? "Bloquear" : "Desbloquear"}>
-                    <span style={{
-                      alignItems: 'center',
-                      color: `${values.estado !== 'B' ? 'red' : 'green'}`,
-                      cursor: 'pointer',
-                      marginTop: '3px',
-                    }}>
-                      <FaIcon icon='Bloqueado' size={26} />
-                    </span>
-                  </Tooltip>
-                </button>
+                {usuarioId &&
+                  <>
+                    <button onClick={(e) => onAcesso(e)}
+                      style={{ backgroundColor: 'transparent' }}
+                    >
+                      <Tooltip title="Acesso">
+                        <span style={{
+                          alignItems: 'center',
+                          color: 'orange',
+                          cursor: 'pointer',
+                          marginTop: '3px',
+                        }}>
+                          <FaIcon icon='Seguranca' size={26} />
+                        </span>
+                      </Tooltip>
+                    </button>
 
-                <button onClick={() => {
-                  window.setFormValue('estado', values.estado === 'R' ? ' ' : 'R')
-                }}
-                  style={{ backgroundColor: 'transparent' }}
-                >
-                  <Tooltip title={values.estado !== 'R' ? "Recusar" : "Liberar"}>
-                    <span style={{
-                      alignItems: 'center',
-                      color: `${values.estado !== 'R' ? 'red' : 'green'}`,
-                      cursor: 'pointer',
-                      marginTop: '3px',
-                    }}>
-                      <FaIcon icon='Recusado' size={24} />
-                    </span>
-                  </Tooltip>
-                </button>
+                    <button onClick={() => {
+                      window.setFormValue('estado', values.estado === 'B' ? ' ' : 'B')
+                    }}
+                      style={{ backgroundColor: 'transparent' }}
+                    >
+                      <Tooltip title={values.estado !== 'B' ? "Bloquear acesso" : "Desbloquear acesso"}>
+                        <span style={{
+                          alignItems: 'center',
+                          color: `${values.estado !== 'B' ? 'red' : 'green'}`,
+                          cursor: 'pointer',
+                          marginTop: '3px',
+                        }}>
+                          <FaIcon icon='Bloqueado' size={26} />
+                        </span>
+                      </Tooltip>
+                    </button>
 
-                <button onClick={() => {
-                  window.setFormValue('estado', values.estado === '7' ? ' ' : '7')
-                }}
-                  style={{ backgroundColor: 'transparent' }}
-                >
-                  <Tooltip title={values.estado !== '7' ? "Suspender por 7 dias" : "Liberar"}>
-                    <span style={{
-                      alignItems: 'center',
-                      color: `${values.estado !== '7' ? 'orange' : 'green'}`,
-                      cursor: 'pointer',
-                      marginTop: '3px',
-                    }}>
-                      <FaIcon icon='Suspenso' size={24} />
-                    </span>
-                  </Tooltip>
-                </button>
+                    {tipoCadastro === 'M' && 
+                      <>
+                        <button onClick={() => {
+                          window.setFormValue('estado', values.estado === 'R' ? ' ' : 'R')
+                        }}
+                          style={{ backgroundColor: 'transparent' }}
+                        >
+                          <Tooltip title={values.estado !== 'R' ? "Recusar" : "Liberar"}>
+                            <span style={{
+                              alignItems: 'center',
+                              color: `${values.estado !== 'R' ? 'red' : 'green'}`,
+                              cursor: 'pointer',
+                              marginTop: '3px',
+                            }}>
+                              <FaIcon icon='Recusado' size={24} />
+                            </span>
+                          </Tooltip>
+                        </button>
 
+                        <button onClick={() => {
+                          window.setFormValue('estado', values.estado === '7' ? ' ' : '7')
+                        }}
+                          style={{ backgroundColor: 'transparent' }}
+                        >
+                          <Tooltip title={values.estado !== '7' ? "Suspender por 7 dias" : "Liberar"}>
+                            <span style={{
+                              alignItems: 'center',
+                              color: `${values.estado !== '7' ? 'orange' : 'green'}`,
+                              cursor: 'pointer',
+                              marginTop: '3px',
+                            }}>
+                              <FaIcon icon='Suspenso' size={24} />
+                            </span>
+                          </Tooltip>
+                        </button>
+                      </>
+                    }
+                  </>
+                }
                 <button type="submit"
                   style={{ backgroundColor: 'transparent' }}
                 >
@@ -1007,12 +1045,14 @@ export default function CardUsuario({ tipo, usuarioId }) {
                           </div>
                         )}
                       </Field>
+                      {/* Tratar o erro de componente */}
                       <div className={classes.status}>
                         {Status(values.status)}
                       </div>
                       <div className={classes.estado}>
                         {Estado(values.estado)}
                       </div>
+
                     </Col>
                     <Col xs={10}>
                       <Grid xs={12}>
@@ -1602,6 +1642,14 @@ export default function CardUsuario({ tipo, usuarioId }) {
                 tipo={tipoCadVei}
                 callback={buscaVeiculosUsuario}
               />
+
+              {usuarioId &&
+              <UserModal
+                isShowUser={isShowUser}
+                hide={toggleUser}
+                userID={usuarioId}
+              />
+              }
 
             </form>
           )

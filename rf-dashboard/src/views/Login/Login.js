@@ -46,8 +46,6 @@ const Login = ({ history }) => {
         localStorage.setItem('@rf/token', token)
         // localStorage.setItem('@rf/rememberMe', rememberMe)
         buscaUsuario(email)
-
-        history.push('/rf/home')
       })
 
     } catch (error) {
@@ -75,8 +73,18 @@ const Login = ({ history }) => {
       })
       .then(response => {
         const { data } = response
+
+        if (data[0].tipo !== 'O') {
+          toast('Sem permissão de acesso ao painel administrativo!', {type: 'error'})
+          localStorage.removeItem('@rf/email')
+          localStorage.removeItem('@rf/token')
+          return
+        }
+
         localStorage.setItem('@rf/userID', data[0].id)
         atualizaStatus(data[0].id)
+        history.push('/rf/home')
+
       }).catch((error) => {
         if (error.response) {
         } else if (error.request) {
@@ -99,7 +107,7 @@ const Login = ({ history }) => {
         const { data } = response
 
         if (response.status === 200) {
-          toast(`Usuário ${data.nome} Online!`, { type: 'success' })
+          toast(`Usuário ${data.nome} Online!`, { type: 'warning' })
         } else if (response.status === 400) {
           response.data.map(mensagem => {
             toast(mensagem.message, { type: 'error' })

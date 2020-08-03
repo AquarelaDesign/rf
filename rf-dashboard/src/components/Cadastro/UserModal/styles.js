@@ -13,13 +13,13 @@ export const Blank = styled.div`
 export const Botao = styled.button`
   border: 0;
   border-radius: 3px;
-  width: ${props => props.width ? `${props.width}` : '20px'};
-  height: ${props => props.height ? `${props.height}` : '20px'};
+  width: 20px;
+  height: 20px;
   font-size: 14px;
   font-weight: bold;
   font-style: italic;
-  background: ${props => props.bg ? `${props.bg}` : '#FFFFFF'};
-  color: ${props => props.color ? `${props.color}` : '#225378'};
+  background: #FFFFFF;
+  color: #225378;
   cursor: pointer;
   margin-left: 10px;
   padding: 0px;
@@ -28,7 +28,7 @@ export const Botao = styled.button`
   &:hover {
     /* background: #225378;
     color: #FFFFFF; */
-    background: ${props => props.bgh ? `${props.bgh}` : '#FFFFFF'};
+    background: #FFFFFF;
     /* color: #0031FF; */
     text-shadow: #B5B5B5 2px 3px 3px;
   }
@@ -48,7 +48,6 @@ export const BoxTitulo = styled.div`
   font-size: ${props => props.size}px;
   font-weight: bold;
   margin-bottom: ${props => props.mb}px;
-  margin-top: ${props => props.mt}px;
 `;
 
 export const Container = styled.div`
@@ -99,7 +98,7 @@ export const Container = styled.div`
   `}
 `;
 
-export const Grid = styled.div`
+export const GridModal = styled.div`
   display: flex;
   flex-direction: row;
   order: 3;
@@ -112,13 +111,13 @@ export const Grid = styled.div`
 `;
 
 export const RLeft = styled.div`
-  width: 90%;
+  width: 93%;
   float: left;
 `;
 
 export const RRight = styled.div`
   display: flex;
-  width: 10%;
+  width: 7%;
   float: right;
   align-items: flex-end;
   align-self: flex-end;

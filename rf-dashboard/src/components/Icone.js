@@ -20,7 +20,7 @@ import {
 } from 'react-icons/fa'
 
 import { GoChecklist } from 'react-icons/go'
-import { GrDeliver, GrUpdate, GrHostMaintenance } from 'react-icons/gr'
+import { GrDeliver, GrUpdate, GrHostMaintenance, GrSecure } from 'react-icons/gr'
 import { GiExitDoor, GiStopwatch } from 'react-icons/gi'
 import { RiSearchLine } from 'react-icons/ri'
 import { FcPlus, FcCancel, FcDocument, FcInTransit } from 'react-icons/fc'
@@ -47,7 +47,7 @@ export const FaIcon = ({ icon, size, height, width }) => {
     case 'FaFilter': return <FaFilter size={size} style={{ marginLeft: 0, marginRight: 5 }} />
     case 'GiExitDoor': return <GiExitDoor size={size} style={{ marginLeft: 0, marginRight: 10 }} />
     case 'RiSearchLine': return <RiSearchLine size={size} style={{ marginTop: '1px' }} />
-    case 'FaRegEdit': return <FaRegEdit size={size} style={{ color: 'red', marginTop: '1px' }} />
+    case 'FaRegEdit': return <FaRegEdit size={size} style={{ color: 'blue', marginTop: '1px' }} />
     case 'GrUpdate': return <GrUpdate size={size} style={{ marginTop: '1px' }} />
     case 'FcPlus': return <FcPlus size={size} style={{ marginTop: '1px' }} />
     case 'FaTruck1': return <FaTruck size={size} style={{ marginTop: 10 }} />
@@ -64,9 +64,10 @@ export const FaIcon = ({ icon, size, height, width }) => {
     case 'blank': return <Image src={blank} alt="" height={size} width={size} />
     case 'supplier': return <Image src={supplier} alt="" style={{ height: 20, width: 20 }} />
     case 'Documentos': return <FcDocument size={size} />
-    case 'Deletar': return <MdDeleteForever size={size} />
+    case 'Deletar': return <MdDeleteForever size={size} style={{ color: '#FF0000' }} />
     case 'Add': return <MdAddCircle size={size} />
     case 'Save': return <FaSave size={size} />
+    case 'Seguranca': return <GrSecure size={size} />
     case 'Bloqueado': return <MdBlock size={size} />
     case 'Recusado': return <FiAlertOctagon size={size} />
     case 'Suspenso': return <FiAlertTriangle size={size} />

@@ -1,3 +1,4 @@
+/* eslint-disable array-callback-return */
 import React, { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom'
 
@@ -21,6 +22,9 @@ import api from '../../../services/rf'
 
 import UsuarioModal from '../UsuarioModal'
 import useModal from '../UsuarioModal/useModal'
+
+import ConfirmaModal from '../../ConfirmaModal'
+import useModalConfirma from '../../ConfirmaModal/useModal'
 
 import PartialMatchFilter from './PartialMatchFilter'
 import StatusFilter from './StatusFilter'
@@ -70,13 +74,21 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
   const [mensagem, setMensagem] = useState('')
   const [tipo, setTipo] = useState('')
   const [usuarioId, setUsuarioId] = useState(null)
+  const [excluiId, setExcluiId] = useState(null)
+  const [nomeExclui, setNomeExclui] = useState(null)
   const { isShowUsuario, toggleUsuario } = useModal()
+  const { isShowConfirma, toggleConfirma } = useModalConfirma()
+
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   useEffect(() => {
     buscaUsuarios()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const buscaUsuarios = async () => {
+    await sleep(1000)
+    
     await api.get(`/usuarios`, {})
       .then(response => {
         if (response.status !== 200) {
@@ -311,8 +323,93 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
       .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
   }
 
+  const excluiUsuario = async (userID) => {
+    
+    if (usuarios.veiculos) {
+      if (usuarios.veiculos.length > 0) {
+        usuarios.veiculos.map(veiculo => {
+          excluiVeiculo(veiculo.id)
+        })
+      }
+    }
+
+    await api.delete(`/usuarios/${userID}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
+      }
+    ).then(response => {
+      if (response.status !== 200) {
+        toast(`Ocorreu um erro na exclusão do usuário!`,
+          { type: 'error' })
+        return
+      }
+      setExcluiId(null)
+      setNomeExclui(null)
+      buscaUsuarios()
+    }).catch((error) => {
+      if (error.response) {
+        const { data } = error.response
+        try {
+          // eslint-disable-next-line array-callback-return
+          data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
+        }
+        catch (e) {
+          console.log('*** data', data)
+        }
+      } else if (error.request) {
+        toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+      } else {
+        toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+      }
+    })
+  }
+
+  const excluiVeiculo = async (veiculoID) => {
+    api.delete(`/veiculosm/${veiculoID}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
+      }
+    ).then(response => {
+      if (response.status === 200) {
+        // toast('Veículo removido com sucesso!', { type: 'success' })
+      } else {
+        toast(response.data[0].message, { type: 'error' })
+      }
+    }).catch((error) => {
+      if (error.response) {
+        const { data } = error.response
+        try {
+          data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
+        }
+        catch (e) {
+          console.log('*** data', data)
+        }
+      } else if (error.request) {
+        toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+      } else {
+        toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+      }
+    })
+  }
+
+
   const onButtonClick = async (tipo, e) => {
     e.preventDefault()
+
+    if (!isShowConfirma) {
+      setExcluiId(null)
+      setNomeExclui(null)
+    }
 
     setTipo(tipo)
 
@@ -321,28 +418,32 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
     // const selectedDataStringPresentation = selectedData.map( node => node.make + ' ' + node.model).join(', ')
     // alert(`Selected nodes: ${selectedDataStringPresentation}`)
 
-    if (selectedNodes.length === 0 && tipo === 'E') {
-      toast('Você deve selecionar um registro para editar!', { type: 'error' })
+    if (selectedNodes.length === 0 && (tipo === 'E' || tipo === 'X')) {
+      if (tipo === 'E') {
+        toast('Você deve selecionar um registro para editar!', { type: 'error' })
+      } else {
+        toast('Você deve selecionar um registro para excluir!', { type: 'error' })
+      }
       return
     }
 
-    // if (tipo === 'E') {
-    //   setUsuarioId(selectedNodes[0].data.id)
-    // } else {
-    //   setUsuarioId(null)
-    // }
-
     switch (tipo) {
-      case 'E': setUsuarioId(selectedNodes[0].data.id); break;
+      case 'E': 
+        setUsuarioId(selectedNodes[0].data.id)
+        break
+      case 'X': 
+        setExcluiId(selectedNodes[0].data.id)
+        setNomeExclui(selectedNodes[0].data.nome)
+        toggleConfirma()
+        break
       case 'A': 
-        buscaUsuarios(); 
+        buscaUsuarios() 
         return
       default: setUsuarioId(null)
     }
-
-
-    toggleUsuario()
-
+    if (tipo !== 'X'){
+      toggleUsuario()
+    }
   }
 
   if (isShowing) {
@@ -364,7 +465,14 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
                   </RLeft>
                   <RRight>
                     <Tooltip title="Atualizar Lista">
-                      <Botao onClick={(e) => onButtonClick('A', e)}><FaIcon icon='GrUpdate' size={18} /> </Botao>
+                      <Botao onClick={(e) => onButtonClick('A', e)}>
+                          <FaIcon icon='GrUpdate' size={18} />
+                      </Botao>
+                    </Tooltip>
+                    <Tooltip title="Excluir">
+                      <Botao onClick={(e) => onButtonClick('X', e)}>
+                        <FaIcon icon='Deletar' size={22} />
+                      </Botao>
                     </Tooltip>
                     <Tooltip title="Editar">
                       <Botao onClick={(e) => onButtonClick('E', e)}><FaIcon icon='FaRegEdit' size={20} /> </Botao>
@@ -412,11 +520,20 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
                 </Texto>
               </BoxTitulo>
             </Container>
+            
             <UsuarioModal
               isShowUsuario={isShowUsuario}
               hide={toggleUsuario}
               tipo={tipo}
               usuarioId={usuarioId}
+            />
+
+            <ConfirmaModal
+              isShowConfirma={isShowConfirma}
+              hide={toggleConfirma}
+              texto='Confirma a Exclusão do Usuário?'
+              texto1={nomeExclui}
+              callback={() => excluiUsuario(excluiId)}
             />
 
           </div>

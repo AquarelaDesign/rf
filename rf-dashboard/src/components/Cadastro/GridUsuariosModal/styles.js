@@ -53,13 +53,13 @@ export const Label = styled.span`
 `;
 
 export const RLeft = styled.div`
-  width: 88%;
+  width: 85%;
   float: left;
 `;
 
 export const RRight = styled.div`
   display: flex;
-  width: 12%;
+  width: 15%;
   float: right;
   align-items: flex-end;
   align-self: flex-end;

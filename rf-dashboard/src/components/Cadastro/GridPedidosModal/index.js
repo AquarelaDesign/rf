@@ -20,8 +20,8 @@ import { FaIcon } from '../../Icone'
 // import { msgerror } from '../../../globais'
 import api from '../../../services/rf'
 
-// import PedidoModal from '../PedidoModal'
-// import useModal from '../PedidoModal/useModal'
+import PedidoModal from '../PedidoModal'
+import useModal from '../PedidoModal/useModal'
 
 // import DatePicker from '../../datepicker'
 import PartialMatchFilter from './PartialMatchFilter'
@@ -42,7 +42,9 @@ const GridPedidosModal = ({ isShowing, hide }) => {
   const [pedidos, setPedidos] = useState(rowData)
   const [vgridApi, setVgridApi] = useState(gridApi)
   const [usuarios, setUsuarios] = useState([])
-  // const [pedidoId, setPedidoId] = useState([])
+  const [tipo, setTipo] = useState(0)
+  const [pedidoId, setPedidoId] = useState([])
+  const { isShowPedido, togglePedido } = useModal()
 
   useEffect(() => {
     buscaUsuarios()
@@ -209,8 +211,6 @@ const GridPedidosModal = ({ isShowing, hide }) => {
   const onButtonClick = async (tipo, e) => {
     e.preventDefault()
 
-    // setTipo(tipo)
-
     const selectedNodes = vgridApi.getSelectedRows()
     // const selectedData = selectedNodes.map( node => node.data )
     // const selectedDataStringPresentation = selectedData.map( node => node.make + ' ' + node.model).join(', ')
@@ -219,25 +219,19 @@ const GridPedidosModal = ({ isShowing, hide }) => {
       return
     }
 
-    alert(`Pedido: ${selectedNodes[0].id}`)
-    return
+    setTipo(tipo)
 
-    // if (tipo === 'E') {
-    //   setPedidoId(selectedNodes[0].data.id)
-    // } else {
-    //   setPedidoId(null)
-    // }
-    /*
+    // alert(`Pedido: ${selectedNodes[0].id}`)
+    // return
+
     switch (tipo) {
-      case 'E': setPedidoId(selectedNodes[0].data.id); break;
+      case 'E': setPedidoId(selectedNodes[0].id); break;
       case 'A': 
         buscaPedidos(); 
         return
       default: setPedidoId(null)
     }
-    */
-    // togglePedido()
-
+    togglePedido()
   }
 
   if (isShowing) {
@@ -308,6 +302,12 @@ const GridPedidosModal = ({ isShowing, hide }) => {
                 </Texto>
               </BoxTitulo>
             </Container>
+            <PedidoModal
+              isShowPedido={isShowPedido}
+              hide={togglePedido}
+              tipo={tipo}
+              pedidoId={pedidoId}
+            />
           </div>
         </div>
       </React.Fragment>
