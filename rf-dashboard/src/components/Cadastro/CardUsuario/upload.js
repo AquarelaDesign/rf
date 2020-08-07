@@ -46,6 +46,7 @@ function Dropzone(props) {
     accept: "image/*",
     multiple: false,
     noDrag: true,
+    disabled: props.disabled,
     onDrop: acceptedFiles => {
       const files = acceptedFiles.map(file => {
         setPrev(URL.createObjectURL(file))

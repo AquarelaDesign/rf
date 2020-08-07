@@ -72,7 +72,7 @@ export default function datePicker(props) {
 
   const handleChange = (event) => {
     const { target: { value } } = event
-    // console.log('*** datapicker value', value, props)
+    console.log('*** datapicker value', value, props)
     props.input.onChange(value)
     setData(value)
   }
@@ -89,6 +89,7 @@ export default function datePicker(props) {
         variant="outlined"
         size='small'
         defaultValue={data}
+        disabled={props.disabled}
         // value={data}
         className={classes.textField}
         InputLabelProps={{
@@ -97,6 +98,7 @@ export default function datePicker(props) {
         inputProps={{
           value: data,
           validate: props.input.validate,
+          disabled: props.disabled,
         }}
       />
     )

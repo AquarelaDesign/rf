@@ -71,6 +71,7 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
   const classes = useStyles()
 
   const [veiculo, setVeiculo] = useState([])
+  const [disableEdit, setDisableEdit] = useState(false)
 
   useEffect(() => {
     const buscaVeiculo = async () => {
@@ -99,9 +100,11 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
         })
     }
 
-    if (veiculoID && veiculoID > 0 && tipo !== 'N') {
+    console.log('**** DocsModal', veiculoID, tipo)
+    if (veiculoID && veiculoID > 0 && tipo === 'E') {
+      setDisableEdit(false)
       buscaVeiculo()
-    } else {
+    } else if (tipo === 'N') {
       var newData = {
         placachassi: "",
         modelo: "",
@@ -117,6 +120,8 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
         carretavct: "",
       }
       setVeiculo(newData)
+    } else {
+      setDisableEdit(true)
     }
 
   }, [veiculoID, userID, tipo])
@@ -262,20 +267,22 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
                     <form onSubmit={handleSubmit} noValidate>
 
                       <div className={classes.botoes}>
-                        <button type="submit"
-                          style={{ backgroundColor: 'transparent' }}
-                        >
-                          <Tooltip title="Salvar">
-                            <span style={{
-                              alignItems: 'center',
-                              color: '#0000FF',
-                              cursor: 'pointer',
-                              marginTop: '3px',
-                            }}>
-                              <FaIcon icon='Save' size={20} />
-                            </span>
-                          </Tooltip>
-                        </button>
+                        {!disableEdit &&
+                          <button type="submit"
+                            style={{ backgroundColor: 'transparent' }}
+                          >
+                            <Tooltip title="Salvar">
+                              <span style={{
+                                alignItems: 'center',
+                                color: '#0000FF',
+                                cursor: 'pointer',
+                                marginTop: '3px',
+                              }}>
+                                <FaIcon icon='Save' size={20} />
+                              </span>
+                            </Tooltip>
+                          </button>
+                        }
 
                         <button type="button"
                           onClick={hide}
@@ -302,6 +309,7 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
                                 name="placachassi"
                                 component={CssTextField}
                                 validate={required}
+                                disabled={disableEdit}
                                 type="text"
                                 label="Placa/Chassi"
                                 variant="outlined"
@@ -318,6 +326,7 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
                                 name="tipo"
                                 component={CssTextField}
                                 validate={required}
+                                disabled={disableEdit}
                                 type="select"
                                 label="Tipo"
                                 variant="outlined"
@@ -336,6 +345,7 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
                                 name="vagas"
                                 component={CssTextField}
                                 validate={required}
+                                disabled={disableEdit}
                                 type="text"
                                 label="Vagas"
                                 variant="outlined"
@@ -354,7 +364,8 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
                                       <Field
                                         name="cavaloimg"
                                         userID={userID}
-                                      >
+                                        disabled={disableEdit}
+                                        >
                                         {props => (
                                           <div>
                                             <Upload {...props} />
@@ -368,6 +379,7 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
                                       <Field
                                         name="cavalo"
                                         validate={required}
+                                        disabled={disableEdit}
                                         message="Informe o Número da Cavalo"
                                         component={CssTextField}
                                         type="text"
@@ -385,6 +397,7 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
                                         label="Vencimento"
                                         name="cavalovct"
                                         validate={required}
+                                        disabled={disableEdit}
                                         message="Informe a Data de Vencimento do Cavalo"
                                         variant="outlined"
                                         type="text"
@@ -408,7 +421,8 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
                                       <Field
                                         name="carretaimg"
                                         userID={userID}
-                                      >
+                                        disabled={disableEdit}
+                                        >
                                         {props => (
                                           <div>
                                             <Upload {...props} />
@@ -422,6 +436,7 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
                                       <Field
                                         name="carreta"
                                         // validate={required}
+                                        disabled={disableEdit}
                                         message="Informe o Número da Carreta"
                                         component={CssTextField}
                                         type="text"
@@ -439,6 +454,7 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
                                         label="Vencimento"
                                         name="carretavct"
                                         // validate={required}
+                                        disabled={disableEdit}
                                         message="Informe a Data de Vencimento do Carreta"
                                         variant="outlined"
                                         type="text"

@@ -108,9 +108,9 @@ const UserModal = ({ isShowUser, hide, userID }) => {
             email: data.email,
             password: "",
             password1: "",
-            usuario_id: userID
+            usuario_id: data.user_id ? data.user_id : userID,
           })
-          setNovo(false)
+          setNovo(data.user_id ? false : true)
 
         }).catch((error) => {
           if (error.response) {
@@ -147,7 +147,7 @@ const UserModal = ({ isShowUser, hide, userID }) => {
       }
     } else {
       apiParams = {
-        url: `/users/${values.id}`,
+        url: `/users/${userID}`,
         method: 'put',
         data: values
       }
@@ -170,6 +170,7 @@ const UserModal = ({ isShowUser, hide, userID }) => {
         } 
         if (novo) {
           toast(`Acesso Liberado!`, {type: 'success'})
+          atualizaUser(response.data.id)
         } else {
           toast(`Dados Atualizados!`, {type: 'success'})
         }
@@ -193,6 +194,38 @@ const UserModal = ({ isShowUser, hide, userID }) => {
         }
       })
     }
+  }
+
+  const atualizaUser = async (usuario_id) => {
+    if (usuario_id) {
+      await api
+        .put(`/usuarios/${userID}`, {
+          user_id: usuario_id,
+        })
+        .then(response => {
+          if (response.status !== 200) {
+            toast(`Erro ao associar usuário!`, {type: 'error'})
+          } 
+        })
+        .catch((error) => {
+          if (error.response) {
+            const { data } = error.response
+            try {
+              data.map(mensagem => {
+                toast(mensagem.message, { type: 'error' })
+              })
+            }
+            catch (e) {
+              console.log('*** data', data)
+            }
+          } else if (error.request) {
+            toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          } else {
+            toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          }
+        })
+    }
+
   }
 
   const fechar = async () => {

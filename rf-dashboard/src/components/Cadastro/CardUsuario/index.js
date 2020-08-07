@@ -41,6 +41,9 @@ import useModalDocs from '../DocsModal/useModal'
 import UserModal from '../UserModal'
 import useModalUser from '../UserModal/useModal'
 
+import ConfirmaModal from '../../ConfirmaModal'
+import useModalConfirma from '../../ConfirmaModal/useModal'
+
 // import { msgerror } from '../../../globais'
 import api from '../../../services/rf'
 import { FaIcon } from '../../Icone'
@@ -259,9 +262,7 @@ formatCep.propTypes = {
 export default function CardUsuario({ tipo, usuarioId }) {
   const classes = useStyles()
 
-  const [initialValues, setInitialValues] = useState({
-    // cpfcnpj: '',
-  })
+  const [initialValues, setInitialValues] = useState({})
   const [value, setValue] = useState(0)
   const [disableEdit, setDisableEdit] = useState(false)
   const [ultimoCep, setUltimoCep] = useState('')
@@ -269,7 +270,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
   const [tipoCad, setTipoCad] = useState(tipo)
   const [tipoCadVei, setTipoCadVei] = useState('')
   const [tipoCadastro, setTipoCadastro] = useState('')
-  const [isMounted, setIsMounted] = useState(false)
+  // const [isMounted, setIsMounted] = useState(false)
   const [userID, setUserID] = useState(usuarioId)
   const [vgridApi, setVgridApi] = useState(gridApi)
   const [veiculos, setVeiculos] = useState([])
@@ -277,9 +278,15 @@ export default function CardUsuario({ tipo, usuarioId }) {
   // const [mostraVeiculos, setMostraVeiculos] = useState(false)
   const [status, setStatus] = useState('')
   const [veiculoId, setVeiculoId] = useState(0)
+
+  const [excluiId, setExcluiId] = useState(null)
+  const [placaExclui, setPlacaExclui] = useState(null)
+  const [propsE, setPropsE] = useState(null)
+  const [sData, setSData] = useState(null)
   
   const { isShowDocs, toggleDocs } = useModalDocs()
   const { isShowUser, toggleUser } = useModalUser()
+  const { isShowConfirma, toggleConfirma } = useModalConfirma()
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -315,9 +322,9 @@ export default function CardUsuario({ tipo, usuarioId }) {
         toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
     }
-    setIsMounted(true)
+    // setIsMounted(true)
 
-    return () => {setIsMounted(false)}
+    // return () => {setIsMounted(false)}
 
   }, [userID, tipoCad, disableEdit])
 
@@ -580,7 +587,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
       }
       setVeiculoId(selectedData[0].id)
     }
-    setTipoCadVei(tipo)
+    setTipoCadVei(disableEdit ? 'D' : tipo)
 
     toggleDocs()
   }
@@ -599,42 +606,63 @@ export default function CardUsuario({ tipo, usuarioId }) {
     e.preventDefault()
     const selectedData = props.api.getSelectedRows()
 
+    setExcluiId(selectedData[0].id)
+    setPlacaExclui(selectedData[0].placachassi)
+    setPropsE(props)
+    setSData(selectedData)
     await sleep(300)
-    api.delete(`/veiculosm/${selectedData[0].id}`,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        }
-      }
-    ).then(response => {
-      if (response.status === 200) {
-        toast('Veículo removido com sucesso!',
-          { type: 'success' })
-        props.api.applyTransaction({ remove: selectedData })
-      } else {
-        toast(response.data[0].message,
-          { type: 'error' })
-      }
-    }).catch((error) => {
-      if (error.response) {
-        const { data } = error.response
-        try {
-          data.map(mensagem => {
-            toast(mensagem.message, { type: 'error' })
-          })
-        }
-        catch (e) {
-          console.log('*** data', data)
-        }
-      } else if (error.request) {
-        console.error('*** bu-1.2', error)
-        toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
-      } else {
-        toast(`Ocorreu um erro no processamento!`, { type: 'error' })
-      }
-    })
+    toggleConfirma()
+  }
 
+  const excluiVeiculo = async () => {
+    if (excluiId) {
+      api.delete(`/veiculosm/${excluiId}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          }
+        }
+      ).then(response => {
+        if (response.status === 200) {
+          toast('Veículo removido com sucesso!',
+            { type: 'success' })
+          propsE.api.applyTransaction({ remove: sData })
+            
+        } else {
+          toast(response.data[0].message,
+            { type: 'error' })
+        }
+
+        setExcluiId(null)
+        setPlacaExclui(null)
+        setPropsE(null)
+        setSData(null)
+      
+      }).catch((error) => {
+        setExcluiId(null)
+        setPlacaExclui(null)
+        setPropsE(null)
+        setSData(null)
+
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('*** data', data)
+          }
+        } else if (error.request) {
+          console.error('*** bu-1.2', error)
+          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        } else {
+          toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        }
+      })
+    }
   }
 
   const columnDefs = [
@@ -672,7 +700,8 @@ export default function CardUsuario({ tipo, usuarioId }) {
       cellRendererFramework: (props) => {
         return (
           <button onClick={(e) => handleDeleteRow(props, e)}
-            style={{ backgroundColor: 'transparent' }}
+          disabled={disableEdit}
+          style={{ backgroundColor: 'transparent' }}
           >
             <Tooltip title="Excluir veículo">
               <span style={{
@@ -937,95 +966,99 @@ export default function CardUsuario({ tipo, usuarioId }) {
 
               </Tabs>
 
-              <div className={classes.botoes}>
-                {usuarioId &&
-                  <>
-                    <button onClick={(e) => onAcesso(e)}
-                      style={{ backgroundColor: 'transparent' }}
-                    >
-                      <Tooltip title="Acesso">
-                        <span style={{
-                          alignItems: 'center',
-                          color: 'orange',
-                          cursor: 'pointer',
-                          marginTop: '3px',
-                        }}>
-                          <FaIcon icon='Seguranca' size={26} />
-                        </span>
-                      </Tooltip>
-                    </button>
+              {!disableEdit &&
+                <div className={classes.botoes}>
+                  {usuarioId &&
+                    <>
+                      <button onClick={(e) => onAcesso(e)}
+                        style={{ backgroundColor: 'transparent' }}
+                      >
+                        <Tooltip title="Acesso">
+                          <span style={{
+                            alignItems: 'center',
+                            color: 'orange',
+                            cursor: 'pointer',
+                            marginTop: '3px',
+                          }}>
+                            <FaIcon icon='Seguranca' size={26} />
+                          </span>
+                        </Tooltip>
+                      </button>
 
-                    <button onClick={() => {
-                      window.setFormValue('estado', values.estado === 'B' ? ' ' : 'B')
-                    }}
-                      style={{ backgroundColor: 'transparent' }}
-                    >
-                      <Tooltip title={values.estado !== 'B' ? "Bloquear acesso" : "Desbloquear acesso"}>
-                        <span style={{
-                          alignItems: 'center',
-                          color: `${values.estado !== 'B' ? 'red' : 'green'}`,
-                          cursor: 'pointer',
-                          marginTop: '3px',
-                        }}>
-                          <FaIcon icon='Bloqueado' size={26} />
-                        </span>
-                      </Tooltip>
-                    </button>
+                      <button onClick={() => {
+                        window.setFormValue('estado', values.estado === 'B' ? ' ' : 'B')
+                      }}
+                        style={{ backgroundColor: 'transparent' }}
+                      >
+                        <Tooltip title={values.estado !== 'B' ? "Bloquear acesso" : "Desbloquear acesso"}>
+                          <span style={{
+                            alignItems: 'center',
+                            color: `${values.estado !== 'B' ? 'red' : 'green'}`,
+                            cursor: 'pointer',
+                            marginTop: '3px',
+                          }}>
+                            <FaIcon icon='Bloqueado' size={26} />
+                          </span>
+                        </Tooltip>
+                      </button>
 
-                    {tipoCadastro === 'M' && 
-                      <>
-                        <button onClick={() => {
-                          window.setFormValue('estado', values.estado === 'R' ? ' ' : 'R')
-                        }}
-                          style={{ backgroundColor: 'transparent' }}
-                        >
-                          <Tooltip title={values.estado !== 'R' ? "Recusar" : "Liberar"}>
-                            <span style={{
-                              alignItems: 'center',
-                              color: `${values.estado !== 'R' ? 'red' : 'green'}`,
-                              cursor: 'pointer',
-                              marginTop: '3px',
-                            }}>
-                              <FaIcon icon='Recusado' size={24} />
-                            </span>
-                          </Tooltip>
-                        </button>
+                      {tipoCadastro === 'M' && 
+                        <>
+                          <button onClick={() => {
+                            window.setFormValue('estado', values.estado === 'R' ? ' ' : 'R')
+                          }}
+                            style={{ backgroundColor: 'transparent' }}
+                          >
+                            <Tooltip title={values.estado !== 'R' ? "Recusar" : "Liberar"}>
+                              <span style={{
+                                alignItems: 'center',
+                                color: `${values.estado !== 'R' ? 'red' : 'green'}`,
+                                cursor: 'pointer',
+                                marginTop: '3px',
+                              }}>
+                                <FaIcon icon='Recusado' size={24} />
+                              </span>
+                            </Tooltip>
+                          </button>
 
-                        <button onClick={() => {
-                          window.setFormValue('estado', values.estado === '7' ? ' ' : '7')
-                        }}
-                          style={{ backgroundColor: 'transparent' }}
-                        >
-                          <Tooltip title={values.estado !== '7' ? "Suspender por 7 dias" : "Liberar"}>
-                            <span style={{
-                              alignItems: 'center',
-                              color: `${values.estado !== '7' ? 'orange' : 'green'}`,
-                              cursor: 'pointer',
-                              marginTop: '3px',
-                            }}>
-                              <FaIcon icon='Suspenso' size={24} />
-                            </span>
-                          </Tooltip>
-                        </button>
-                      </>
-                    }
-                  </>
-                }
-                <button type="submit"
-                  style={{ backgroundColor: 'transparent' }}
-                >
-                  <Tooltip title="Salvar">
-                    <span style={{
-                      alignItems: 'center',
-                      color: '#0000FF',
-                      cursor: 'pointer',
-                      marginTop: '3px',
-                    }}>
-                      <FaIcon icon='Save' size={24} />
-                    </span>
-                  </Tooltip>
-                </button>
-              </div>
+                          <button onClick={() => {
+                            window.setFormValue('estado', values.estado === '7' ? ' ' : '7')
+                          }}
+                            style={{ backgroundColor: 'transparent' }}
+                          >
+                            <Tooltip title={values.estado !== '7' ? "Suspender por 7 dias" : "Liberar"}>
+                              <span style={{
+                                alignItems: 'center',
+                                color: `${values.estado !== '7' ? 'orange' : 'green'}`,
+                                cursor: 'pointer',
+                                marginTop: '3px',
+                              }}>
+                                <FaIcon icon='Suspenso' size={24} />
+                              </span>
+                            </Tooltip>
+                          </button>
+                        </>
+                      }
+                    </>
+                  }
+
+                  <button type="submit"
+                    style={{ backgroundColor: 'transparent' }}
+                  >
+                    <Tooltip title="Salvar">
+                      <span style={{
+                        alignItems: 'center',
+                        color: '#0000FF',
+                        cursor: 'pointer',
+                        marginTop: '3px',
+                      }}>
+                        <FaIcon icon='Save' size={24} />
+                      </span>
+                    </Tooltip>
+                  </button>
+                  
+                </div>
+              }
 
               <TabPanel
                 value={value}
@@ -1038,6 +1071,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                       <Field
                         name="foto"
                         userID={userID}
+                        disabled={disableEdit}
                       >
                         {props => (
                           <div>
@@ -1490,20 +1524,22 @@ export default function CardUsuario({ tipo, usuarioId }) {
                             </Tooltip>
                           </button>
 
-                          <button onClick={(e) => onDocs(e, 'N')}
-                            style={{ backgroundColor: 'transparent' }}
-                          >
-                            <Tooltip title="Adicionar um novo veículo">
-                              <span style={{
-                                alignItems: 'center',
-                                color: '#31C417',
-                                cursor: 'pointer',
-                                marginTop: '3px',
-                              }}>
-                                <FaIcon icon='Add' size={30} />
-                              </span>
-                            </Tooltip>
-                          </button>
+                          {!disableEdit &&
+                            <button onClick={(e) => onDocs(e, 'N')}
+                              style={{ backgroundColor: 'transparent' }}
+                            >
+                              <Tooltip title="Adicionar um novo veículo">
+                                <span style={{
+                                  alignItems: 'center',
+                                  color: '#31C417',
+                                  cursor: 'pointer',
+                                  marginTop: '3px',
+                                }}>
+                                  <FaIcon icon='Add' size={30} />
+                                </span>
+                              </Tooltip>
+                            </button>
+                          }
                         </div>
                       </Col>
                     </Row>
@@ -1525,7 +1561,8 @@ export default function CardUsuario({ tipo, usuarioId }) {
                                 <Field
                                   name="habilitacaoimg"
                                   userID={userID}
-                                >
+                                  disabled={disableEdit}
+                                  >
                                   {props => (
                                     <div>
                                       <Upload {...props} />
@@ -1534,6 +1571,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                                 </Field>
                                 <Field
                                   name="habilitacao"
+                                  disabled={disableEdit}
                                   validate={required}
                                   message="Informe o Número da CNH"
                                   component={CssTextField}
@@ -1548,6 +1586,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                                   label="Vencimento"
                                   name="habilitacaovct"
                                   // validate={required}
+                                  disabled={disableEdit}
                                   message="Informe a Data de Vencimento da CNH"
                                   variant="outlined"
                                   type="text"
@@ -1565,6 +1604,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                                 <Field
                                   name="ANTTimg"
                                   userID={userID}
+                                  disabled={disableEdit}
                                 >
                                   {props => (
                                     <div>
@@ -1575,6 +1615,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                                 <Field
                                   name="ANTT"
                                   validate={required}
+                                  disabled={disableEdit}
                                   message="Informe o Número da ANTT"
                                   component={CssTextField}
                                   type="text"
@@ -1588,6 +1629,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                                   label="Vencimento"
                                   name="ANTTvct"
                                   // validate={required}
+                                  disabled={disableEdit}
                                   message="Informe a Data de Vencimento da ANTT"
                                   variant="outlined"
                                   type="text"
@@ -1619,6 +1661,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                             rowData={veiculos}
                             singleClickEdit={true}
                             stopEditingWhenGridLosesFocus={true}
+                            suppressNavigable={disableEdit}
                             // editType='fullRow'
                             components={{ numericCellEditor: getNumericCellEditor() }}
                             tooltipShowDelay={0}
@@ -1631,6 +1674,15 @@ export default function CardUsuario({ tipo, usuarioId }) {
                       </Col>
                     </Row>
                   </Grid>
+
+                  <ConfirmaModal
+                    isShowConfirma={isShowConfirma}
+                    hide={toggleConfirma}
+                    texto='Confirma a Exclusão do Veículo?'
+                    texto1={placaExclui}
+                    callback={() => excluiVeiculo(excluiId)}
+                  />
+
                 </TabPanel>
                 : null}
 

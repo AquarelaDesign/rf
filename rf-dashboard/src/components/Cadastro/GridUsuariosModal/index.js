@@ -84,7 +84,7 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
   useEffect(() => {
     buscaUsuarios()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [isShowing])
 
   const buscaUsuarios = async () => {
     await sleep(1000)
@@ -317,6 +317,13 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
   //   }
   // }
 
+  const onRowDoubleClicked = (params) => {
+    console.log('**** onRowDoubleClicked', params)
+    setTipo('V')
+    setUsuarioId(params.data.id)
+    toggleUsuario()
+  }
+
   function formatNumber(number) {
     return Math.floor(number)
       .toString()
@@ -508,6 +515,7 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
                     paginationPageSize={50}
                     localeText={agPtBr}
                     // onCellClicked={onCellClicked}
+                    onRowDoubleClicked={onRowDoubleClicked}
                   >
                   </AgGridReact>
                 </div>
