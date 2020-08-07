@@ -7,6 +7,8 @@ import { Container, BoxTitulo, Item, Grid, Texto, Box } from './styles'
 
 import moment from "moment"
 
+// const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
 export default function CardTransportes({ data, index }) {
   const ref = useRef()
   // const { removeM } = useContext(BoardContext)
@@ -25,56 +27,73 @@ export default function CardTransportes({ data, index }) {
   // const dataRotas = loadRotas()
 
   useEffect(() => {
-    const carrega =async () => {
-      await setPedido(data)
-      await setVeiculos(data.veiculos)
-      await setRotas(data.rotas)
+    const carrega = async () => {
+      setPedido(data)
+      setVeiculos(data.veiculos)
+      setRotas(data.rotas)
 
       const resColeta = await BuscaRota(data.localcoleta)
-      await setLocalColeta(resColeta[0])
+      
+      console.log('**** resColeta', resColeta)
+      setLocalColeta(resColeta[0])
 
       const resEntrega = await BuscaRota(data.localentrega)
-      await setLocalEntrega(resEntrega[0])
 
-      if (localColeta) {
-        let _rota = `ROTA: ${localColeta.cidade}/${localColeta.uf}`
+      console.log('**** resEntrega', resEntrega)
+      setLocalEntrega(resEntrega[0])
+
+      // await sleep(500)
+      if (resColeta[0]) {
+        let _rota = ''
+        let _contatoc = ''
+        let _contatoe = ''
+
+        if (resColeta[0].cidade && resColeta[0].uf) {
+          _rota += `ROTA: ${resColeta[0].cidade}/${resColeta[0].uf} `
+        }
+
         let _enderecoc = ''
         let _enderecoe = ''
-        let _contatoc = `CONTATO: ${localColeta.contato} TEL: ${localColeta.fone}`
-        let _contatoe = `CONTATO: ${localEntrega.contato} TEL: ${localEntrega.fone}`
 
-        if (localColeta.cidade) setLocal(`${localColeta.cidade}/${localColeta.uf}`)
+        if (resColeta[0].contato) _contatoc += `CONTATO: ${resColeta[0].contato} ` 
+        if (resColeta[0].fone) _contatoc += `TEL: ${resColeta[0].fone}`
+        
+        if (resColeta[0].cidade) setLocal(`${resColeta[0].cidade}/${resColeta[0].uf}`)
 
-        if (localColeta.logradouro) _enderecoc = `${_enderecoc} ${localColeta.logradouro}`
-        if (localColeta.numero) _enderecoc = `${_enderecoc}, ${localColeta.numero}`
-        if (localColeta.complemento) _enderecoc = `${_enderecoc}, ${localColeta.complemento}`
-        if (localColeta.bairro) _enderecoc = `${_enderecoc}, ${localColeta.bairro}`
-        if (localColeta.cidade) _enderecoc = `${_enderecoc}, ${localColeta.cidade}`
-        if (localColeta.uf) _enderecoc = `${_enderecoc}/ ${localColeta.uf}`
+        if (resColeta[0].logradouro) _enderecoc = `${_enderecoc} ${resColeta[0].logradouro}`
+        if (resColeta[0].numero) _enderecoc = `${_enderecoc}, ${resColeta[0].numero}`
+        if (resColeta[0].complemento) _enderecoc = `${_enderecoc}, ${resColeta[0].complemento}`
+        if (resColeta[0].bairro) _enderecoc = `${_enderecoc}, ${resColeta[0].bairro}`
+        if (resColeta[0].cidade) _enderecoc = `${_enderecoc}, ${resColeta[0].cidade}`
+        if (resColeta[0].uf) _enderecoc = `${_enderecoc}/ ${resColeta[0].uf}`
         setEnderecoc(_enderecoc)
 
-        if (localColeta.contato) _contatoc = `CONTATO: ${localColeta.contato} `
-        if (localColeta.fone) _contatoc = `${_contatoc}TEL: ${localColeta.fone}`
+        if (resColeta[0].contato) _contatoc = `CONTATO: ${resColeta[0].contato} `
+        if (resColeta[0].fone) _contatoc = `${_contatoc}TEL: ${resColeta[0].fone}`
         setContatoc(_contatoc)
-        
-        if (localEntrega) {
-          _rota = `${_rota} X ${localEntrega.cidade}/${localEntrega.uf}`
 
-          if (localEntrega.logradouro) _enderecoe = `${_enderecoe} ${localEntrega.logradouro}`
-          if (localEntrega.numero) _enderecoe = `${_enderecoe}, ${localEntrega.numero}`
-          if (localEntrega.complemento) _enderecoe = `${_enderecoe}, ${localEntrega.complemento}`
-          if (localEntrega.bairro) _enderecoe = `${_enderecoe}, ${localEntrega.bairro}`
-          if (localEntrega.cidade) _enderecoe = `${_enderecoe}, ${localEntrega.cidade}`
-          if (localEntrega.uf) _enderecoe = `${_enderecoe}/ ${localEntrega.uf}`
+        if (resEntrega[0]) {
+          if (resEntrega[0].cidade && resEntrega[0].uf) {
+            _rota += (_rota ? 'X ' : 'ROTA: ') + `${resEntrega[0].cidade}/${resEntrega[0].uf}`
+          }
+
+          if (resEntrega[0].contato) _contatoe += `CONTATO: ${resEntrega[0].contato} ` 
+          if (resEntrega[0].fone) _contatoe += `TEL: ${resEntrega[0].fone}`
+            
+          if (resEntrega[0].logradouro) _enderecoe = `${_enderecoe} ${resEntrega[0].logradouro}`
+          if (resEntrega[0].numero) _enderecoe = `${_enderecoe}, ${resEntrega[0].numero}`
+          if (resEntrega[0].complemento) _enderecoe = `${_enderecoe}, ${resEntrega[0].complemento}`
+          if (resEntrega[0].bairro) _enderecoe = `${_enderecoe}, ${resEntrega[0].bairro}`
+          if (resEntrega[0].cidade) _enderecoe = `${_enderecoe}, ${resEntrega[0].cidade}`
+          if (resEntrega[0].uf) _enderecoe = `${_enderecoe}/ ${resEntrega[0].uf}`
           setEnderecoe(_enderecoe)
 
-          if (localEntrega.contato) _contatoe = `CONTATO: ${localEntrega.contato} `
-          if (localEntrega.fone) _contatoe = `${_contatoe}TEL: ${localEntrega.fone}`
+          if (resEntrega[0].contato) _contatoe = `CONTATO: ${resEntrega[0].contato} `
+          if (resEntrega[0].fone) _contatoe = `${_contatoe}TEL: ${resEntrega[0].fone}`
           setContatoe(_contatoe)
         }
+        
         setRota(_rota)
-
-
       }
     }
     carrega()
@@ -102,8 +121,6 @@ export default function CardTransportes({ data, index }) {
     const data = moment(value).format('DD/MM/YYYY')
     return data
   }
-  
-
 
   // useEffect(() => {
   //   setIsLoading(true)
@@ -195,7 +212,7 @@ export default function CardTransportes({ data, index }) {
       <Texto bgcolor='#E7E6E6' color='#2699FB' size={12}>Limite de Coleta: {FormataData(pedido.limitecoleta)}</Texto>
       <Texto bgcolor='#E7E6E6' color='#90D284' size={12}>Limite de Entrega: {FormataData(pedido.limiteentrega)}</Texto>
 
-      {localColeta &&
+      {localColeta && rota !== '' &&
         <Texto bgcolor='#E7E6E6' size={12}>{rota}</Texto>
       }
       <Texto bgcolor='#E7E6E6' size={12} mb={5}>Veículos: {veiculos.length} unidades</Texto>
@@ -214,7 +231,7 @@ export default function CardTransportes({ data, index }) {
         </Grid>
       }
 
-      {localColeta &&
+      {localColeta && (enderecoc || contatoc) &&
         <Box border='1px solid #B5B5B5' mb={5}>
           <Texto bgcolor='#E7E6E6' size={14} bold={400} mb={5}>LOCAL DE COLETA</Texto>
           <Texto bgcolor='#E7E6E6' size={12} mb={2}>{localColeta.descricao}</Texto>
@@ -223,7 +240,7 @@ export default function CardTransportes({ data, index }) {
         </Box>
       }
 
-      {localEntrega &&
+      {localEntrega && (enderecoe || contatoe) &&
         <Box border='1px solid #B5B5B5' mb={5}>
           <Texto bgcolor='#E7E6E6' size={14} bold={400} mb={5}>LOCAL DE ENTREGA</Texto>
           <Texto bgcolor='#E7E6E6' size={12} mb={2}>{localEntrega.descricao}</Texto>
