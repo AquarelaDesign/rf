@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import ReactDOM from 'react-dom'
+// import { Form } from '@unform/web'
+import * as Yup from 'yup'
 
 import {
   Container,
@@ -8,21 +10,77 @@ import {
   RLeft,
   RRight,
   Botao,
-  Grid,
+  Grid as GridModal,
   Blank,
 } from '../CardUsuario/styles'
+
+import { Form } from './styles'
 
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
-import { Tooltip,} from '@material-ui/core'
 import { FaIcon } from '../../Icone'
 
 import "./modal.css"
 
-// import CardUsuario from '../CardUsuario'
+import { Grid, Row, Col } from 'react-flexbox-grid'
+
+import {
+  Box,
+  InputAdornment,
+  MenuItem,
+  Tabs,
+  Tab,
+  Tooltip,
+  withStyles,
+} from '@material-ui/core'
+
+import Input from '../../Forms/Input'
 
 const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
+
+  const formRef = useRef(null)
+
+  // const [initialValues, setInitialValues] = useState({})
+  // const [value, setValue] = useState(0)
+  // const [disableEdit, setDisableEdit] = useState(false)
+  // const [modo, setModo] = useState('')
+
+  // const required = value => (value ? undefined : '* Obrigatório!')
+
+  async function handleSubmit (data, { reset }) {
+    try {
+      
+      const schema = Yup.object().shape({
+        pedido: Yup.string().required('O pedido é obrigatório'),
+        // email: Yup.string()
+        //   .email('Digite um email válido')
+        //   .required('O email é obrigatório')
+        //   .min(3, 'No mínimo 3 caracteres'),
+      })
+
+      await schema.validate(data, {
+        abortEarly: false,
+      })
+      
+      console.log('**** data', data) //, formRef.current)
+          
+      formRef.current.setErrors({})
+      reset()
+      
+    } catch (err) {
+      if (err instanceof Yup.ValidationError) {
+        const errorMessages = {}
+
+        err.inner.forEach(error => {
+          errorMessages[error.path] = error.message
+        })
+
+        formRef.current.setErrors(errorMessages)
+      }
+      console.log('**** err', err, formRef.current)
+    }
+  }
 
   if (isShowPedido) {
     return ReactDOM.createPortal(
@@ -32,7 +90,7 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
           <div className="modal">
             <Container>
               <BoxTitulo height={24} bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10}>
-                <Grid mb={5}>
+                <GridModal mb={5}>
                   <RLeft>
                     <Texto
                       size={22} height={24} italic={true} bold={700} font='Arial'
@@ -48,13 +106,13 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
                       <Botao onClick={hide}><FaIcon icon='GiExitDoor' size={20} /> </Botao>
                     </Tooltip>
                   </RRight>
-                </Grid>
+                </GridModal>
               </BoxTitulo>
 
-              {/* <CardUsuario 
-                usuarioId={usuarioId}
-                tipo={tipo}
-              /> */}
+              <Form ref={formRef} onSubmit={handleSubmit}>
+                <Input name="pedido" />
+                <button type="submit">Enviar</button>
+              </Form>
 
               <BoxTitulo height={24} mt={10}>
                 <Texto

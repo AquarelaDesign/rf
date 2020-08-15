@@ -844,14 +844,24 @@ export default function CardUsuario({ tipo, usuarioId }) {
       .replace('.', '')
       .replace('-', '')
       .replace('/', '')
+      .replace(' ', '')
+      .replace('.', '')
 
     if (valor.trim().length === 11) {
-      if (!isCPF(value)) {
+      console.log('**** valor CPF', valor, isCPF(valor))
+
+      if (!isCPF(valor.trim())) {
         return 'CPF Inválido!'
+      } else {
+        return undefined
       }
     } else if (valor.trim().length === 14) {
-      if (!isCNPJ(value)) {
+      console.log('**** valor CNPJ', valor, isCNPJ(valor))
+
+      if (!isCNPJ(valor.trim())) {
         return 'CNPJ Inválido!'
+      } else {
+        return undefined
       }
     } else {
       return undefined
@@ -878,7 +888,9 @@ export default function CardUsuario({ tipo, usuarioId }) {
     }
     setUltimoCep(cep)
 
-    const service = `http://31.220.50.222:3003/api/cep/${cep}`
+    const prot = window.location.protocol // === 'http' ? 'http' : 'https'
+    const port = window.location.protocol === 'http:' ? 3003 : 3004
+    const service = `${prot}//www.retornofacil.com.br:${port}/api/cep/${cep}`
 
     Axios.get(service, {})
       .then(response => {

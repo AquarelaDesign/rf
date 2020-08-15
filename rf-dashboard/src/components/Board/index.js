@@ -31,7 +31,8 @@ const dataC = loadCargas()
 const dataT = loadTransportes()
 const dataE = loadEntregas()
 
-const ws = Ws('ws://31.220.50.222:3333')
+const prot = window.location.protocol === 'http' ? 'ws' : 'wss'
+const ws = Ws(`${prot}://www.retornofacil.com.br:3333`)
 ws.connect()
 
 const Board = () => {

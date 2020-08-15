@@ -50,7 +50,7 @@ const GridPedidosModal = ({ isShowing, hide }) => {
     buscaUsuarios()
     buscaPedidos()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [isShowPedido])
 
   const buscaUsuarios = async () => {
     await api

@@ -18,9 +18,22 @@
 */
 
 const { Ignitor } = require('@adonisjs/ignitor')
+// const path = require('path')
+const https = require('https')
+const fs = require('fs')
+
+// Certificate
+const options = {
+  // key: fs.readFileSync(path.join(__dirname, './server.key')),
+  // cert: fs.readFileSync(path.join(__dirname, './server.crt'))
+  key: fs.readFileSync('/etc/letsencrypt/live/retornofacil.com.br/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/retornofacil.com.br/cert.pem')
+}
 
 new Ignitor(require('@adonisjs/fold'))
   .appRoot(__dirname)
   .wsServer()
-  .fireHttpServer()
+  .fireHttpServer((handler) => {
+    return https.createServer(options, handler)
+  })
   .catch(console.error)

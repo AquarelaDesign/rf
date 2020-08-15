@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
-import { BrowserRouter } from 'react-router-dom'
+import { Router } from 'react-router-dom'
+import { createMemoryHistory } from 'history'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -20,15 +21,16 @@ toast.configure({
 const loading = () => <div className="animated fadeIn pt-3 text-center">Carregando...</div>
 
 class App extends Component {
-
   render() {
+    const history = createMemoryHistory()
+
     return (
-      <BrowserRouter>
+      <Router history={history}>
         <React.Suspense fallback={loading()}>
           <Routes/>
         </React.Suspense>
-      </BrowserRouter>
-    );
+      </Router>
+    )
   }
 }
 

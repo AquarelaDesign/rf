@@ -1,8 +1,10 @@
 import axios from 'axios'
 import { getToken } from './auth'
 
+const prot = window.location.protocol
+
 const api = axios.create({
-  baseURL: 'http://31.220.50.222:3333',
+  baseURL: `${prot}//www.retornofacil.com.br:3333`,
   timeout: 5000,
 })
 
