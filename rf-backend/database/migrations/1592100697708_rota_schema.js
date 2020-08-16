@@ -28,6 +28,7 @@ class RotaSchema extends Schema {
       table.string('telefone')
       table.string('whats')
       table.string('email')
+      table.integer('motorista_id')
       table.timestamps()
     })
   }
