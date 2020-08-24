@@ -291,7 +291,6 @@ export default function CardUsuario({ tipo, usuarioId }) {
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   useEffect(() => {
-    // toggleCep()
     try {
 
       if (tipoCad !== 'N' && tipoCad !== 'E') {
@@ -322,10 +321,6 @@ export default function CardUsuario({ tipo, usuarioId }) {
         toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
     }
-    // setIsMounted(true)
-
-    // return () => {setIsMounted(false)}
-
   }, [userID, tipoCad, disableEdit])
 
   useEffect(() => {
