@@ -34,12 +34,12 @@ export default function CardTransportes({ data, index }) {
 
       const resColeta = await BuscaRota(data.localcoleta)
       
-      console.log('**** resColeta', resColeta)
+      // console.log('**** resColeta', resColeta)
       setLocalColeta(resColeta[0])
 
       const resEntrega = await BuscaRota(data.localentrega)
 
-      console.log('**** resEntrega', resEntrega)
+      // console.log('**** resEntrega', resEntrega)
       setLocalEntrega(resEntrega[0])
 
       // await sleep(500)

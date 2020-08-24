@@ -37,6 +37,7 @@ const rowData = []
 const GridPedidosModal = ({ isShowing, hide }) => {
   // const classes = useStyles()
   // const [modalStyle] = React.useState(getModalStyle)
+  const ref = React.createRef()
   const mensagem = ''
 
   const [pedidos, setPedidos] = useState(rowData)
@@ -76,7 +77,7 @@ const GridPedidosModal = ({ isShowing, hide }) => {
           toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
       })
-    }
+  }
 
   const buscaPedidos = async () => {
     await api.get(`/pedidos`, {})
@@ -100,7 +101,7 @@ const GridPedidosModal = ({ isShowing, hide }) => {
           toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
       })
-    }
+  }
 
   const frameworkComponents = {
     formatStatus: FormatStatus,
@@ -173,6 +174,20 @@ const GridPedidosModal = ({ isShowing, hide }) => {
     },
   ]
 
+  const ToolRef = React.forwardRef((props, ref) => {
+    const refIcon = React.createRef()
+
+    return (
+      <Tooltip ref={ref} title={props.title}>
+        <IconRef ref={refIcon} icon={props.icon} size={props.size} />
+      </Tooltip>
+    )
+  })
+
+  const IconRef = React.forwardRef((props, ref) => (
+    <FaIcon icon={props.icon} size={props.size} />
+  ))
+
   function FormatStatus(params) {
     // [D]isponivel,
     // [A]guardando, 
@@ -182,16 +197,17 @@ const GridPedidosModal = ({ isShowing, hide }) => {
     // [E]ntregue, 
     // [X]Cancelado
     // []Em Manutenção, 
-    
+
     switch (params.value) {
-      case 'D': return (<Tooltip title="Disponível"><FaIcon icon='Disponivel' size={20}/></Tooltip>)
-      case 'A': return (<Tooltip title="Aguardando Coleta"><FaIcon icon='Aguardando' size={20} /></Tooltip>)
-      case 'C': return (<Tooltip title="Em Coleta"><FaIcon icon='FaTruckLoading' size={20} /></Tooltip>)
-      case 'T': return (<Tooltip title="Em Trnasporte"><FaIcon icon='Transporte' size={20} /></Tooltip>)
-      case 'O': return (<Tooltip title="Em Conferência"><FaIcon icon='Confere' size={20} /></Tooltip>)
-      case 'E': return (<Tooltip title="Entregue"><FaIcon icon='Entregue' size={20} /></Tooltip>)
-      case 'X': return (<Tooltip title="Cancelado"><FaIcon icon='Cancelado' size={20} /></Tooltip>)
-      default: return (<Tooltip title="Em Manutenção"><FaIcon icon='Manutencao' size={20} /></Tooltip>)
+      // case 'D': return (<Tooltip title="Disponível"><FaIcon ref={ref} icon='Disponivel' size={20}/></Tooltip>)
+      case 'D': return (<ToolRef title="Disponível" icon='Disponivel' size={20} />)
+      case 'A': return (<ToolRef title="Aguardando Coleta" icon='Aguardando' size={20} />)
+      case 'C': return (<ToolRef title="Em Coleta" icon='FaTruckLoading' size={20} />)
+      case 'T': return (<ToolRef title="Em Trnasporte" icon='Transporte' size={20} />)
+      case 'O': return (<ToolRef title="Em Conferência" icon='Confere' size={20} />)
+      case 'E': return (<ToolRef title="Entregue" icon='Entregue' size={20} />)
+      case 'X': return (<ToolRef title="Cancelado" icon='Cancelado' size={20} />)
+      default: return (<ToolRef title="Em Manutenção" icon='Manutencao' size={20} />)
     }
   }
 
@@ -199,7 +215,7 @@ const GridPedidosModal = ({ isShowing, hide }) => {
     const data = moment(params.value).format('DD/MM/YYYY')
     return (<span>{data}</span>)
   }
-  
+
   function BuscaNome(params) {
     return usuarios.filter(user => user.id === params.value).map(
       fusu => {
@@ -225,9 +241,11 @@ const GridPedidosModal = ({ isShowing, hide }) => {
     // return
 
     switch (tipo) {
-      case 'E': setPedidoId(selectedNodes[0].id); break;
-      case 'A': 
-        buscaPedidos(); 
+      case 'E': 
+        setPedidoId(selectedNodes[0].id)
+        break
+      case 'A':
+        buscaPedidos()
         return
       default: setPedidoId(null)
     }
@@ -267,15 +285,15 @@ const GridPedidosModal = ({ isShowing, hide }) => {
                   </RRight>
                 </Grid>
               </BoxTitulo>
-              
+
               <BoxTitulo mg={0} bgcolor='#FFFFFF'>
-                <div className="ag-theme-custom-react" 
-                  style={{ 
+                <div className="ag-theme-custom-react"
+                  style={{
                     margin: '10px',
-                    height: '460px', 
-                    width: '100%', 
-                    borderRadius: '10px', 
-                    backgroundColor: '#FFFFFF' 
+                    height: '460px',
+                    width: '100%',
+                    borderRadius: '10px',
+                    backgroundColor: '#FFFFFF'
                   }}>
                   {/**/}
                   <AgGridReact

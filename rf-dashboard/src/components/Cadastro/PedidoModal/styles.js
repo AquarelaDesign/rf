@@ -7,4 +7,5 @@ export const Form = styled(Unform)`
   padding: 10px;
   background: #FFFFFF;
   border-radius: 5px;
+  height: ${props => props.height};
 `;

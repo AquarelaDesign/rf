@@ -118,7 +118,8 @@ const UserModal = ({ isShowUser, hide, userID }) => {
             try {
               data.map(mensagem => {
                 toast(mensagem.message, { type: 'error' })
-              })
+                return true
+              },{})
             }
             catch (e) {
               console.log('*** data', data)
@@ -187,7 +188,8 @@ const UserModal = ({ isShowUser, hide, userID }) => {
           try {
             data.map(mensagem => {
               toast(mensagem.message, { type: 'error' })
-            })
+              return true
+            },{})
           }
           catch (e) {
             console.log('*** error data', data)
@@ -218,7 +220,8 @@ const UserModal = ({ isShowUser, hide, userID }) => {
             try {
               data.map(mensagem => {
                 toast(mensagem.message, { type: 'error' })
-              })
+                return true
+              }, {})
             }
             catch (e) {
               console.log('*** data', data)

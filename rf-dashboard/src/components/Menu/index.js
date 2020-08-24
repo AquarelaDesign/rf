@@ -32,7 +32,12 @@ export default function Menu() {
         const { data } = response
 
         if (response.status === 200) {
-          toast(`Usuário ${data.nome} Offline!`, { type: 'warning' })
+          toast(`Usuário ${data.nome} Offline!`, { 
+            type: 'warning', 
+            autoClose: 2000, 
+            closeOnClick: true,
+            pauseOnHover: true,
+          })
         } else if (response.status === 400) {
           response.data.map(mensagem => {
             toast(mensagem.message, { type: 'error' })
