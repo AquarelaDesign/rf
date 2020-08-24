@@ -318,7 +318,7 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
   // }
 
   const onRowDoubleClicked = (params) => {
-    console.log('**** onRowDoubleClicked', params)
+    // console.log('**** onRowDoubleClicked', params)
     setTipo('V')
     setUsuarioId(params.data.id)
     toggleUsuario()

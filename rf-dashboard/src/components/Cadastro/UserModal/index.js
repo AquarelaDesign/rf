@@ -133,6 +133,11 @@ const UserModal = ({ isShowUser, hide, userID }) => {
   }
 
   const onSubmit = async (values) => {
+    if (String(values.password).length === 0 || String(values.password1).length === 0) {
+      toast('As senhas devem ser informadas!', { type: 'error' })
+      return
+    }
+
     if (values.password !== values.password1) {
       toast('As senhas informadas não são iguais!', { type: 'error' })
       return

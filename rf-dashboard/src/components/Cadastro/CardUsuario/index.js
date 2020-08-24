@@ -848,7 +848,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
       .replace('.', '')
 
     if (valor.trim().length === 11) {
-      console.log('**** valor CPF', valor, isCPF(valor))
+      // console.log('**** valor CPF', valor, isCPF(valor))
 
       if (!isCPF(valor.trim())) {
         return 'CPF Inválido!'
@@ -856,7 +856,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
         return undefined
       }
     } else if (valor.trim().length === 14) {
-      console.log('**** valor CNPJ', valor, isCNPJ(valor))
+      // console.log('**** valor CNPJ', valor, isCNPJ(valor))
 
       if (!isCNPJ(valor.trim())) {
         return 'CNPJ Inválido!'
@@ -948,9 +948,15 @@ export default function CardUsuario({ tipo, usuarioId }) {
         initialValues={initialValues}
         validate={required}
         mutators={{
-          setValue: ([field, value], state, { changeValue }) => {
+          _setValue: ([field, value], state, { changeValue }) => {
             changeValue(state, field, () => value)
-          }
+          },
+          get setValue() {
+            return this._setValue
+          },
+          set setValue(value) {
+            this._setValue = value
+          },
         }}
         render={({
           handleSubmit,
@@ -1626,7 +1632,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                                 </Field>
                                 <Field
                                   name="ANTT"
-                                  validate={required}
+                                  // validate={required}
                                   disabled={disableEdit}
                                   message="Informe o Número da ANTT"
                                   component={CssTextField}
@@ -1704,6 +1710,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                 userID={usuarioId}
                 veiculoID={veiculoId}
                 tipo={tipoCadVei}
+                disabled={disableEdit}
                 callback={buscaVeiculosUsuario}
               />
 

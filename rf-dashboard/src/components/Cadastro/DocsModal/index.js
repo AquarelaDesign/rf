@@ -67,11 +67,12 @@ const CssTextField = withStyles({
   },
 })(TextField)
 
-const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
+const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, disabled, callback }) => {
+  const ref = React.createRef()
   const classes = useStyles()
 
   const [veiculo, setVeiculo] = useState([])
-  const [disableEdit, setDisableEdit] = useState(false)
+  const [disableEdit, setDisableEdit] = useState(disabled)
 
   useEffect(() => {
     const buscaVeiculo = async () => {
@@ -100,11 +101,14 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
         })
     }
 
-    console.log('**** DocsModal', veiculoID, tipo)
+    // console.log('**** DocsModal', veiculoID, tipo)
+    // console.log('**** disableEdit', disableEdit)
+    // console.log('**** disabled', disabled)
     if (veiculoID && veiculoID > 0 && tipo === 'E') {
       setDisableEdit(false)
       buscaVeiculo()
     } else if (tipo === 'N') {
+      setDisableEdit(false)
       var newData = {
         placachassi: "",
         modelo: "",
@@ -120,8 +124,11 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
         carretavct: "",
       }
       setVeiculo(newData)
-    } else {
+    } else if (tipo === 'D') {
       setDisableEdit(true)
+      if (veiculoID && veiculoID > 0) {
+        buscaVeiculo()
+      }
     }
 
   }, [veiculoID, userID, tipo])
@@ -404,7 +411,7 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
                                       >
                                         {props => (
                                           <div>
-                                            <DatePicker {...props} />
+                                            <DatePicker ref={ref} {...props} />
                                           </div>
                                         )}
                                       </Field>
@@ -461,7 +468,7 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, callback }) => {
                                       >
                                         {props => (
                                           <div>
-                                            <DatePicker {...props} />
+                                            <DatePicker ref={ref} {...props} />
                                           </div>
                                         )}
                                       </Field>
