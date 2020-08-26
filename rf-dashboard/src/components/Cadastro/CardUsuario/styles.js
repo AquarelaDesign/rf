@@ -49,6 +49,7 @@ export const BoxTitulo = styled.div`
   font-weight: bold;
   margin-bottom: ${props => props.mb}px;
   margin-top: ${props => props.mt}px;
+  padding-top: ${props => props.pt}px;
 `;
 
 export const Container = styled.div`

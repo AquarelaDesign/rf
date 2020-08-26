@@ -36,6 +36,7 @@ import { makeStyles } from '@material-ui/core/styles'
 
 import { Form } from './styles'
 import Input from '../../Forms/Input'
+import InputD from '../../Forms/InputD'
 import * as Yup from 'yup'
 import { isCNPJ, isCPF } from 'brazilian-values'
 import MaskedInput from 'react-text-mask'
@@ -65,9 +66,9 @@ function TabPanel(props) {
       {...other}
     >
       {value === index && (
-        <Box p={1}>
+        <BoxTitulo mt={5} bgcolor='#2699F8'>
           {children}
-        </Box>
+        </BoxTitulo>
       )}
     </div>
   )
@@ -218,8 +219,9 @@ const useStyles = makeStyles((theme) => ({
   },
   botoes: {
     position: 'absolute',
-    top: 100,
-    right: 100,
+    top: 200,
+    right: 200,
+    zIndex: 490,
   },
   botoesvei: {
     position: 'absolute',
@@ -231,13 +233,11 @@ const useStyles = makeStyles((theme) => ({
 const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
   const classes = useStyles()
   const formRef = useRef(null)
-  const inputRef = useRef()
-
-  const [initialValues, setInitialValues] = useState({
-    pedido: pedidoId,
-  })
 
   const [value, setValue] = useState(0)
+  const [values, setValues] = useState({})
+  const [dadosCliente, setDadosCliente] = useState({})
+
   const [disableEdit, setDisableEdit] = useState(false)
   const [ultimoCep, setUltimoCep] = useState('')
   const [tipoCad, setTipoCad] = useState(tipo)
@@ -256,12 +256,12 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
       "0px 1px 3px 0px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 2px 1px -1px rgba(0, 0, 0, 0.12)"
   };
 
-  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+  // const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   useEffect(() => {
     try {
 
-      console.log('**** Inicio', tipoCad, pedidoId)
+      // console.log('**** Inicio', tipoCad, pedidoId)
       if (tipoCad !== 'N' && tipoCad !== 'E') {
         setDisableEdit(true)
       }
@@ -302,9 +302,10 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
           data.limitecoleta = data.limitecoleta ? data.limitecoleta.substring(0, 10) : null
           data.limiteentrega = data.limiteentrega ? data.limiteentrega.substring(0, 10) : null
 
-          setInitialValues(data)
+          setValues(data)
           setTipoCadastro(data.tipo)
           setVeiculos(data.veiculos)
+          buscaCliente(data.cliente_id)
         }).catch((error) => {
           if (error.response) {
             const { data } = error.response
@@ -325,17 +326,13 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
     }
   }
   
-  /* buscaUsuario
-  const buscaUsuario = async () => {
-    if (userID) {
+  const buscaCliente = async (clienteID) => {
+    if (clienteID) {
       await api
-        .get(`/usuarios/${userID}`)
+        .get(`/usuarios/${clienteID}`)
         .then(response => {
           const { data } = response
-          setInitialValues(data)
-          setTipoCadastro(data.tipo)
-          valTipoCadastro(data.tipo)
-          setVeiculos(data.veiculos)
+          setDadosCliente(data)
         }).catch((error) => {
           if (error.response) {
             const { data } = error.response
@@ -355,7 +352,6 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
         })
     }
   }
-  */
 
   /* buscaVeiculos
   const buscaVeiculos = async () => {
@@ -387,6 +383,10 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
   }
   */
 
+  const findCliente = () => {
+    alert('findCliente')
+  }
+
   const handleChange = (event, newValue) => {
     setValue(newValue)
   }
@@ -397,7 +397,7 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
       console.log('**** data', data)
 
       const schema = Yup.object().shape({
-        pedido: Yup.string().required('O pedido é obrigatório'),
+        id: Yup.string().required('O pedido é obrigatório'),
         // email: Yup.string()
         //   .email('Digite um email válido')
         //   .required('O email é obrigatório')
@@ -408,7 +408,7 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
         abortEarly: false,
       })
       
-      console.log('**** formRef.current', formRef.current)
+      // console.log('**** formRef.current', formRef.current)
           
       formRef.current.setErrors({})
       reset()
@@ -423,9 +423,12 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
 
         formRef.current.setErrors(errorMessages)
       }
-      console.log('**** err', err, formRef.current)
     }
   }
+
+  function submitForm() {
+    formRef.current.submitForm()
+  } 
 
   if (isShowPedido) {
     return ReactDOM.createPortal(
@@ -445,89 +448,277 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
                     </Texto>
                   </RLeft>
                   <RRight>
-                    <Blank><FaIcon icon='blank' size={20} height={20} width={20} /> </Blank>
-                    <Blank><FaIcon icon='blank' size={20} height={20} width={20} /> </Blank>
+                    <Blank><FaIcon icon='blank' size={20} height={20} width={20} /></Blank>
+                    <Tooltip title="Salvar">
+                      <Botao onClick={submitForm}><FaIcon icon='Save' size={20} /></Botao>
+                    </Tooltip>
                     <Tooltip title="Fechar Janela">
-                      <Botao onClick={hide}><FaIcon icon='GiExitDoor' size={20} /> </Botao>
+                      <Botao onClick={hide}><FaIcon icon='GiExitDoor' size={20} /></Botao>
                     </Tooltip>
                   </RRight>
                 </GridModal>
               </BoxTitulo>
 
-              <Form ref={formRef} onSubmit={handleSubmit} height={'490px'} initialData={initialValues}>
+              <Form ref={formRef} onSubmit={handleSubmit} height={'490px'} width={'100%'} >
 
                 <Tabs value={value} onChange={handleChange} aria-label="Dados do Pedido">
                   <Tab label="Pedido" {...a11yProps(0)} />
                   <Tab label="Veículos" {...a11yProps(1)} />
                 </Tabs>
 
-                {!disableEdit &&
-                  <div className={classes.botoes}>
-                    <button type="submit"
-                      style={{ backgroundColor: 'transparent' }}
-                    >
-                      <Tooltip title="Salvar">
-                        <span style={{
-                          alignItems: 'center',
-                          color: '#0000FF',
-                          cursor: 'pointer',
-                          marginTop: '3px',
-                        }}>
-                          <FaIcon icon='Save' size={24} />
-                        </span>
-                      </Tooltip>
-                    </button>
-                  </div>
-                }
-
                 <TabPanel
                   value={value}
                   index={0}
-                  id='cadPed'
+                  id='cadPed' 
+                  style={{ width: '100%' }}
                 >
-                  <Grid fluid>
+                  <Grid>
+
                     <Row>
-                      <Col xs={2}>
-                        <Input 
-                          name="id" 
-                          label="Pedido" 
-                          type="text"
-                          onFocus
-                          onBlur
-                          // value={initialValues.id}
-                          // onChange={val => setInitialValues({ ...initialValues, id: val })}
-                          // ref={inputRef}
-                        />
-                      </Col>
-                      <Col xs={2}>
-                        <Input 
-                          name="limitecoleta" 
-                          label="Limite Coleta" 
-                          type="date"
-                          onFocus
-                          onBlur
-                          // value={initialValues.limitecoleta}
-                          // onChange={val => setInitialValues({ ...initialValues, limitecoleta: val })}
-                          // ref={inputRef}
-                        />
-                      </Col>
-                      <Col xs={2}>
-                        <Input 
-                          name="limiteentrega" 
-                          label="Limite Entrega" 
-                          type="date"
-                          onFocus
-                          onBlur
-                          // value={initialValues.limiteentrega}
-                          // onChange={val => setInitialValues({ ...initialValues, limiteentrega: val })}
-                          // ref={inputRef}
-                        />
+                      <Col xs={12}>
+                        <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10} mt={15}>
+                          <Grid>
+                            <Row style={{ height: '22px' }}>
+                              <Col xs={12}>
+                                <Texto
+                                  size={16} height={18} italic={true} bold={700} font='Arial'
+                                  mt={2}
+                                  color='#2699FB' shadow={true}>
+                                  PEDIDO
+                                </Texto>
+                              </Col>
+                            </Row>
+                          </Grid>
+                        </BoxTitulo>
                       </Col>
                     </Row>
+
+                    <Row>
+                      <Col xs={12}>
+                        <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10}>
+                          <Grid>
+                            <Row style={{ height: '54px', marginTop: '15px' }}>
+                              <Col xs={2}>
+                                <InputD 
+                                  type="text" 
+                                  onFocus onBlur 
+                                  name="id" 
+                                  label="Pedido"
+                                  value={values.id}
+                                  disabled 
+                                />
+                              </Col>
+                              <Col xs={2}>
+                                <Input 
+                                  type="date" 
+                                  onFocus onBlur 
+                                  name="limitecoleta" 
+                                  label="Limite Coleta" 
+                                  value={values.limitecoleta}
+                                  onChange={e => setValues({ ...values, limitecoleta: e.target.value })} 
+                                />
+                              </Col>
+                              <Col xs={2}>
+                                <Input 
+                                  type="date" 
+                                  onFocus onBlur 
+                                  name="limiteentrega" 
+                                  label="Limite Entrega" 
+                                  value={values.limiteentrega}
+                                  onChange={e => setValues({ ...values, limiteentrega: e.target.value })} 
+                                />
+                              </Col>
+                            </Row>
+                          </Grid>
+                        </BoxTitulo>
+                      </Col>
+                    </Row>
+
+                    <Row>
+                      <Col xs={12}>
+                        <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10} mt={5}>
+                          <Grid>
+                            <Row style={{ height: '22px' }}>
+                              <Col xs={12}>
+                                <Texto
+                                  size={16} height={18} italic={true} bold={700} font='Arial'
+                                  mt={2}
+                                  color='#2699FB' shadow={true}>
+                                  CONTRATANTE
+                                </Texto>
+                              </Col>
+                            </Row>
+                          </Grid>
+                        </BoxTitulo>
+                      </Col>
+                    </Row>
+
+                    <Row>
+                      <Col xs={12}>
+                        <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10} pt={15}>
+                          <Grid>
+                            <Row style={{ height: '54px' }}>
+                              <Col xs={2}>
+                                <Input 
+                                  type="text" 
+                                  onFocus onBlur 
+                                  name="cliente_id" 
+                                  label="Cliente" 
+                                  icon={<AiOutlineSearch />} 
+                                  callButton={findCliente}
+                                  value={values.cliente_id}
+                                  onChange={e => setValues({ ...values, cliente_id: e.target.value })} 
+                                />
+                              </Col>
+                              <Col xs={2}>
+                                <InputD 
+                                  type="text" 
+                                  onFocus onBlur 
+                                  name="cpfcnpj" 
+                                  label="CPF/CNPJ" 
+                                  value={dadosCliente.cpfcnpj} 
+                                  disabled
+                                />
+                              </Col>
+                              <Col xs={8}>
+                                <InputD 
+                                  type="text" 
+                                  onFocus onBlur 
+                                  name="nome" 
+                                  label="Nome" 
+                                  value={dadosCliente.nome} 
+                                  disabled
+                                />
+                              </Col>
+                            </Row>
+                            <Row style={{ height: '54px' }}>
+                              <Col xs={3}>
+                                <Input 
+                                  type="text" 
+                                  onFocus onBlur 
+                                  name="contato" 
+                                  label="Contato" 
+                                  value={dadosCliente.contato}
+                                  disabled
+                                />
+                              </Col>
+                              <Col xs={5}>
+                                <InputD 
+                                  type="text" 
+                                  onFocus onBlur 
+                                  name="email" 
+                                  label="E-mail" 
+                                  value={dadosCliente.email} 
+                                  disabled
+                                />
+                              </Col>
+                              <Col xs={2}>
+                                <InputD 
+                                  type="text" 
+                                  onFocus onBlur 
+                                  name="celular" 
+                                  label="Celular" 
+                                  value={dadosCliente.celular} 
+                                  disabled
+                                />
+                              </Col>
+                              <Col xs={2}>
+                                <InputD 
+                                  type="text" 
+                                  onFocus onBlur 
+                                  name="whats" 
+                                  label="WhatsApp" 
+                                  value={dadosCliente.whats} 
+                                  disabled
+                                />
+                              </Col>
+                            </Row>
+
+                            <Row style={{ height: '54px' }}>
+                              <Col xs={6}>
+                                <Input 
+                                  type="text" 
+                                  onFocus onBlur 
+                                  name="logradouro" 
+                                  label="Endereço" 
+                                  value={dadosCliente.logradouro}
+                                  disabled
+                                />
+                              </Col>
+                              <Col xs={2}>
+                                <InputD 
+                                  type="text" 
+                                  onFocus onBlur 
+                                  name="numero" 
+                                  label="Número" 
+                                  value={dadosCliente.numero} 
+                                  disabled
+                                />
+                              </Col>
+                              <Col xs={4}>
+                                <InputD 
+                                  type="text" 
+                                  onFocus onBlur 
+                                  name="complemento" 
+                                  label="Complemento" 
+                                  value={dadosCliente.complemento} 
+                                  disabled
+                                />
+                              </Col>
+                            </Row>
+                            <Row style={{ height: '54px' }}>
+                              <Col xs={3}>
+                                <Input 
+                                  type="text" 
+                                  onFocus onBlur 
+                                  name="bairro" 
+                                  label="Bairro" 
+                                  value={dadosCliente.bairro}
+                                  disabled
+                                />
+                              </Col>
+                              <Col xs={3}>
+                                <InputD 
+                                  type="text" 
+                                  onFocus onBlur 
+                                  name="cidade" 
+                                  label="Cidade" 
+                                  value={dadosCliente.cidade} 
+                                  disabled
+                                />
+                              </Col>
+                              <Col xs={1}>
+                                <InputD 
+                                  type="text" 
+                                  onFocus onBlur 
+                                  name="uf" 
+                                  label="UF" 
+                                  value={dadosCliente.uf} 
+                                  disabled
+                                />
+                              </Col>
+                              <Col xs={2}>
+                                <InputD 
+                                  type="text" 
+                                  onFocus onBlur 
+                                  name="cep" 
+                                  label="CEP" 
+                                  value={dadosCliente.cep} 
+                                  disabled
+                                />
+                              </Col>
+                            </Row>
+                          </Grid>
+                        </BoxTitulo>
+                      </Col>
+                    </Row>
+
                   </Grid>
                 </TabPanel>
 
-                {/* <button type="submit">Enviar</button> */}
+                <TabPanel value={value} index={1}>
+                  Teste
+                </TabPanel>
               </Form>
 
               <BoxTitulo height={24} mt={10}>
