@@ -51,6 +51,9 @@ import Axios from 'axios'
 import { AgGridReact, gridApi } from 'ag-grid-react'
 import agPtBr from '../../agPtBr'
 
+import DocsModal from '../DocsModal'
+import useModalDocs from '../DocsModal/useModal'
+
 import ConfirmaModal from '../../ConfirmaModal'
 import useModalConfirma from '../../ConfirmaModal/useModal'
 
@@ -90,7 +93,6 @@ function a11yProps(index) {
 function clearNumber(value = '') {
   return value.replace(/\D+/g, '')
 }
-
 function formatCpfCnpj(props) {
   const { inputRef, value, ...other } = props
 
@@ -155,7 +157,6 @@ formatCelular.propTypes = {
   inputRef: PropTypes.func.isRequired,
   onChange: PropTypes.func.isRequired,
 }
-
 function formatCep(props) {
   const { inputRef, value, ...other } = props
 
@@ -184,6 +185,56 @@ formatCep.propTypes = {
   inputRef: PropTypes.func.isRequired,
   onChange: PropTypes.func.isRequired,
 }
+
+const AntTabs = withStyles({
+  root: {
+    borderBottom: '1px solid #FFFFFF',
+    height: 40,
+    padding: 5,
+  },
+  indicator: {
+    backgroundColor: '#B5B5B5',
+  },
+})(Tabs);
+
+const AntTab = withStyles((theme) => ({
+  root: {
+    textTransform: 'none',
+    minWidth: 100,
+    fontWeight: 700,
+    height: 40,
+    color: '#3b97e3',
+    padding: 0,
+    // marginRight: theme.spacing(4),
+    fontFamily: [
+      '-apple-system',
+      'BlinkMacSystemFont',
+      '"Segoe UI"',
+      'Roboto',
+      '"Helvetica Neue"',
+      'Arial',
+      'sans-serif',
+      '"Apple Color Emoji"',
+      '"Segoe UI Emoji"',
+      '"Segoe UI Symbol"',
+    ].join(','),
+    '&:hover': {
+      // backgroundColor: '#0031FF',
+      color: '#3b97e3',
+      opacity: 1,
+    },
+    '&$selected': {
+      color: '#3b97e3',
+      // backgroundColor: '#3b97e3',
+      // borderRadius: '5px',
+    },
+    '&:focus': {
+      // backgroundColor: '#0031FF',
+      color: '#3b97e3',
+    },
+  },
+  selected: {},
+}))((props) => <Tab disableRipple {...props} />);
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -225,8 +276,17 @@ const useStyles = makeStyles((theme) => ({
   },
   botoesvei: {
     position: 'absolute',
-    top: 110,
+    top: 200,
     right: 32,
+    width: 200,
+    borderRadius: 5,
+    backgroundColor: '#FFFFFF',
+  },
+  demo1: {
+    padding: '0px',
+    border: '5px solid #2699F8' ,
+    backgroundColor: '#FFFFFF',
+    borderRadius: '5px',
   },
 }))
 
@@ -248,6 +308,15 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
   const [vgridApi, setVgridApi] = useState(gridApi)
   const [veiculos, setVeiculos] = useState([])
 
+  const [excluiId, setExcluiId] = useState(null)
+  const [placaExclui, setPlacaExclui] = useState(null)
+  const [propsE, setPropsE] = useState(null)
+  const [sData, setSData] = useState(null)
+  const [veiculoId, setVeiculoId] = useState(0)
+
+  const { isShowDocs, toggleDocs } = useModalDocs()
+  const { isShowConfirma, toggleConfirma } = useModalConfirma()
+
   const style = {
     background: "#FFF",
     borderRadius: "0.25rem",
@@ -256,7 +325,7 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
       "0px 1px 3px 0px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 2px 1px -1px rgba(0, 0, 0, 0.12)"
   };
 
-  // const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   useEffect(() => {
     try {
@@ -301,6 +370,8 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
 
           data.limitecoleta = data.limitecoleta ? data.limitecoleta.substring(0, 10) : null
           data.limiteentrega = data.limiteentrega ? data.limiteentrega.substring(0, 10) : null
+
+          console.log('**** data.veiculos', data.veiculos)
 
           setValues(data)
           setTipoCadastro(data.tipo)
@@ -387,6 +458,162 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
     alert('findCliente')
   }
 
+  const handleDeleteRow = async (props, e) => {
+    e.preventDefault()
+    const selectedData = props.api.getSelectedRows()
+
+    setExcluiId(selectedData[0].id)
+    setPlacaExclui(selectedData[0].placachassi)
+    setPropsE(props)
+    setSData(selectedData)
+    await sleep(300)
+    toggleConfirma()
+  }
+
+  function getNumericCellEditor() {
+    function isCharNumeric(charStr) {
+      return !!/\d/.test(charStr)
+    }
+
+    function isKeyPressedNumeric(event) {
+      var charCode = getCharCodeFromEvent(event);
+      var charStr = String.fromCharCode(charCode);
+      return isCharNumeric(charStr)
+    }
+
+    function getCharCodeFromEvent(event) {
+      event = event || window.event
+      return typeof event.which === 'undefined' ? event.keyCode : event.which
+    }
+
+    function NumericCellEditor() { }
+
+    NumericCellEditor.prototype.init = function (params) {
+      this.focusAfterAttached = params.cellStartedEdit
+      this.eInput = document.createElement('input')
+      this.eInput.style.width = '100%'
+      this.eInput.style.height = '100%'
+      this.eInput.value = isCharNumeric(params.charPress)
+        ? params.charPress
+        : params.value
+      var that = this
+      this.eInput.addEventListener('keypress', function (event) {
+        if (!isKeyPressedNumeric(event)) {
+          that.eInput.focus()
+          if (event.preventDefault) event.preventDefault()
+        }
+      })
+    }
+
+    NumericCellEditor.prototype.getGui = function () {
+      return this.eInput
+    }
+
+    NumericCellEditor.prototype.afterGuiAttached = function () {
+      if (this.focusAfterAttached) {
+        this.eInput.focus()
+        this.eInput.select()
+      }
+    }
+
+    NumericCellEditor.prototype.isCancelBeforeStart = function () {
+      return this.cancelBeforeStart
+    }
+
+    NumericCellEditor.prototype.isCancelAfterEnd = function () { }
+
+    NumericCellEditor.prototype.getValue = function () {
+      return this.eInput.value
+    }
+
+    NumericCellEditor.prototype.focusIn = function () {
+      var eInput = this.getGui()
+      eInput.focus()
+      eInput.select()
+    }
+
+    NumericCellEditor.prototype.focusOut = function () {
+    }
+
+    return NumericCellEditor
+  }
+
+  const columnDefs = [
+    {
+      headerName: "Placa/Chassi",
+      field: "placachassi",
+      width: 120,
+      sortable: true,
+      // editable: true,
+    },
+    {
+      headerName: "Modelo",
+      field: "modelo",
+      flex: 1,
+      sortable: true,
+      // editable: true,
+      // cellEditor: 'agSelectCellEditor',
+      // cellEditorParams: {
+      //   values: TipoVeiculo(), // ['CARRETA', 'CAVALO', 'PLATAFORMA'],
+      // },
+    },
+    {
+      headerName: "Situação",
+      field: "estado",
+      width: 140,
+      sortable: true,
+      // editable: true,
+      // cellEditor: 'numericCellEditor',
+    },
+    {
+      headerName: "",
+      width: 30,
+      sortable: false,
+      editable: false,
+      cellRendererFramework: (props) => {
+        return (
+          <button onClick={(e) => handleDeleteRow(props, e)}
+          disabled={disableEdit}
+          style={{ backgroundColor: 'transparent' }}
+          >
+            <Tooltip title="Excluir veículo">
+              <span style={{
+                alignItems: 'center',
+                color: '#FF0000',
+                marginLeft: '-18px',
+                marginTop: '3px',
+              }}>
+                <FaIcon icon='Deletar' size={20} />
+              </span>
+            </Tooltip>
+          </button>
+        )
+      },
+    },
+  ]
+
+  const onDocs = async (e, tipo) => {
+    e.preventDefault()
+
+    if (tipo === 'E') {
+      const selectedData = vgridApi.getSelectedRows()
+
+      if (!selectedData) {
+        toast('Você deve selecionar um veículo para editar!', { type: 'alert' })
+        return
+      }
+
+      if (selectedData.length === 0) {
+        toast('Você deve selecionar um veículo para editar!', { type: 'alert' })
+        return
+      }
+      setVeiculoId(selectedData[0].id)
+    }
+    setTipoCadVei(disableEdit ? 'D' : tipo)
+
+    toggleDocs()
+  }
+
   const handleChange = (event, newValue) => {
     setValue(newValue)
   }
@@ -461,22 +688,20 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
 
               <Form ref={formRef} onSubmit={handleSubmit} height={'490px'} width={'100%'} >
 
-                <Tabs value={value} onChange={handleChange} aria-label="Dados do Pedido">
-                  <Tab label="Pedido" {...a11yProps(0)} />
-                  <Tab label="Veículos" {...a11yProps(1)} />
-                </Tabs>
+                <div className={classes.demo1}>
+                  <AntTabs value={value} onChange={handleChange} aria-label="Dados do Pedido">
+                    <AntTab label="Pedido" {...a11yProps(0)} />
+                    <AntTab label="Veículos" {...a11yProps(1)} />
+                    <AntTab label="Rotas" {...a11yProps(1)} />
+                  </AntTabs>
+                </div>
 
-                <TabPanel
-                  value={value}
-                  index={0}
-                  id='cadPed' 
-                  style={{ width: '100%' }}
-                >
+                <TabPanel value={value} index={0} style={{ width: '100%' }}>
                   <Grid>
 
                     <Row>
                       <Col xs={12}>
-                        <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10} mt={15}>
+                        <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10} mt={10}>
                           <Grid>
                             <Row style={{ height: '22px' }}>
                               <Col xs={12}>
@@ -536,7 +761,7 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
 
                     <Row>
                       <Col xs={12}>
-                        <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10} mt={5}>
+                        <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10} mt={1}>
                           <Grid>
                             <Row style={{ height: '22px' }}>
                               <Col xs={12}>
@@ -716,7 +941,72 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
                   </Grid>
                 </TabPanel>
 
-                <TabPanel value={value} index={1}>
+                <TabPanel value={value} index={1} style={{ width: '100%', height: '510px' }}>
+                  <Grid>
+                    <Row style={{ height: '50px' }}>
+                      <Col xs={6}>
+                        <div
+                          className={classes.botoesvei}
+                        >
+                          {!disableEdit &&
+                            <button onClick={(e) => onDocs(e, 'N')}
+                              style={{ backgroundColor: 'transparent' }}
+                            >
+                              <Tooltip title="Adicionar um novo veículo">
+                                <span style={{
+                                  alignItems: 'center',
+                                  color: '#31C417',
+                                  cursor: 'pointer',
+                                  marginTop: '3px',
+                                }}>
+                                  <FaIcon icon='Add' size={30} />
+                                </span>
+                              </Tooltip>
+                            </button>
+                          }
+                        </div>
+                      </Col>
+                      <Col xs={6}></Col>
+                    </Row>
+
+                    <Row>
+                      <Col xs={6}>
+                        <div className="ag-theme-custom-react" style={{
+                            height: '345px',
+                            width: '100%',
+                            borderRadius: '10px',
+                            backgroundColor: '#FFFFFF'
+                        }}>
+                          <AgGridReact
+                            id='agVeiculos'
+                            name='agVeiculos'
+                            rowSelection="single"
+                            onGridReady={(params) => { setVgridApi(params.api) }}
+                            columnDefs={columnDefs}
+                            rowData={veiculos}
+                            singleClickEdit={true}
+                            stopEditingWhenGridLosesFocus={true}
+                            suppressNavigable={disableEdit}
+                            // editType='fullRow'
+                            components={{ numericCellEditor: getNumericCellEditor() }}
+                            tooltipShowDelay={0}
+                            pagination={true}
+                            paginationPageSize={10}
+                            localeText={agPtBr}
+                          >
+                          </AgGridReact>
+                        </div>
+                      </Col>
+                      <Col xs={6}>
+                      </Col>
+                    </Row>
+                    <Row style={{ height: '10px' }}>
+                      <Col xs={12}></Col>
+                    </Row>
+                  </Grid>
+                </TabPanel>
+
+                <TabPanel value={value} index={2} style={{ width: '100%' }}>
                   Teste
                 </TabPanel>
               </Form>
