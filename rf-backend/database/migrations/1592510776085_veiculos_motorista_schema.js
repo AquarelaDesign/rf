@@ -14,7 +14,7 @@ class VeiculosMotoristaSchema extends Schema {
         .onUpdate('CASCADE')
         .onDelete('CASCADE')
       table.string('placachassi').notNullable().defaultTo('')
-      table.string('modelo').defaultTo('')
+      table.string('modelo').notNullable().defaultTo('')
       table.integer('ano').defaultTo(0)
       table.integer('vagas').defaultTo(0)
       table.string('tipo').defaultTo(0)

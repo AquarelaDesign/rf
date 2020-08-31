@@ -29,6 +29,8 @@ class RotaSchema extends Schema {
       table.string('whats')
       table.string('email')
       table.integer('motorista_id')
+      table.string('tipo').comment('[C]oleta / [E]ntrega')
+      table.integer('rota_relacionada').comment('Rota Relacionada')
       table.timestamps()
     })
   }
