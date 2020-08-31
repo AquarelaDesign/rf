@@ -274,11 +274,27 @@ const useStyles = makeStyles((theme) => ({
     right: 200,
     zIndex: 490,
   },
-  botoesvei: {
+  botoesVeiculos: {
+    display: 'flex',
+    justifyContent: 'flex-end',
     position: 'absolute',
-    top: 200,
-    right: 32,
-    width: 200,
+    top: 130,
+    left: 25,
+    paddingTop: '3px',
+    paddingRight: '5px',
+    width: '47%',
+    borderRadius: 5,
+    backgroundColor: '#FFFFFF',
+  },
+  botoesRotas: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    position: 'absolute',
+    top: 130,
+    right: 25,
+    paddingTop: '3px',
+    paddingRight: '5px',
+    width: '47%',
     borderRadius: 5,
     backgroundColor: '#FFFFFF',
   },
@@ -305,14 +321,19 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
   const [tipoCadastro, setTipoCadastro] = useState('')
   // const [modo, setModo] = useState('')
 
-  const [vgridApi, setVgridApi] = useState(gridApi)
+  const [vgridVeiculos, setVgridVeiculos] = useState(gridApi)
   const [veiculos, setVeiculos] = useState([])
+  const [veiculoId, setVeiculoId] = useState(0)
+  const [veiculoExclui, setVeiculoExclui] = useState(null)
+
+  const [vgridRotas, setVgridRotas] = useState(gridApi)
+  const [rotas, setRotas] = useState([])
+  const [rotaId, setRotaId] = useState(0)
+  const [rotaExclui, setRotaExclui] = useState(null)
 
   const [excluiId, setExcluiId] = useState(null)
-  const [placaExclui, setPlacaExclui] = useState(null)
   const [propsE, setPropsE] = useState(null)
   const [sData, setSData] = useState(null)
-  const [veiculoId, setVeiculoId] = useState(0)
 
   const { isShowDocs, toggleDocs } = useModalDocs()
   const { isShowConfirma, toggleConfirma } = useModalConfirma()
@@ -371,11 +392,12 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
           data.limitecoleta = data.limitecoleta ? data.limitecoleta.substring(0, 10) : null
           data.limiteentrega = data.limiteentrega ? data.limiteentrega.substring(0, 10) : null
 
-          console.log('**** data.veiculos', data.veiculos)
+          console.log('**** data.rotas', data.rotas)
 
           setValues(data)
           setTipoCadastro(data.tipo)
           setVeiculos(data.veiculos)
+          setRotas(data.rotas)
           buscaCliente(data.cliente_id)
         }).catch((error) => {
           if (error.response) {
@@ -458,12 +480,24 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
     alert('findCliente')
   }
 
-  const handleDeleteRow = async (props, e) => {
+  const deleteRowVeiculo = async (props, e) => {
     e.preventDefault()
     const selectedData = props.api.getSelectedRows()
 
     setExcluiId(selectedData[0].id)
-    setPlacaExclui(selectedData[0].placachassi)
+    setVeiculoExclui(selectedData[0].placachassi)
+    setPropsE(props)
+    setSData(selectedData)
+    await sleep(300)
+    toggleConfirma()
+  }
+
+  const deleteRowRota = async (props, e) => {
+    e.preventDefault()
+    const selectedData = props.api.getSelectedRows()
+
+    setRotaId(selectedData[0].id)
+    setRotaExclui(selectedData[0].placachassi)
     setPropsE(props)
     setSData(selectedData)
     await sleep(300)
@@ -538,7 +572,7 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
     return NumericCellEditor
   }
 
-  const columnDefs = [
+  const colDefsVeiculos = [
     {
       headerName: "Placa/Chassi",
       field: "placachassi",
@@ -572,7 +606,7 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
       editable: false,
       cellRendererFramework: (props) => {
         return (
-          <button onClick={(e) => handleDeleteRow(props, e)}
+          <button onClick={(e) => deleteRowVeiculo(props, e)}
           disabled={disableEdit}
           style={{ backgroundColor: 'transparent' }}
           >
@@ -592,11 +626,72 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
     },
   ]
 
-  const onDocs = async (e, tipo) => {
+  const colDefsRotas = [
+    {
+      headerName: "Cidade",
+      field: "cidade",
+      width: 100,
+      sortable: false,
+      // editable: true,
+    },
+    {
+      headerName: "UF",
+      field: "uf",
+      width: 70,
+      sortable: false,
+      // editable: true,
+    },
+    {
+      headerName: "Contato",
+      field: "contato",
+      flex: 1,
+      sortable: false,
+      // editable: true,
+      // cellEditor: 'agSelectCellEditor',
+      // cellEditorParams: {
+      //   values: TipoVeiculo(), // ['CARRETA', 'CAVALO', 'PLATAFORMA'],
+      // },
+    },
+    {
+      headerName: "Telefone",
+      field: "telefone",
+      width: 100,
+      sortable: true,
+      // editable: true,
+      // cellEditor: 'numericCellEditor',
+    },
+    {
+      headerName: "",
+      width: 30,
+      sortable: false,
+      editable: false,
+      cellRendererFramework: (props) => {
+        return (
+          <button onClick={(e) => deleteRowRota(props, e)}
+          disabled={disableEdit}
+          style={{ backgroundColor: 'transparent' }}
+          >
+            <Tooltip title="Excluir rota">
+              <span style={{
+                alignItems: 'center',
+                color: '#FF0000',
+                marginLeft: '-18px',
+                marginTop: '3px',
+              }}>
+                <FaIcon icon='Deletar' size={20} />
+              </span>
+            </Tooltip>
+          </button>
+        )
+      },
+    },
+  ]
+
+  const onVeiculos = async (e, tipo) => {
     e.preventDefault()
 
     if (tipo === 'E') {
-      const selectedData = vgridApi.getSelectedRows()
+      const selectedData = vgridVeiculos.getSelectedRows()
 
       if (!selectedData) {
         toast('Você deve selecionar um veículo para editar!', { type: 'alert' })
@@ -608,6 +703,28 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
         return
       }
       setVeiculoId(selectedData[0].id)
+    }
+    setTipoCadVei(disableEdit ? 'D' : tipo)
+
+    toggleDocs()
+  }
+
+  const onRotas = async (e, tipo) => {
+    e.preventDefault()
+
+    if (tipo === 'E') {
+      const selectedData = vgridRotas.getSelectedRows()
+
+      if (!selectedData) {
+        toast('Você deve selecionar um veículo para editar!', { type: 'alert' })
+        return
+      }
+
+      if (selectedData.length === 0) {
+        toast('Você deve selecionar uma rota para editar!', { type: 'alert' })
+        return
+      }
+      setRotaId(selectedData[0].id)
     }
     setTipoCadVei(disableEdit ? 'D' : tipo)
 
@@ -946,10 +1063,10 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
                     <Row style={{ height: '50px' }}>
                       <Col xs={6}>
                         <div
-                          className={classes.botoesvei}
+                          className={classes.botoesVeiculos}
                         >
-                          {!disableEdit &&
-                            <button onClick={(e) => onDocs(e, 'N')}
+                          {/* {!disableEdit && */}
+                            <button onClick={(e) => onVeiculos(e, 'N')}
                               style={{ backgroundColor: 'transparent' }}
                             >
                               <Tooltip title="Adicionar um novo veículo">
@@ -963,10 +1080,31 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
                                 </span>
                               </Tooltip>
                             </button>
-                          }
+                          {/* } */}
                         </div>
                       </Col>
-                      <Col xs={6}></Col>
+                      <Col xs={6}>
+                        <div
+                          className={classes.botoesRotas}
+                        >
+                          {/* {!disableEdit && */}
+                            <button onClick={(e) => onVeiculos(e, 'N')}
+                              style={{ backgroundColor: 'transparent' }}
+                            >
+                              <Tooltip title="Adicionar um novo veículo">
+                                <span style={{
+                                  alignItems: 'center',
+                                  color: '#31C417',
+                                  cursor: 'pointer',
+                                  marginTop: '3px',
+                                }}>
+                                  <FaIcon icon='Add' size={30} />
+                                </span>
+                              </Tooltip>
+                            </button>
+                          {/* } */}
+                        </div>
+                      </Col>
                     </Row>
 
                     <Row>
@@ -974,15 +1112,16 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
                         <div className="ag-theme-custom-react" style={{
                             height: '345px',
                             width: '100%',
-                            borderRadius: '10px',
-                            backgroundColor: '#FFFFFF'
+                            // borderRadius: '10px',
+                            backgroundColor: '#FFFFFF', 
+                            border: '5px solid #FFFFFF',
                         }}>
                           <AgGridReact
                             id='agVeiculos'
                             name='agVeiculos'
                             rowSelection="single"
-                            onGridReady={(params) => { setVgridApi(params.api) }}
-                            columnDefs={columnDefs}
+                            onGridReady={(params) => { setVgridVeiculos(params.api) }}
+                            columnDefs={colDefsVeiculos}
                             rowData={veiculos}
                             singleClickEdit={true}
                             stopEditingWhenGridLosesFocus={true}
@@ -998,6 +1137,32 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
                         </div>
                       </Col>
                       <Col xs={6}>
+                        <div className="ag-theme-custom-react" style={{
+                            height: '345px',
+                            width: '100%',
+                            // borderRadius: '10px',
+                            backgroundColor: '#FFFFFF', 
+                            border: '5px solid #FFFFFF',
+                        }}>
+                          <AgGridReact
+                            id='agRotas'
+                            name='agRotas'
+                            rowSelection="single"
+                            onGridReady={(params) => { setVgridRotas(params.api) }}
+                            columnDefs={colDefsRotas}
+                            rowData={rotas}
+                            singleClickEdit={true}
+                            stopEditingWhenGridLosesFocus={true}
+                            suppressNavigable={disableEdit}
+                            // editType='fullRow'
+                            components={{ numericCellEditor: getNumericCellEditor() }}
+                            tooltipShowDelay={0}
+                            pagination={true}
+                            paginationPageSize={10}
+                            localeText={agPtBr}
+                          >
+                          </AgGridReact>
+                        </div>
                       </Col>
                     </Row>
                     <Row style={{ height: '10px' }}>
