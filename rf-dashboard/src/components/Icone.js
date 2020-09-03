@@ -17,15 +17,17 @@ import {
   FaRegThumbsUp,
   FaCircle,
   FaSave,
+  FaFileUpload,
 } from 'react-icons/fa'
 
+import { AiOutlineCloseCircle } from 'react-icons/ai'
 import { GoChecklist } from 'react-icons/go'
 import { GrDeliver, GrUpdate, GrHostMaintenance, GrSecure } from 'react-icons/gr'
 import { GiExitDoor, GiStopwatch } from 'react-icons/gi'
 import { RiSearchLine } from 'react-icons/ri'
 import { FcPlus, FcCancel, FcDocument, FcInTransit } from 'react-icons/fc'
 import { FiAlertOctagon, FiAlertTriangle } from 'react-icons/fi'
-import { MdDeleteForever, MdAddCircle, MdBlock, MdCheckCircle, MdCancel } from 'react-icons/md'
+import { MdDeleteForever, MdAddCircle, MdBlock, MdCheckCircle, MdCancel, MdZoomOutMap } from 'react-icons/md'
 
 import blank from '../assets/transparent.png'
 import supplier from '../assets/supplier.png'
@@ -37,6 +39,7 @@ import pb_fone from '../assets/pb_fone.png'
 
 export const FaIcon = ({ icon, size, height, width }) => {
   switch (icon) {
+    case 'FecharImg': return <AiOutlineCloseCircle size={size} />
     case 'FaTruck': return <FaTruck size={size} style={{ paddingTop: 10 }} />
     case 'FaBoxOpen': return <FaBoxOpen size={size} style={{ paddingTop: 10 }} />
     case 'FaArrowAltCircleRight': return <FaArrowAltCircleRight size={size} style={{ paddingTop: 10 }} />
@@ -61,9 +64,11 @@ export const FaIcon = ({ icon, size, height, width }) => {
     case 'FiAlertOctagon': return <FiAlertOctagon size={size} style={{ marginTop: 10 }} />
     case 'FiAlertTriangle': return <FiAlertTriangle size={size} style={{ marginTop: 10 }} />
     case 'FaCircle': return <FaCircle size={size} style={{ marginTop: 10 }} />
+    case 'FileUpload': return <FaFileUpload size={size} />
     case 'blank': return <Image src={blank} alt="" height={size} width={size} />
     case 'supplier': return <Image src={supplier} alt="" style={{ height: 20, width: 20 }} />
     case 'Documentos': return <FcDocument size={size} />
+    case 'Ampliar': return <MdZoomOutMap size={size} />
     case 'Deletar': return <MdDeleteForever size={size} style={{ color: '#FF0000' }} />
     case 'Add': return <MdAddCircle size={size} />
     case 'Save': return <FaSave size={size} />
