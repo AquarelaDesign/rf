@@ -52,7 +52,7 @@ import cadBancos from '../../../services/json/bancos.json'
 // import cadEstados from '../../../services/json/estados.json'
 // import cadTipoVeiculo from '../../../services/json/tipoveiculo.json'
 
-import Upload from './upload'
+import Upload from './uploadNew'
 import DatePicker from '../../datepicker'
 import { values } from 'lodash'
 // import useModal from '../../Email/useModal'
@@ -316,7 +316,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
         })
       } else if (error.request) {
         console.error('*** bu-1.2', error)
-        toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
       } else {
         toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
@@ -652,7 +652,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
           }
         } else if (error.request) {
           console.error('*** bu-1.2', error)
-          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
           toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
@@ -804,7 +804,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
           }
         } else if (error.request) {
           console.error('*** bu-1.2', error)
-          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
           toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }

@@ -23,7 +23,7 @@ import {
   TextField,
 } from 'final-form-material-ui'
 
-import Upload from '../CardUsuario/upload'
+import Upload from '../CardUsuario/uploadNew'
 import DatePicker from '../../datepicker'
 
 import "./modal.css"
@@ -271,7 +271,7 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, disabled, callba
                   props,
                 }) => {
                   return (
-                    <form onSubmit={handleSubmit} noValidate>
+                    <form onSubmit={handleSubmit} >
 
                       <div className={classes.botoes}>
                         {!disableEdit &&
@@ -403,7 +403,7 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, disabled, callba
                                       <Field
                                         label="Vencimento"
                                         name="cavalovct"
-                                        validate={required}
+                                        // validate={required}
                                         disabled={disableEdit}
                                         message="Informe a Data de Vencimento do Cavalo"
                                         variant="outlined"
