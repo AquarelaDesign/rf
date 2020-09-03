@@ -72,11 +72,12 @@ export default function datePicker(props) {
 
   const handleChange = (event) => {
     const { target: { value } } = event
-    console.log('*** datapicker value', value, props)
+    console.log('**** datapicker value', value, props)
     props.input.onChange(value)
     setData(value)
   }
 
+  // console.log('**** props', props)
   // if (data !== null) {
     return (
       <CssTextField 

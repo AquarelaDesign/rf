@@ -92,8 +92,7 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
     await api.get(`/usuarios`, {})
       .then(response => {
         if (response.status !== 200) {
-          toast(`Ocorreu um erro na busca dos usuários!`,
-            { type: 'error' })
+          toast(`Ocorreu um erro na busca dos usuários!`, { type: 'error' })
           return
         }
         setUsuarios(response.data)
@@ -110,9 +109,9 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
             console.log('*** data', data)
           }
         } else if (error.request) {
-          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
-          toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
       })
   }
