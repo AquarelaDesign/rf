@@ -72,9 +72,9 @@ const GridPedidosModal = ({ isShowing, hide }) => {
           }
         } else if (error.request) {
           console.error('*** bu-1.2', error)
-          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
-          toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
       })
   }
@@ -96,9 +96,9 @@ const GridPedidosModal = ({ isShowing, hide }) => {
           }
         } else if (error.request) {
           console.error('*** bu-1.2', error)
-          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
-          toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
       })
   }

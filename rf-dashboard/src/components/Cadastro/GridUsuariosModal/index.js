@@ -65,7 +65,13 @@ const useStyles = makeStyles((theme) => ({
 }))
 */
 
-const GridUsuarioModal = ({ isShowing, hide }) => {
+const GridUsuarioModal = ({ 
+  isShowing, 
+  hide, 
+  modo='', 
+  tipoConsulta='', 
+  callFind=undefined 
+}) => {
   // const classes = useStyles()
   // const [modalStyle] = React.useState(getModalStyle)
 
@@ -76,12 +82,22 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
   const [usuarioId, setUsuarioId] = useState(null)
   const [excluiId, setExcluiId] = useState(null)
   const [nomeExclui, setNomeExclui] = useState(null)
+  const [tipoCadastro, setTipoCadastro] = useState('USUÁRIOS')
+
   const { isShowUsuario, toggleUsuario } = useModal()
   const { isShowConfirma, toggleConfirma } = useModalConfirma()
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   useEffect(() => {
+    switch (tipoConsulta) {
+      case 'O': setTipoCadastro('OPERADORES'); break
+      case 'M': setTipoCadastro('MOTORISTAS'); break
+      case 'C': setTipoCadastro('CLIENTES'); break
+      case 'F': setTipoCadastro('FORNECEDORES'); break
+      default: setTipoCadastro('USUÁRIOS')
+    }
+    
     buscaUsuarios()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isShowing])
@@ -89,7 +105,12 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
   const buscaUsuarios = async () => {
     await sleep(1000)
     
-    await api.get(`/usuarios`, {})
+    await api.post(`/buscausuarios`, {
+      email: "",
+      tipo: tipoConsulta,
+      status: "",
+      estado: ""
+    })
       .then(response => {
         if (response.status !== 200) {
           toast(`Ocorreu um erro na busca dos usuários!`, { type: 'error' })
@@ -370,7 +391,7 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
       } else if (error.request) {
         toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
       } else {
-        toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+      // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
     })
   }
@@ -403,7 +424,7 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
       } else if (error.request) {
         toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
       } else {
-        toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+      // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
     })
   }
@@ -452,6 +473,21 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
     }
   }
 
+  const onReturn = (e) => {
+    e.preventDefault()
+    const selectedNodes = vgridApi.getSelectedNodes()
+
+    if (selectedNodes.length === 0 && tipoCadastro !== '') {
+      toast('Você deve selecionar um registro para retonar!', { type: 'error' })
+      return
+    } else {
+      hide()
+      if (callFind){
+        callFind(selectedNodes[0].data.id)
+      }
+    }
+  }
+
   if (isShowing) {
     return ReactDOM.createPortal(
       <React.Fragment>
@@ -466,7 +502,7 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
                       size={22} height={24} italic={true} bold={700} font='Arial'
                       mt={3}
                       color='#2699FB' shadow={true}>
-                      CADASTRO DE USUÁRIOS
+                      {`CADASTRO DE ${tipoCadastro}`}
                     </Texto>
                   </RLeft>
                   <RRight>
@@ -475,6 +511,14 @@ const GridUsuarioModal = ({ isShowing, hide }) => {
                           <FaIcon icon='GrUpdate' size={18} />
                       </Botao>
                     </Tooltip>
+                    {
+                      tipoConsulta !== '' && 
+                      <Tooltip title="Retornar Consulta">
+                        <Botao onClick={(e) => onReturn(e)}>
+                          <FaIcon icon='Return' size={22} />
+                        </Botao>
+                      </Tooltip>
+                    }
                     <Tooltip title="Excluir">
                       <Botao onClick={(e) => onButtonClick('X', e)}>
                         <FaIcon icon='Deletar' size={22} />

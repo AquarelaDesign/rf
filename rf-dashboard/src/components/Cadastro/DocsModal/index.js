@@ -96,7 +96,7 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, disabled, callba
           } else if (error.request) {
             toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
-            toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }
         })
     }
@@ -214,7 +214,7 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, disabled, callba
           } else if (error.request) {
             toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
-            toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }
         })
     }

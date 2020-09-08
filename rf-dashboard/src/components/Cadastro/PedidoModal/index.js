@@ -36,12 +36,12 @@ import { makeStyles } from '@material-ui/core/styles'
 
 import { Form } from './styles'
 import Input from '../../Forms/Input'
-import InputD from '../../Forms/InputD'
+// import InputD from '../../Forms/InputD'
 import * as Yup from 'yup'
 import { isCNPJ, isCPF } from 'brazilian-values'
 import MaskedInput from 'react-text-mask'
 
-import { AiOutlineSearch } from 'react-icons/ai'
+// import { AiOutlineSearch } from 'react-icons/ai'
 import { FaIcon } from '../../Icone'
 import "./modal.css"
 
@@ -56,6 +56,10 @@ import useModalDocs from '../DocsModal/useModal'
 
 import ConfirmaModal from '../../ConfirmaModal'
 import useModalConfirma from '../../ConfirmaModal/useModal'
+
+import GridUsuariosModal from '../GridUsuariosModal'
+import useModalUsuarios from '../GridUsuariosModal/useModal'
+
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -88,102 +92,6 @@ function a11yProps(index) {
     id: `simple-tab-${index}`,
     'aria-controls': `simple-tabpanel-${index}`,
   }
-}
-
-function clearNumber(value = '') {
-  return value.replace(/\D+/g, '')
-}
-function formatCpfCnpj(props) {
-  const { inputRef, value, ...other } = props
-
-  // if (!value) {
-  //   return value
-  // }
-
-  const clearValue = clearNumber(value)
-  let sMask = [/[0-9]/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/, /\d/]
-  if (clearValue.length > 11) {
-    sMask = [/[0-9]/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '/', /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/]
-  }
-
-  return (
-    <MaskedInput
-      {...other}
-      ref={(ref) => {
-        inputRef(ref ? ref.inputElement : null);
-      }}
-      value={value}
-      mask={sMask}
-      placeholderChar={'\u2000'}
-      showMask
-    />
-  )
-}
-
-formatCpfCnpj.propTypes = {
-  inputRef: PropTypes.func.isRequired,
-  onChange: PropTypes.func.isRequired,
-}
-
-function formatCelular(props) {
-  const { inputRef, value, ...other } = props
-
-  let valor = value
-  if (!valor) {
-    valor = ''
-  }
-
-  const clearValue = clearNumber(value)
-  let sMask = ['(', /[1-9]/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/, /\d/]
-  if (clearValue.length > 10) {
-    sMask = ['(', /[1-9]/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/]
-  }
-
-  return (
-    <MaskedInput
-      {...other}
-      ref={(ref) => {
-        inputRef(ref ? ref.inputElement : null);
-      }}
-      value={valor}
-      mask={sMask}
-      placeholderChar={'\u2000'}
-      showMask
-    />
-  )
-}
-
-formatCelular.propTypes = {
-  inputRef: PropTypes.func.isRequired,
-  onChange: PropTypes.func.isRequired,
-}
-function formatCep(props) {
-  const { inputRef, value, ...other } = props
-
-  let valor = value
-  if (!valor) {
-    valor = ''
-  }
-
-  const sMask = [/[1-9]/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/]
-
-  return (
-    <MaskedInput
-      {...other}
-      ref={(ref) => {
-        inputRef(ref ? ref.inputElement : null);
-      }}
-      value={valor}
-      mask={sMask}
-      placeholderChar={'\u2000'}
-      showMask
-    />
-  )
-}
-
-formatCep.propTypes = {
-  inputRef: PropTypes.func.isRequired,
-  onChange: PropTypes.func.isRequired,
 }
 
 const AntTabs = withStyles({
@@ -338,6 +246,8 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
   const { isShowDocs, toggleDocs } = useModalDocs()
   const { isShowConfirma, toggleConfirma } = useModalConfirma()
 
+  const { isShowing, toggleGridUsuarios } = useModalUsuarios()
+
   const style = {
     background: "#FFF",
     borderRadius: "0.25rem",
@@ -357,7 +267,6 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
       }
 
       if (pedidoId !== null && tipoCad !== 'N') {
-        console.log('**** buscaPedido')
         buscaPedido()
       }
 
@@ -377,7 +286,7 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
       } else if (error.request) {
         toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
       } else {
-        toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+      // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
     }
   }, [pedidoId, tipoCad, disableEdit])
@@ -392,13 +301,35 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
           data.limitecoleta = data.limitecoleta ? data.limitecoleta.substring(0, 10) : null
           data.limiteentrega = data.limiteentrega ? data.limiteentrega.substring(0, 10) : null
 
-          console.log('**** data.rotas', data.rotas)
-
           setValues(data)
+          formRef.current.setFieldValue('id', data.id)
+          formRef.current.setFieldValue('limitecoleta', data.limitecoleta)
+          formRef.current.setFieldValue('limiteentrega', data.limiteentrega)
+
           setTipoCadastro(data.tipo)
           setVeiculos(data.veiculos)
           setRotas(data.rotas)
-          buscaCliente(data.cliente_id)
+
+          if (data.cliente_id !== null) {
+            buscaCliente(data.cliente_id)
+          } else {
+            setDadosCliente({
+              id: '', 
+              cpfcnpj: '', 
+              nome: '', 
+              contato: '', 
+              email: '', 
+              celular: '', 
+              whats: '',
+              logradouro: '', 
+              numero: '', 
+              complemento: '',
+              bairro: '', 
+              cidade: '', 
+              uf: '', 
+              cep: '', 
+            })
+          }
         }).catch((error) => {
           if (error.response) {
             const { data } = error.response
@@ -413,19 +344,24 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
           } else if (error.request) {
             toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
-            toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }
         })
     }
   }
-  
+
   const buscaCliente = async (clienteID) => {
     if (clienteID) {
       await api
         .get(`/usuarios/${clienteID}`)
         .then(response => {
           const { data } = response
+
+          console.log('*** data', data)
           setDadosCliente(data)
+
+          formRef.current.setFieldValue('cliente_id', data.id)
+
         }).catch((error) => {
           if (error.response) {
             const { data } = error.response
@@ -440,7 +376,7 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
           } else if (error.request) {
             toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
-            toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }
         })
     }
@@ -469,7 +405,7 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
           } else if (error.request) {
             toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
-            toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }
         })
     }
@@ -477,7 +413,14 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
   */
 
   const findCliente = () => {
-    alert('findCliente')
+    toggleGridUsuarios()
+  }
+
+  const callBackCliente = (e) => {
+    formRef.current.setFieldValue('cliente_id', e)
+    setValues({ ...values, cliente_id: e })
+    buscaCliente(e)
+    // alert(`Retorno Clientes: ${e}`)
   }
 
   const deleteRowVeiculo = async (props, e) => {
@@ -738,7 +681,13 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
   async function handleSubmit (data, { reset }) {
     try {
       
-      console.log('**** data', data)
+      const dados = {
+        tipo: 'C',
+        id: formRef.current.getFieldValue('id'),
+        limitecoleta: formRef.current.getFieldValue('limitecoleta'),
+        limiteentrega: formRef.current.getFieldValue('limiteentrega'),
+        cliente_id: formRef.current.getFieldValue('cliente_id'),
+      }
 
       const schema = Yup.object().shape({
         id: Yup.string().required('O pedido é obrigatório'),
@@ -752,10 +701,9 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
         abortEarly: false,
       })
       
-      // console.log('**** formRef.current', formRef.current)
-          
       formRef.current.setErrors({})
-      reset()
+
+      console.log('**** Salvar Dados', dados)
       
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
@@ -808,8 +756,8 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
                 <div className={classes.demo1}>
                   <AntTabs value={value} onChange={handleChange} aria-label="Dados do Pedido">
                     <AntTab label="Pedido" {...a11yProps(0)} />
-                    <AntTab label="Veículos" {...a11yProps(1)} />
-                    <AntTab label="Rotas" {...a11yProps(1)} />
+                    <AntTab label="Dados" {...a11yProps(1)} />
+                    {/* <AntTab label="Rotas" {...a11yProps(2)} /> */}
                   </AntTabs>
                 </div>
 
@@ -841,13 +789,13 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
                           <Grid>
                             <Row style={{ height: '54px', marginTop: '15px' }}>
                               <Col xs={2}>
-                                <InputD 
+                                <Input 
                                   type="text" 
                                   onFocus onBlur 
                                   name="id" 
                                   label="Pedido"
                                   value={values.id}
-                                  disabled 
+                                  disabled={true}
                                 />
                               </Col>
                               <Col xs={2}>
@@ -906,30 +854,30 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
                                   onFocus onBlur 
                                   name="cliente_id" 
                                   label="Cliente" 
-                                  icon={<AiOutlineSearch />} 
-                                  callButton={findCliente}
+                                  icon={true} 
+                                  callSearch={findCliente}
                                   value={values.cliente_id}
                                   onChange={e => setValues({ ...values, cliente_id: e.target.value })} 
                                 />
                               </Col>
                               <Col xs={2}>
-                                <InputD 
+                                <Input
                                   type="text" 
                                   onFocus onBlur 
                                   name="cpfcnpj" 
                                   label="CPF/CNPJ" 
                                   value={dadosCliente.cpfcnpj} 
-                                  disabled
+                                  disabled={true}
                                 />
                               </Col>
                               <Col xs={8}>
-                                <InputD 
+                                <Input
                                   type="text" 
                                   onFocus onBlur 
                                   name="nome" 
                                   label="Nome" 
                                   value={dadosCliente.nome} 
-                                  disabled
+                                  disabled={true}
                                 />
                               </Col>
                             </Row>
@@ -945,33 +893,33 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
                                 />
                               </Col>
                               <Col xs={5}>
-                                <InputD 
+                                <Input
                                   type="text" 
                                   onFocus onBlur 
                                   name="email" 
                                   label="E-mail" 
                                   value={dadosCliente.email} 
-                                  disabled
+                                  disabled={true}
                                 />
                               </Col>
                               <Col xs={2}>
-                                <InputD 
+                                <Input
                                   type="text" 
                                   onFocus onBlur 
                                   name="celular" 
                                   label="Celular" 
                                   value={dadosCliente.celular} 
-                                  disabled
+                                  disabled={true}
                                 />
                               </Col>
                               <Col xs={2}>
-                                <InputD 
+                                <Input
                                   type="text" 
                                   onFocus onBlur 
                                   name="whats" 
                                   label="WhatsApp" 
                                   value={dadosCliente.whats} 
-                                  disabled
+                                  disabled={true}
                                 />
                               </Col>
                             </Row>
@@ -988,23 +936,23 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
                                 />
                               </Col>
                               <Col xs={2}>
-                                <InputD 
+                                <Input
                                   type="text" 
                                   onFocus onBlur 
                                   name="numero" 
                                   label="Número" 
                                   value={dadosCliente.numero} 
-                                  disabled
+                                  disabled={true}
                                 />
                               </Col>
                               <Col xs={4}>
-                                <InputD 
+                                <Input
                                   type="text" 
                                   onFocus onBlur 
                                   name="complemento" 
                                   label="Complemento" 
                                   value={dadosCliente.complemento} 
-                                  disabled
+                                  disabled={true}
                                 />
                               </Col>
                             </Row>
@@ -1016,37 +964,37 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
                                   name="bairro" 
                                   label="Bairro" 
                                   value={dadosCliente.bairro}
-                                  disabled
+                                  disabled={true}
                                 />
                               </Col>
                               <Col xs={3}>
-                                <InputD 
+                                <Input
                                   type="text" 
                                   onFocus onBlur 
                                   name="cidade" 
                                   label="Cidade" 
                                   value={dadosCliente.cidade} 
-                                  disabled
+                                  disabled={true}
                                 />
                               </Col>
                               <Col xs={1}>
-                                <InputD 
+                                <Input
                                   type="text" 
                                   onFocus onBlur 
                                   name="uf" 
                                   label="UF" 
                                   value={dadosCliente.uf} 
-                                  disabled
+                                  disabled={true}
                                 />
                               </Col>
                               <Col xs={2}>
-                                <InputD 
+                                <Input
                                   type="text" 
                                   onFocus onBlur 
                                   name="cep" 
                                   label="CEP" 
                                   value={dadosCliente.cep} 
-                                  disabled
+                                  disabled={true}
                                 />
                               </Col>
                             </Row>
@@ -1065,6 +1013,28 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
                         <div
                           className={classes.botoesVeiculos}
                         >
+                          <Texto
+                            size={18} height={20} italic={true} bold={600} font='Arial'
+                            mt={5}
+                            color='#2699FB' shadow={true}>
+                            Veículos
+                          </Texto>
+
+                          <button onClick={(e) => onVeiculos(e, 'E')}
+                            style={{ backgroundColor: 'transparent' }}
+                          >
+                            <Tooltip title="Editar Veículo">
+                              <span style={{
+                                alignItems: 'center',
+                                color: '#000000',
+                                cursor: 'pointer',
+                                marginTop: '3px',
+                              }}>
+                                <FaIcon icon='Documentos' size={30} />
+                              </span>
+                            </Tooltip>
+                          </button>
+
                           {/* {!disableEdit && */}
                             <button onClick={(e) => onVeiculos(e, 'N')}
                               style={{ backgroundColor: 'transparent' }}
@@ -1087,8 +1057,30 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
                         <div
                           className={classes.botoesRotas}
                         >
+                          <Texto
+                            size={18} height={20} italic={true} bold={600} font='Arial'
+                            mt={5}
+                            color='#2699FB' shadow={true}>
+                            Rotas
+                          </Texto>
+
+                          <button onClick={(e) => onRotas(e, 'E')}
+                            style={{ backgroundColor: 'transparent' }}
+                          >
+                            <Tooltip title="Editar Rota">
+                              <span style={{
+                                alignItems: 'center',
+                                color: '#000000',
+                                cursor: 'pointer',
+                                marginTop: '3px',
+                              }}>
+                                <FaIcon icon='Documentos' size={30} />
+                              </span>
+                            </Tooltip>
+                          </button>
+
                           {/* {!disableEdit && */}
-                            <button onClick={(e) => onVeiculos(e, 'N')}
+                            <button onClick={(e) => onRotas(e, 'N')}
                               style={{ backgroundColor: 'transparent' }}
                             >
                               <Tooltip title="Adicionar um novo veículo">
@@ -1182,6 +1174,12 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
                 </Texto>
               </BoxTitulo>
             </Container>
+            <GridUsuariosModal 
+              isShowing={isShowing}
+              hide={toggleGridUsuarios}
+              tipoConsulta='C'
+              callFind={callBackCliente}
+            />
           </div>
         </div>
       </React.Fragment>

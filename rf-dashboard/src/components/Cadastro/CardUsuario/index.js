@@ -318,7 +318,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
         console.error('*** bu-1.2', error)
         // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
       } else {
-        toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+      // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
     }
   }, [userID, tipoCad, disableEdit])
@@ -367,7 +367,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
           } else if (error.request) {
             toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
-            toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }
         })
     }
@@ -395,7 +395,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
           } else if (error.request) {
             toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
-            toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }
         })
     }
@@ -654,7 +654,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
           console.error('*** bu-1.2', error)
           // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
-          toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
       })
     }
@@ -806,7 +806,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
           console.error('*** bu-1.2', error)
           // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
-          toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
       })
 
@@ -925,7 +925,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
         } else if (error.request) {
           toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
-          toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
         setAtualizaCEP(false)
       })

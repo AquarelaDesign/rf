@@ -20,10 +20,11 @@ import {
   FaFileUpload,
 } from 'react-icons/fa'
 
+import { BsBackspaceFill } from 'react-icons/bs'
 import { AiOutlineCloseCircle } from 'react-icons/ai'
 import { GoChecklist } from 'react-icons/go'
 import { GrDeliver, GrUpdate, GrHostMaintenance, GrSecure } from 'react-icons/gr'
-import { GiExitDoor, GiStopwatch } from 'react-icons/gi'
+import { GiExitDoor, GiStopwatch, GiReturnArrow } from 'react-icons/gi'
 import { RiSearchLine } from 'react-icons/ri'
 import { FcPlus, FcCancel, FcDocument, FcInTransit } from 'react-icons/fc'
 import { FiAlertOctagon, FiAlertTriangle } from 'react-icons/fi'
@@ -39,6 +40,7 @@ import pb_fone from '../assets/pb_fone.png'
 
 export const FaIcon = ({ icon, size, height, width }) => {
   switch (icon) {
+    case 'Return': return <BsBackspaceFill size={size} />
     case 'FecharImg': return <AiOutlineCloseCircle size={size} />
     case 'FaTruck': return <FaTruck size={size} style={{ paddingTop: 10 }} />
     case 'FaBoxOpen': return <FaBoxOpen size={size} style={{ paddingTop: 10 }} />

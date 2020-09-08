@@ -63,7 +63,7 @@ export default function Menu() {
           console.error('*** lo-1.2', error)
           toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
-          toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
       })
   }

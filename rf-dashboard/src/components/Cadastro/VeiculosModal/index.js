@@ -1,37 +1,35 @@
-/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable array-callback-return */
 import React, { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom'
-
+import { toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import {
   Container,
   BoxTitulo,
   Texto,
   RLeft,
   RRight,
-  // Botao,
-  GridModal,
-  // Blank,
-} from './styles'
-
-import { toast } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
-
-import { Tooltip,} from '@material-ui/core'
-import { FaIcon } from '../../Icone'
-
-import "./modal.css"
-
-import api from '../../../services/rf'
-
+  Blank,
+} from '../CardUsuario/styles'
 import { makeStyles } from '@material-ui/core/styles'
-import { withStyles } from '@material-ui/core'
+
+import { Tooltip, withStyles, MenuItem } from '@material-ui/core'
+import { FaIcon } from '../../Icone'
 
 import { Grid, Row, Col } from 'react-flexbox-grid'
 import { Form, Field } from 'react-final-form'
 
 import {
-  TextField
+  TextField,
 } from 'final-form-material-ui'
+
+import Upload from '../CardUsuario/uploadNew'
+import DatePicker from '../../datepicker'
+
+import "./modal.css"
+import api from '../../../services/rf'
+
+import moment from 'moment'
 
 const useStyles = makeStyles((theme) => ({
   botoes: {
@@ -40,7 +38,6 @@ const useStyles = makeStyles((theme) => ({
     right: 5,
   },
 }))
-
 
 const CssTextField = withStyles({
   root: {
@@ -66,153 +63,24 @@ const CssTextField = withStyles({
     '& .MuiFormHelperText-contained': {
       justifyContent: 'left',
     },
+
   },
 })(TextField)
 
-const UserModal = ({ isShowUser, hide, userID }) => {
+const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabled, callback }) => {
+  const ref = React.createRef()
   const classes = useStyles()
 
-  const [novo, setNovo] = useState(true)
-  // const [email, setEmail] = useState('')
-  // const [password, setPassword] = useState('')
-  const [user, setUser] = useState({
-    id: null,
-    username: "",
-    email: "",
-    password: "",
-    password1: "",
-    usuario_id: null
-  })
+  const [veiculo, setVeiculo] = useState([])
+  const [disableEdit, setDisableEdit] = useState(disabled)
 
   useEffect(() => {
-    if (userID) {
-      buscaUsuario()
-    } else {
-      toast(`O registro do usuário ainda não foi criado, por favor salve o registro e tente novamente!`, { type: 'error' })
-      hide()
-    }
-  }, [userID])
-
-  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
-
-  const buscaUsuario = async () => {
-    if (userID) {
+    const buscaVeiculo = async () => {
       await api
-        .get(`/usuarios/${userID}`)
+        .get(`/veiculos/${veiculoID}`)
         .then(response => {
           const { data } = response
-          
-          setUser({
-            id: data.id,
-            username: data.nome,
-            email: data.email,
-            password: "",
-            password1: "",
-            usuario_id: data.user_id ? data.user_id : userID,
-          })
-          setNovo(data.user_id ? false : true)
-
-        }).catch((error) => {
-          if (error.response) {
-            const { data } = error.response
-            try {
-              data.map(mensagem => {
-                toast(mensagem.message, { type: 'error' })
-                return true
-              },{})
-            }
-            catch (e) {
-              console.log('*** data', data)
-            }
-          } else if (error.request) {
-            toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
-          } else {
-          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
-          }
-        })
-    }
-  }
-
-  const onSubmit = async (values) => {
-    if (String(values.password).length === 0 || String(values.password1).length === 0) {
-      toast('As senhas devem ser informadas!', { type: 'error' })
-      return
-    }
-
-    if (values.password !== values.password1) {
-      toast('As senhas informadas não são iguais!', { type: 'error' })
-      return
-    }
-
-    let apiParams = {}
-    if (novo) {
-      apiParams = {
-        url: `/users`,
-        method: 'post',
-        data: values
-      }
-    } else {
-      apiParams = {
-        url: `/users/${userID}`,
-        method: 'put',
-        data: values
-      }
-    } 
-
-    delete values['id']
-    delete values['password1']
-
-    if (values) {
-      await api(apiParams, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        }
-      })
-      .then(response => {
-        if (response.status !== 200) {
-          toast(`Ocorreu um erro ao atualizar os dados!`, {type: 'error'})
-          return
-        } 
-        if (novo) {
-          toast(`Acesso Liberado!`, {type: 'success'})
-          atualizaUser(response.data.id)
-        } else {
-          toast(`Dados Atualizados!`, {type: 'success'})
-        }
-        fechar()
-
-      }).catch((error) => {
-        if (error.response) {
-          const { data } = error.response
-          try {
-            data.map(mensagem => {
-              toast(mensagem.message, { type: 'error' })
-              return true
-            },{})
-          }
-          catch (e) {
-            console.log('*** error data', data)
-          }
-        } else if (error.request) {
-          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
-        } else {
-        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
-        }
-      })
-    }
-  }
-
-  const atualizaUser = async (usuario_id) => {
-    if (usuario_id) {
-      await api
-        .put(`/usuarios/${userID}`, {
-          user_id: usuario_id,
-        })
-        .then(response => {
-          if (response.status !== 200) {
-            toast(`Erro ao associar usuário!`, {type: 'error'})
-          } 
+          setVeiculo(data)
         })
         .catch((error) => {
           if (error.response) {
@@ -220,11 +88,10 @@ const UserModal = ({ isShowUser, hide, userID }) => {
             try {
               data.map(mensagem => {
                 toast(mensagem.message, { type: 'error' })
-                return true
-              }, {})
+              })
             }
             catch (e) {
-              console.log('*** data', data)
+              console.log('*** data', data.message)
             }
           } else if (error.request) {
             toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
@@ -234,45 +101,156 @@ const UserModal = ({ isShowUser, hide, userID }) => {
         })
     }
 
+    // console.log('**** DocsModal', veiculoID, tipo)
+    // console.log('**** disableEdit', disableEdit)
+    // console.log('**** disabled', disabled)
+    if (veiculoID && veiculoID > 0 && tipo === 'E') {
+      setDisableEdit(false)
+      buscaVeiculo()
+    } else if (tipo === 'N') {
+      setDisableEdit(false)
+      var newData = {
+        pedido_id: pedidoID,
+        placachassi: "",
+        modelo: "",
+        estado: "",
+        ano: null,
+        valor: null,
+        fipe: "",
+      }
+      setVeiculo(newData)
+    } else if (tipo === 'D') {
+      setDisableEdit(true)
+      if (veiculoID && veiculoID > 0) {
+        buscaVeiculo()
+      }
+    }
+
+  }, [veiculoID, pedidoID, tipo])
+
+  const onSubmit = async (values) => {
+    if (values.cavalovct === "") {
+      toast(`Informe a Data de Vencimento do Cavalo!`, { type: 'error' })
+      return
+    }
+
+    let newValues = {}
+    for (let key in values) {
+      if (key === 'placachassi') {
+        newValues[key] = values[key].toUpperCase()
+      } else if (
+        key === 'habilitacaovct' ||
+        key === 'ANTTvct' ||
+        key === 'cavalovct' ||
+        key === 'carretavct'
+      ) {
+        if (values[key]) {
+          newValues[key] = moment(values[key]).format('YYYY-MM-DD')
+        } else {
+          newValues[key] = values[key]
+        }
+      } else {
+        newValues[key] = values[key]
+      }
+    }
+
+    let apiParams = {}
+    if (veiculoID) {
+      apiParams = {
+        url: `/veiculosm/${veiculoID}`,
+        method: 'put',
+        data: newValues
+      }
+    } else {
+      delete newValues['id']
+      apiParams = {
+        url: `/veiculosm`,
+        method: 'post',
+        data: newValues
+      }
+    }
+
+    if (newValues) {
+      const placa = newValues.placachassi
+
+      await api(apiParams, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
+      })
+        .then(response => {
+          const { data } = response
+          if (response.status !== 200) {
+            toast(`Ocorreu um erro no processamento da placa [${placa}]!`,
+              { type: 'error' })
+            return
+          }
+          
+          setVeiculo(data)
+          fechar()
+
+        }).catch((error) => {
+          if (error.response) {
+            const { data } = error.response
+            try {
+              data.map(mensagem => {
+                toast(mensagem.message, { type: 'error' })
+              })
+            }
+            catch (e) {
+              console.log('*** error data', data)
+            }
+          } else if (error.request) {
+            toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          } else {
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          }
+        })
+    }
   }
+
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   const fechar = async () => {
     await sleep(1000)
-    hide()
+
+    if (callback) {
+      callback()
+      hide()
+    }
   }
+
 
   const required = value => (value ? undefined : '* Obrigatório!')
 
-  if (isShowUser) {
+  if (isShowVeiculos) {
     return ReactDOM.createPortal(
       <React.Fragment>
         <div className="modal-overlay" />
         <div className="modal-wrapper" aria-modal aria-hidden tabIndex={-1} role="dialog">
-          <div className="modal-user">
+          <div className="modal-box">
             <Container>
               <BoxTitulo height={24} bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10}>
-                <GridModal mb={5}>
+                <Grid mb={5}>
                   <RLeft>
                     <Texto
                       size={22} height={24} italic={true} bold={700} font='Arial'
                       mt={3}
                       color='#2699FB' shadow={true}>
-                      {novo ? 'LIBERAÇÃO DE ACESSO' : 'ALTERAÇÃO DA SENHA'}
+                      {veiculo.placachassi ? `Dados do Veículo [${veiculo.placachassi}]` : 'Dados do Veículo'}
                     </Texto>
                   </RLeft>
                   <RRight>
-                    {/* <Blank><FaIcon icon='blank' size={20} height={20} width={20} /> </Blank> */}
-                    {/* <Blank><FaIcon icon='blank' size={20} height={20} width={20} /> </Blank> */}
-                    {/* <Tooltip title="Fechar Janela">
-                      <Botao onClick={hide}><FaIcon icon='GiExitDoor' size={20} /> </Botao>
-                    </Tooltip> */}
+                    <Blank><FaIcon icon='blank' size={20} height={20} width={20} /> </Blank>
+                    <Blank><FaIcon icon='blank' size={20} height={20} width={20} /> </Blank>
                   </RRight>
-                </GridModal>
+                </Grid>
               </BoxTitulo>
 
               <Form
                 onSubmit={onSubmit}
-                initialValues={user}
+                initialValues={veiculo}
                 validate={required}
                 render={({
                   handleSubmit,
@@ -283,23 +261,25 @@ const UserModal = ({ isShowUser, hide, userID }) => {
                   props,
                 }) => {
                   return (
-                    <form onSubmit={handleSubmit} noValidate>
+                    <form onSubmit={handleSubmit} >
 
                       <div className={classes.botoes}>
-                        <button type="submit"
-                          style={{ backgroundColor: 'transparent' }}
-                        >
-                          <Tooltip title="Salvar">
-                            <span style={{
-                              alignItems: 'center',
-                              color: '#0000FF',
-                              cursor: 'pointer',
-                              marginTop: '3px',
-                            }}>
-                              <FaIcon icon='Save' size={20} />
-                            </span>
-                          </Tooltip>
-                        </button>
+                        {!disableEdit &&
+                          <button type="submit"
+                            style={{ backgroundColor: 'transparent' }}
+                          >
+                            <Tooltip title="Salvar">
+                              <span style={{
+                                alignItems: 'center',
+                                color: '#0000FF',
+                                cursor: 'pointer',
+                                marginTop: '3px',
+                              }}>
+                                <FaIcon icon='Save' size={20} />
+                              </span>
+                            </Tooltip>
+                          </button>
+                        }
 
                         <button type="button"
                           onClick={hide}
@@ -321,64 +301,59 @@ const UserModal = ({ isShowUser, hide, userID }) => {
                       <div style={{ paddingTop: '15px', paddingBottom: '20px', height: '100%', backgroundColor: '#FFFFFF' }}>
                         <Grid fluid style={{ marginTop: '15px', height: '100%' }}>
                           <Row style={{ minHeight: '65px' }}>
-                            <Col xs={12}>
+                            <Col xs={4}>
                               <Field
-                                name="username"
-                                component={CssTextField}
-                                // validate={required}
-                                type="text"
-                                label="Usuário"
-                                variant="outlined"
-                                fullWidth
-                                size="small"
-                                margin="dense"
-                                disabled={true}
-                              />
-                            </Col>
-                          </Row>
-                          <Row style={{ minHeight: '65px' }}>
-                            <Col xs={12}>
-                              <Field
-                                name="email"
-                                component={CssTextField}
-                                // validate={required}
-                                type="text"
-                                label="Email"
-                                variant="outlined"
-                                fullWidth
-                                size="small"
-                                margin="dense"
-                                disabled={true}
-                              />
-                            </Col>
-                          </Row>
-                          <Row style={{ minHeight: '65px' }}>
-                            <Col xs={6}>
-                              <Field
-                                name="password"
+                                name="placachassi"
                                 component={CssTextField}
                                 validate={required}
-                                type="password"
-                                label="Senha"
+                                disabled={disableEdit}
+                                type="text"
+                                label="Placa/Chassi"
                                 variant="outlined"
                                 fullWidth
                                 size="small"
                                 margin="dense"
+                                inputProps={{
+                                  inputProps: { maxLength: 7 },
+                                }}
                               />
                             </Col>
-                            <Col xs={6}>
+                            <Col xs={8}>
                               <Field
-                                name="password1"
+                                name="modelo"
                                 component={CssTextField}
-                                // validate={required}
-                                type="password"
-                                label="Confirme a Senha"
+                                validate={required}
+                                disabled={disableEdit}
+                                type="text"
+                                label="Modelo"
                                 variant="outlined"
                                 fullWidth
                                 size="small"
                                 margin="dense"
                               />
                             </Col>
+                          </Row>
+                          <Row>
+                            <Col xs={4}>
+                              <Field
+                                name="estado"
+                                component={CssTextField}
+                                validate={required}
+                                disabled={disableEdit}
+                                type="select"
+                                label="Estado"
+                                variant="outlined"
+                                fullWidth
+                                select
+                                size="small"
+                                margin="dense"
+                              >
+                                <MenuItem value="CARRETA">CARRETA</MenuItem>
+                                <MenuItem value="CAVALO">CAVALO</MenuItem>
+                                <MenuItem value="PLATAFORMA">PLATAFORMA</MenuItem>
+                              </Field>
+                            </Col>
+
                           </Row>
                           <Row>
                             <Col xs={12}>
@@ -390,7 +365,6 @@ const UserModal = ({ isShowUser, hide, userID }) => {
                   )
                 }}
               />
-
 
               <BoxTitulo height={24} mt={10}>
                 <Texto
@@ -406,4 +380,4 @@ const UserModal = ({ isShowUser, hide, userID }) => {
   return null
 }
 
-export default UserModal
+export default VeiculosModal
