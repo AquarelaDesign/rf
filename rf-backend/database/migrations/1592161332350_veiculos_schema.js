@@ -19,6 +19,10 @@ class VeiculosSchema extends Schema {
       table.integer('ano').defaultTo(0)
       table.decimal('valor', 18, 2).defaultTo(0)
       table.string('fipe').defaultTo('')
+      table.string('fipe_tipo').defaultTo('')
+      table.integer('fipe_marca_id').defaultTo(0)
+      table.integer('fipe_modelo_id').defaultTo(0)
+      table.string('fipe_ano_id').defaultTo('')
       table.timestamps()
     })
   }

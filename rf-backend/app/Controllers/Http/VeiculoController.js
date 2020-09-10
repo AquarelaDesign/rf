@@ -46,6 +46,10 @@ class VeiculoController {
       "ano",
       "valor",
       "fipe",
+      "fipe_tipo",
+      "fipe_marca_id",
+      "fipe_modelo_id",
+      "fipe_ano_id",
     ])
 
     const veiculos = await Veiculo.create(data)
@@ -91,6 +95,10 @@ class VeiculoController {
       "ano",
       "valor",
       "fipe",
+      "fipe_tipo",
+      "fipe_marca_id",
+      "fipe_modelo_id",
+      "fipe_ano_id",
     ])
 
     veiculos.merge(data)
