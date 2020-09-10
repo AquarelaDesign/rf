@@ -1,4 +1,5 @@
 import styled from 'styled-components'
+import px2vw from '../../components/px2vw'
 
 export const Div = styled.div`
   display: flex;
@@ -14,7 +15,7 @@ export const Div = styled.div`
 export const Topo = styled.div`
   display: flex;
   width: 100%;
-  height: 60px;
+  height: 40px;
   flex-direction: column;
   align-items: center;
   background-color: #225378;
@@ -26,7 +27,7 @@ export const Topo = styled.div`
 export const Rodape = styled.div`
   display: flex;
   width: 100%;
-  height: 150px;
+  max-height: ${px2vw(120)};
   flex-direction: row;
   flex-grow: 3;
   justify-content: space-between;
@@ -38,7 +39,8 @@ export const Rodape = styled.div`
   bottom: 0px; 
   line-height: 1.6;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: 0.9em;
+  font-size: 2vh;
+  /* font-size: 0.9em; */
 `;
 
 export const RTitulo = styled.div`
@@ -59,7 +61,7 @@ export const RLeft = styled.div`
   width: 33%;
   height: 100%;
   float: left;
-  padding: 20px;
+  padding: 0px 0px 20px 0px;
   color: #FFFFFF;
 `;
 
@@ -67,7 +69,7 @@ export const RCenter = styled.div`
   width: 34%;
   height: 100%;
   float: none;
-  padding: 20px;
+  padding: 0px 0px 20px 0px;
   color: #FFFFFF;
 `;
 
@@ -75,7 +77,7 @@ export const RRight = styled.div`
   width: 33%;
   height: 100%;
   float: right;
-  padding: 20px;
+  padding: 0px 0px 20px 0px;
   color: #FFFFFF;
 `;
 
@@ -84,7 +86,7 @@ export const TituloLogin = styled.div`
   font-family: "Montserrat", sans-serif;
   font-weight: bold;
   font-style: italic;
-  font-size: 2em;
+  font-size: 3.5vh;
   text-align: center;
 `;
 
@@ -92,21 +94,25 @@ export const FormLabel = styled.div`
   color: #225378;
   font-family: "Montserrat", sans-serif;
   font-style: italic;
-  font-size: 1.3em;
+  font-size: 2.5vh;
   margin-top: 20px;
 `;
 
 export const Loginsc = styled.div`
   display: flex;
   width: 400px;
-  height: 500px;
+  min-height: 500px;
+  height: auto;
   flex-direction: column;
   align-items: center;
   float: right;
   background-color: rgba(255, 255, 255, 0.8);
   border-radius: 21px;
   padding: 0px 20px;
-  margin: 80px 20px;
+  margin: 80px 5vh auto;
+  /* top: 80px;
+  right: 40px; */
+  /* bottom: 40px; */
 
   p {
     font-size: 1em;
@@ -178,7 +184,8 @@ export const Loginsc = styled.div`
 `;
 
 export const Botao = styled.div`
-  margin-top: 15px;
+  margin-top: 10px;
+  margin-bottom: 30px;
   align-self: center;
   text-align: center;
   width: 100%;

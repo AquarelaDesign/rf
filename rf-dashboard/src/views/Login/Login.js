@@ -1,5 +1,5 @@
 /* eslint-disable array-callback-return */
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -9,6 +9,10 @@ import { AccountCircle, Lock } from '@material-ui/icons'
 
 import api from '../../services/rf'
 import logo from '../../assets/logo.png'
+import logo1 from '../../assets/LogiLog.png'
+import Empresa1 from '../../services/json/empresa.json'
+import Empresa2 from '../../services/json/empresa2.json'
+
 import { 
   Loginsc, 
   TituloLogin, 
@@ -24,9 +28,16 @@ import {
 } from './styles'
 
 const Login = ({ history }) => {
+  const [Empresa, setEmpresa] = useState(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   // const [rememberMe, setRememberMe] = useState(false)
+
+  useEffect(() => {
+    if (Empresa === null) {
+      setEmpresa(window.location.hostname === "localhost1" ? Empresa2 : Empresa1)
+    }
+  },[Empresa])
   
   const clickEsqueceuSenha = () => {
     console.log('clickEsqueceuSenha')
@@ -144,10 +155,21 @@ const Login = ({ history }) => {
   }
   
   return (
-    <Container style={{height: '100%', margin: '0px', width: '100%', padding: '0px'}}>
+    <Container style={{
+      height: '100%', 
+      margin: '0px', 
+      width: '100%', 
+      padding: '0px', 
+      alignItems: 'center' 
+    }}>
       <Topo/>
       <Loginsc>
-        <Image id="logo" src={logo} alt="" style={{marginTop: 20, height: 150}} />
+        <Image 
+          id="logo" 
+          src={window.location.hostname === "localhost1" ? logo1 : logo} 
+          alt="" 
+          style={{marginTop: 20, minHeight: 150, height: '20vh'}} 
+        />
         <Form onSubmit={handleSubmit}>
           <TituloLogin>Login</TituloLogin>
 
@@ -204,27 +226,26 @@ const Login = ({ history }) => {
       <Rodape>
         <RLeft>
           <RTitulo>CONTATO</RTitulo>
-          <RTexto>
-            contato@arenatransautos.com.br<br/>
-            +55 (41)  3284-5252<br/>
-            +55 (41) 99165-5253
-          </RTexto>
+          {Empresa && <RTexto>
+            {Empresa.email}<br/>
+            {Empresa.telefone}<br/>
+            {Empresa.whatsapp}
+          </RTexto>}
         </RLeft>
         <RCenter>
           <RTitulo>SOBRE</RTitulo>
           <RTexto>
             Quem Somos<br/>
-            Portal Transporte de Veículos<br/>
+            Portal {window.location.hostname === "localhost1" ? '' : 'Transporte de Veículos'}<br/>
             Política de Privacidade<br/>
             Termos de Uso
           </RTexto>
         </RCenter>
         <RRight>
           <RTitulo>INFORMAÇÕES</RTitulo>
-          <RTexto>
-            Software para gestão de transporte de veículos,
-            para transportistas e transportadoras
-          </RTexto>
+          {Empresa && <RTexto>
+            {Empresa.info}
+          </RTexto>}
         </RRight>
       </Rodape>
     </Container>
