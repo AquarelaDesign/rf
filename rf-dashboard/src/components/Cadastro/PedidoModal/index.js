@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, createRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
 
@@ -36,7 +36,7 @@ import { makeStyles } from '@material-ui/core/styles'
 
 import { Form } from './styles'
 import Input from '../../Forms/Input'
-// import InputD from '../../Forms/InputD'
+
 import * as Yup from 'yup'
 import { isCNPJ, isCPF } from 'brazilian-values'
 import MaskedInput from 'react-text-mask'
@@ -60,6 +60,8 @@ import useModalConfirma from '../../ConfirmaModal/useModal'
 import GridUsuariosModal from '../GridUsuariosModal'
 import useModalUsuarios from '../GridUsuariosModal/useModal'
 
+import VeiculosModal from '../VeiculosModal'
+import useModalVeiculos from '../VeiculosModal/useModal'
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -218,6 +220,7 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
   const classes = useStyles()
   const formRef = useRef(null)
 
+  const [pedidoID, setPedidoID] = useState(pedidoId)
   const [value, setValue] = useState(0)
   const [values, setValues] = useState({})
   const [dadosCliente, setDadosCliente] = useState({})
@@ -231,8 +234,9 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
 
   const [vgridVeiculos, setVgridVeiculos] = useState(gridApi)
   const [veiculos, setVeiculos] = useState([])
-  const [veiculoId, setVeiculoId] = useState(0)
+  const [veiculoID, setVeiculoID] = useState(0)
   const [veiculoExclui, setVeiculoExclui] = useState(null)
+  const { isShowVeiculos, toggleVeiculos } = useModalVeiculos()
 
   const [vgridRotas, setVgridRotas] = useState(gridApi)
   const [rotas, setRotas] = useState([])
@@ -247,6 +251,7 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
   const { isShowConfirma, toggleConfirma } = useModalConfirma()
 
   const { isShowing, toggleGridUsuarios } = useModalUsuarios()
+
 
   const style = {
     background: "#FFF",
@@ -637,19 +642,26 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
       const selectedData = vgridVeiculos.getSelectedRows()
 
       if (!selectedData) {
-        toast('Você deve selecionar um veículo para editar!', { type: 'alert' })
+        toast('Você deve selecionar um veículo para editar!', { type: 'error' })
         return
       }
 
       if (selectedData.length === 0) {
-        toast('Você deve selecionar um veículo para editar!', { type: 'alert' })
+        toast('Você deve selecionar um veículo para editar!', { type: 'error' })
         return
       }
-      setVeiculoId(selectedData[0].id)
+      setVeiculoID(selectedData[0].id)
     }
     setTipoCadVei(disableEdit ? 'D' : tipo)
 
-    toggleDocs()
+    toggleVeiculos()
+  }
+
+  const callBackVeiculos = (e) => {
+    // formRef.current.setFieldValue('cliente_id', e)
+    // setValues({ ...values, cliente_id: e })
+    // buscaCliente(e)
+    alert(`Retorno Veiculos: ${e}`)
   }
 
   const onRotas = async (e, tipo) => {
@@ -889,7 +901,7 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
                                   name="contato" 
                                   label="Contato" 
                                   value={dadosCliente.contato}
-                                  disabled
+                                  disabled={true}
                                 />
                               </Col>
                               <Col xs={5}>
@@ -932,7 +944,7 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
                                   name="logradouro" 
                                   label="Endereço" 
                                   value={dadosCliente.logradouro}
-                                  disabled
+                                  disabled={true}
                                 />
                               </Col>
                               <Col xs={2}>
@@ -1179,6 +1191,15 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
               hide={toggleGridUsuarios}
               tipoConsulta='C'
               callFind={callBackCliente}
+            />
+            <VeiculosModal 
+              isShowVeiculos={isShowVeiculos}
+              hide={toggleVeiculos}
+              pedidoID={pedidoID}
+              veiculoID={veiculoID}
+              tipo={tipoCadVei}
+              disabled={disableEdit}
+              callback={callBackVeiculos}
             />
           </div>
         </div>

@@ -23,14 +23,10 @@ import { Grid, Row, Col } from 'react-flexbox-grid'
 
 import { Form } from '../../Forms/Form'
 import Input from '../../Forms/Input'
-import Select from '../../Forms/Select'
 import * as Yup from 'yup'
 
 import "./modal.css"
 import api from '../../../services/rf'
-import Axios from 'axios'
-
-const fipeapi = 'https://fipeapi.appspot.com/api/1/'
 
 const useStyles = makeStyles((theme) => ({
   botoes: {
@@ -40,21 +36,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-const fipeTipo = [
-  { value: 'carros', label: 'Carros' },
-  { value: 'motos ', label: 'Motos ' },
-  { value: 'caminhoes', label: 'Caminhões' },
-]
-
 const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabled, callback }) => {
   const formRef = useRef(null)
   const classes = useStyles()
 
   const [values, setValues] = useState([])
-  const [marcas, setMarcas] = useState([])
-  const [modelos, setModelos] = useState([])
-  const [anos, setAnos] = useState([])
-  const [fipe, setFipe] = useState([])
   const [disableEdit, setDisableEdit] = useState(disabled)
 
   useEffect(() => {
@@ -111,116 +97,6 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
     }
 
   }, [veiculoID, pedidoID, tipo])
-
-  const buscaMarcas = async (dados) => {
-    await Axios
-      .get(`${fipeapi}/${dados.value}/marcas.json`)
-      .then(response => {
-        const { data } = response
-
-        let ma = []
-        data.map( m=>{
-          ma.push({
-            value: m.id, 
-            label: m.fipe_name,
-          })
-        })
-        setMarcas(ma)
-        console.log('**** buscaMarcas', ma)
-      })
-      .catch((error) => {
-        if (error.response) {
-          const { data } = error.response
-          try {
-            data.map(mensagem => {
-              toast(mensagem.message, { type: 'error' })
-            })
-          }
-          catch (e) {
-            console.log('*** error.data', data.message)
-          }
-        } else if (error.request) {
-          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
-        } else {
-        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
-        }
-      })
-  }
-
-  const buscaModelos = async (dados) => {
-    await Axios
-      .get(`${fipeapi}/${dados.value}/veiculos/${dados.value}.json`)
-      .then(response => {
-        const { data } = response
-
-        let ma = []
-        data.map( m=>{
-          ma.push({
-            value: m.id, 
-            label: m.fipe_name,
-          })
-        })
-        setModelos(ma)
-        console.log('**** buscaModelos', ma)
-      })
-      .catch((error) => {
-        if (error.response) {
-          const { data } = error.response
-          try {
-            data.map(mensagem => {
-              toast(mensagem.message, { type: 'error' })
-            })
-          }
-          catch (e) {
-            console.log('*** error.data', data.message)
-          }
-        } else if (error.request) {
-          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
-        } else {
-        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
-        }
-      })
-    
-  }
-  
-  const buscaAnos = async (dados) => {
-    console.log('**** buscaAnos', dados)
-    /*
-    await Axios
-      .get(`${fipeapi}/${dados.value}/veiculo//${dados.value}.json`)
-      .then(response => {
-        const { data } = response
-
-        let ma = []
-        data.map( m=>{
-          ma.push({
-            value: m.id, 
-            label: m.fipe_name,
-          })
-        })
-        setModelos(ma)
-        console.log('**** buscaModelos', ma)
-      })
-      .catch((error) => {
-        if (error.response) {
-          const { data } = error.response
-          try {
-            data.map(mensagem => {
-              toast(mensagem.message, { type: 'error' })
-            })
-          }
-          catch (e) {
-            console.log('*** error.data', data.message)
-          }
-        } else if (error.request) {
-          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
-        } else {
-        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
-        }
-      })
-    */
-  }
-  
 
   async function handleSubmit (data, { reset }) {
     try {
@@ -298,54 +174,16 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
                 <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10}>
                   <Grid>
                     <Row style={{ height: '54px', marginTop: '15px' }}>
-                      <Col xs={6}>
+                      <Col xs={2}>
                         <Input 
                           type="text" 
                           onFocus onBlur 
                           name="placachassi" 
                           label="Placa/Chassi"
-                          height='40px'
                           value={values.placachassi}
-                          disabled={disableEdit}
+                          // disabled={true}
                         />
                       </Col>
-                      <Col xs={6}>
-                        <Select 
-                          onFocus onBlur 
-                          name="fipe_tipo" 
-                          label="Tipo"
-                          defaultValue={values.fipe_tipo}
-                          onChange={buscaMarcas}
-                          options={fipeTipo}
-                          disabled={disableEdit}
-                        />
-                      </Col>
-                    </Row>
-                    <Row style={{ height: '54px', marginTop: '15px' }}>
-                      <Col xs={6}>
-                        <Select 
-                          onFocus onBlur 
-                          name="fipe_marca_id" 
-                          label="Marca"
-                          defaultValue={values.fipe_marca_id}
-                          onChange={buscaModelos}
-                          options={marcas}
-                          disabled={disableEdit}
-                        />
-                      </Col>
-                      <Col xs={6}>
-                        <Select 
-                          onFocus onBlur 
-                          name="fipe_modelo_id" 
-                          label="Modelo"
-                          defaultValue={values.fipe_modelo_id}
-                          onChange={buscaAnos}
-                          options={modelos}
-                          disabled={disableEdit}
-                        />
-                      </Col>
-                    </Row>
-                    <Row style={{ height: '54px', marginTop: '15px' }}>
                     </Row>
                   </Grid>
                 </BoxTitulo>
