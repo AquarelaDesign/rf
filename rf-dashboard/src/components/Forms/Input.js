@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useField } from '@unform/core'
+
 import PropTypes from 'prop-types'
-import styled from "styled-components";
+import styled from "styled-components"
+
 import ReactInputMask from 'react-input-mask'
 import { AiOutlineSearch } from 'react-icons/ai'
 
@@ -15,6 +17,7 @@ const InputContainer = styled.div`
   margin-top: 5px;
   color: #000;
   font-family: "Montserrat", sans-serif;
+  height: ${props => props.height ? props.height : '32px'};
   /* border: 1px solid #0031FF; */
 
   & > input {
@@ -26,7 +29,7 @@ const InputContainer = styled.div`
     font-size: 14px;
     transition: all 0.2s ease;
     z-index: 499;
-    height: 30px;
+    height: ${props => props.height ? props.height : '30px'};
     margin-bottom: 1px;
   }
 
@@ -105,6 +108,7 @@ export default function Input({
   callSearch,
   disabled,
   tipo,
+  height,
   ...rest 
 }) {
   const inputRef = useRef(null)
@@ -245,7 +249,7 @@ export default function Input({
   }
 
   return (
-    <InputContainer focused={isFocused}>
+    <InputContainer focused={isFocused} height={height} >
       {renderLabel()}
       {renderIcon()}
       <ErrorBoundary>
@@ -282,6 +286,7 @@ Input.propTypes = {
   label: PropTypes.string,
   type: PropTypes.string,
   tipo: PropTypes.string,
+  height: PropTypes.string,
   inputRef: PropTypes.func,
   callSearch: PropTypes.func,
   icon: PropTypes.bool,
