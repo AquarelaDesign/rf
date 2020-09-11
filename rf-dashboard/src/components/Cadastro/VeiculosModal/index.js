@@ -42,8 +42,14 @@ const useStyles = makeStyles((theme) => ({
 
 const fipeTipo = [
   { value: 'carros', label: 'Carros' },
-  { value: 'motos ', label: 'Motos ' },
+  { value: 'motos', label: 'Motos' },
   { value: 'caminhoes', label: 'Caminhões' },
+]
+
+const estado = [
+  { value: 'Funcionando', label: 'Funcionando' },
+  { value: 'Pane', label: 'Pane' },
+  { value: 'Sinistrado', label: 'Sinistrado' },
 ]
 
 const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabled, callback }) => {
@@ -56,6 +62,9 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
   const [anos, setAnos] = useState([])
   const [fipe, setFipe] = useState([])
   const [disableEdit, setDisableEdit] = useState(disabled)
+  const [disableMarca, setDisableMarca] = useState(true)
+  const [disableModelo, setDisableModelo] = useState(true)
+  const [disableAno, setDisableAno] = useState(true)
 
   useEffect(() => {
     const buscaVeiculo = async () => {
@@ -64,7 +73,7 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
         .then(response => {
           const { data } = response
           setValues(data)
-          console.log('**** buscaVeiculo', data)
+          // console.log('**** buscaVeiculo', data)
         })
         .catch((error) => {
           if (error.response) {
@@ -85,9 +94,6 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
         })
     }
 
-    // console.log('**** DocsModal', veiculoID, tipo)
-    // console.log('**** disableEdit', disableEdit)
-    // console.log('**** disabled', disabled)
     if (veiculoID && veiculoID > 0 && tipo === 'E') {
       setDisableEdit(false)
       buscaVeiculo()
@@ -100,6 +106,10 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
         estado: "",
         ano: null,
         valor: null,
+        fipe_tipo: null,
+        fipe_marca_id: null,
+        fipe_modelo_id: null,
+        fipe_ano_id: null,
         fipe: "",
       }
       setValues(newData)
@@ -113,6 +123,7 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
   }, [veiculoID, pedidoID, tipo])
 
   const buscaMarcas = async (dados) => {
+    setValues({ ...values, fipe_tipo: dados.value })
     await Axios
       .get(`${fipeapi}/${dados.value}/marcas.json`)
       .then(response => {
@@ -126,7 +137,10 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
           })
         })
         setMarcas(ma)
-        console.log('**** buscaMarcas', ma)
+        if (!disableEdit){
+          setDisableMarca(false)
+        }
+        // console.log('**** buscaMarcas', ma)
       })
       .catch((error) => {
         if (error.response) {
@@ -148,8 +162,9 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
   }
 
   const buscaModelos = async (dados) => {
+    setValues({ ...values, fipe_marca_id: dados.value })
     await Axios
-      .get(`${fipeapi}/${dados.value}/veiculos/${dados.value}.json`)
+      .get(`${fipeapi}/${values.fipe_tipo}/veiculos/${dados.value}.json`)
       .then(response => {
         const { data } = response
 
@@ -161,7 +176,9 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
           })
         })
         setModelos(ma)
-        console.log('**** buscaModelos', ma)
+        if (!disableEdit){
+          setDisableModelo(false)
+        }
       })
       .catch((error) => {
         if (error.response) {
@@ -184,10 +201,12 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
   }
   
   const buscaAnos = async (dados) => {
-    console.log('**** buscaAnos', dados)
-    /*
+    setValues({ ...values, fipe_modelo_id: dados.value })
+    // https://fipeapi.appspot.com/api/1/carros/veiculo/21/4828.json
+    // console.log('**** buscaAnos', `${fipeapi}${values.fipe_tipo}/veiculo/${values.fipe_marca_id}/${dados.value}.json`)
+    
     await Axios
-      .get(`${fipeapi}/${dados.value}/veiculo//${dados.value}.json`)
+      .get(`${fipeapi}${values.fipe_tipo}/veiculo/${values.fipe_marca_id}/${dados.value}.json`)
       .then(response => {
         const { data } = response
 
@@ -195,11 +214,13 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
         data.map( m=>{
           ma.push({
             value: m.id, 
-            label: m.fipe_name,
+            label: m.name,
           })
         })
-        setModelos(ma)
-        console.log('**** buscaModelos', ma)
+        setAnos(ma)
+        if (!disableEdit){
+          setDisableAno(false)
+        }
       })
       .catch((error) => {
         if (error.response) {
@@ -218,10 +239,43 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
         // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
       })
-    */
+    
   }
   
+  const buscaFipe = async (dados) => {
+    setValues({ ...values, fipe_ano_id: dados.value })
+    // https://fipeapi.appspot.com/api/1/carros/veiculo/21/4828/2013-1.json
+    // console.log('**** buscaFipe', `${fipeapi}${values.fipe_tipo}/veiculo/${values.fipe_marca_id}/${values.fipe_modelo_id}/${dados.value}.json`)
+    
+    await Axios
+      .get(`${fipeapi}${values.fipe_tipo}/veiculo/${values.fipe_marca_id}/${values.fipe_modelo_id}/${dados.value}.json`)
+      .then(response => {
+        const { data } = response
 
+        setValues({ ...values, fipe: data.fipe_codigo })
+        setValues({ ...values, valor: data.preco })
+        console.log('**** buscaFipe', data)
+      })
+      .catch((error) => {
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('*** error.data', data.message)
+          }
+        } else if (error.request) {
+          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        } else {
+        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        }
+      })
+    
+  }
+  
   async function handleSubmit (data, { reset }) {
     try {
       
@@ -294,7 +348,7 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
                 </Grid>
               </BoxTitulo>
 
-              <Form ref={formRef} onSubmit={handleSubmit} height={'490px'} width={'100%'} >
+              <Form ref={formRef} onSubmit={handleSubmit} height={'290px'} width={'100%'} >
                 <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10}>
                   <Grid>
                     <Row style={{ height: '54px', marginTop: '15px' }}>
@@ -306,9 +360,23 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
                           label="Placa/Chassi"
                           height='40px'
                           value={values.placachassi}
+                          onChange={e => setValues({ ...values, placachassi: e.target.value })} 
                           disabled={disableEdit}
                         />
                       </Col>
+                      <Col xs={6}>
+                        <Select 
+                          onFocus onBlur 
+                          name="estado" 
+                          label="Estado"
+                          defaultValue={values.estado}
+                          options={estado}
+                          // onChange={e => setValues({ ...values, estado: e.target.value })} 
+                          disabled={disableEdit}
+                        />
+                      </Col>
+                    </Row>
+                    <Row style={{ height: '54px', marginTop: '15px' }}>
                       <Col xs={6}>
                         <Select 
                           onFocus onBlur 
@@ -320,8 +388,6 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
                           disabled={disableEdit}
                         />
                       </Col>
-                    </Row>
-                    <Row style={{ height: '54px', marginTop: '15px' }}>
                       <Col xs={6}>
                         <Select 
                           onFocus onBlur 
@@ -330,9 +396,11 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
                           defaultValue={values.fipe_marca_id}
                           onChange={buscaModelos}
                           options={marcas}
-                          disabled={disableEdit}
+                          disabled={disableMarca}
                         />
                       </Col>
+                    </Row>
+                    <Row style={{ height: '54px', marginTop: '15px' }}>
                       <Col xs={6}>
                         <Select 
                           onFocus onBlur 
@@ -341,11 +409,46 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
                           defaultValue={values.fipe_modelo_id}
                           onChange={buscaAnos}
                           options={modelos}
-                          disabled={disableEdit}
+                          disabled={disableModelo}
+                        />
+                      </Col>
+                      <Col xs={6}>
+                        <Select 
+                          onFocus onBlur 
+                          name="fipe_ano_id" 
+                          label="Ano"
+                          defaultValue={values.fipe_ano_id}
+                          onChange={buscaFipe}
+                          options={anos}
+                          disabled={disableAno}
                         />
                       </Col>
                     </Row>
                     <Row style={{ height: '54px', marginTop: '15px' }}>
+                      <Col xs={6}>
+                        <Input 
+                          type="text" 
+                          onFocus onBlur 
+                          name="fipe" 
+                          label="Código FIPE"
+                          height='40px'
+                          value={values.fipe}
+                          onChange={e => setValues({ ...values, fipe: e.target.value })} 
+                          disabled={disableEdit}
+                        />
+                      </Col>
+                      <Col xs={6}>
+                        <Input 
+                          type="text" 
+                          onFocus onBlur 
+                          name="valor" 
+                          label="Valor"
+                          height='40px'
+                          value={values.valor}
+                          onChange={e => setValues({ ...values, valor: e.target.value })} 
+                          disabled={disableEdit}
+                        />
+                      </Col>
                     </Row>
                   </Grid>
                 </BoxTitulo>

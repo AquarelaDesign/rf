@@ -75,8 +75,8 @@ const Buttom = styled.div`
 
   & > button {
     background-color: #DCDCDC;
-    height: 28px;
-    width: 28px;
+    height: ${props => props.height ? `${(parseInt(props.height.replace('px','')) - 4)}px` : '28px'};
+    width: ${props => props.height ? `${(parseInt(props.height.replace('px','')) - 4)}px` : '28px'};
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
     border: none;
@@ -240,7 +240,7 @@ export default function Input({
   
   const renderLabel = () => label && <label>{label}</label>
   
-  const renderIcon = () => icon && <Buttom>
+  const renderIcon = () => icon && <Buttom height={height}>
     <button type="button" onClick={callSearch}><AiOutlineSearch /></button>
   </Buttom>
 

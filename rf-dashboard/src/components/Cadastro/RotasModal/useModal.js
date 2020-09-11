@@ -1,16 +1,16 @@
 import { useState } from 'react'
 
-const useModalVeiculos = () => {
-  const [isShowVeiculos, setIsShowVeiculos] = useState(false)
+const useModalRotas = () => {
+  const [isShowRotas, setIsShowRotas] = useState(false)
 
-  function toggleVeiculos() {
-    setIsShowVeiculos(!isShowVeiculos)
+  function toggleRotas() {
+    setIsShowRotas(!isShowRotas)
   }
 
   return {
-    isShowVeiculos,
-    toggleVeiculos,
+    isShowRotas,
+    toggleRotas,
   }
 }
 
-export default useModalVeiculos
+export default useModalRotas

@@ -63,6 +63,9 @@ import useModalUsuarios from '../GridUsuariosModal/useModal'
 import VeiculosModal from '../VeiculosModal'
 import useModalVeiculos from '../VeiculosModal/useModal'
 
+import RotasModal from '../RotasModal'
+import useModalRotas from '../RotasModal/useModal'
+
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -240,8 +243,9 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
 
   const [vgridRotas, setVgridRotas] = useState(gridApi)
   const [rotas, setRotas] = useState([])
-  const [rotaId, setRotaId] = useState(0)
+  const [rotaID, setRotaID] = useState(0)
   const [rotaExclui, setRotaExclui] = useState(null)
+  const { isShowRotas, toggleRotas } = useModalRotas()
 
   const [excluiId, setExcluiId] = useState(null)
   const [propsE, setPropsE] = useState(null)
@@ -266,7 +270,7 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
   useEffect(() => {
     try {
 
-      // console.log('**** Inicio', tipoCad, pedidoId)
+      console.log('**** Inicio', tipoCad, pedidoId)
       if (tipoCad !== 'N' && tipoCad !== 'E') {
         setDisableEdit(true)
       }
@@ -444,7 +448,7 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
     e.preventDefault()
     const selectedData = props.api.getSelectedRows()
 
-    setRotaId(selectedData[0].id)
+    setRotaID(selectedData[0].id)
     setRotaExclui(selectedData[0].placachassi)
     setPropsE(props)
     setSData(selectedData)
@@ -652,7 +656,8 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
       }
       setVeiculoID(selectedData[0].id)
     }
-    setTipoCadVei(disableEdit ? 'D' : tipo)
+    console.log('**** onVeiculos', disableEdit, tipo)
+    setTipoCadVei(tipo !== 'E' && tipo !== 'N' ? 'D' : tipo)
 
     toggleVeiculos()
   }
@@ -660,7 +665,7 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
   const callBackVeiculos = (e) => {
     // formRef.current.setFieldValue('cliente_id', e)
     // setValues({ ...values, cliente_id: e })
-    // buscaCliente(e)
+    // buscaVeiculos(e)
     alert(`Retorno Veiculos: ${e}`)
   }
 
@@ -671,7 +676,7 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
       const selectedData = vgridRotas.getSelectedRows()
 
       if (!selectedData) {
-        toast('Você deve selecionar um veículo para editar!', { type: 'alert' })
+        toast('Você deve selecionar uma rota para editar!', { type: 'alert' })
         return
       }
 
@@ -679,11 +684,18 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
         toast('Você deve selecionar uma rota para editar!', { type: 'alert' })
         return
       }
-      setRotaId(selectedData[0].id)
+      setRotaID(selectedData[0].id)
     }
-    setTipoCadVei(disableEdit ? 'D' : tipo)
+    setTipoCadVei(tipo !== 'E' && tipo !== 'N' ? 'D' : tipo)
 
-    toggleDocs()
+    toggleRotas()
+  }
+
+  const callBackRotas = (e) => {
+    // formRef.current.setFieldValue('cliente_id', e)
+    // setValues({ ...values, cliente_id: e })
+    // buscaRotas(e)
+    alert(`Retorno Rotas: ${e}`)
   }
 
   const handleChange = (event, newValue) => {
@@ -870,6 +882,7 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
                                   callSearch={findCliente}
                                   value={values.cliente_id}
                                   onChange={e => setValues({ ...values, cliente_id: e.target.value })} 
+                                  disabled={disableEdit}
                                 />
                               </Col>
                               <Col xs={2}>
@@ -1200,6 +1213,15 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
               tipo={tipoCadVei}
               disabled={disableEdit}
               callback={callBackVeiculos}
+            />
+            <RotasModal
+              isShowRotas={isShowRotas}
+              hide={toggleRotas}
+              pedidoID={pedidoID}
+              rotaID={rotaID}
+              tipo={tipoCadVei}
+              disabled={disableEdit}
+              callback={callBackRotas}
             />
           </div>
         </div>

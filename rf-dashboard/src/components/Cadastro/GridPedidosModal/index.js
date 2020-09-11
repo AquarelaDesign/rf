@@ -43,7 +43,7 @@ const GridPedidosModal = ({ isShowing, hide }) => {
   const [pedidos, setPedidos] = useState(rowData)
   const [vgridApi, setVgridApi] = useState(gridApi)
   const [usuarios, setUsuarios] = useState([])
-  const [tipo, setTipo] = useState(0)
+  const [tipo, setTipo] = useState('')
   const [pedidoId, setPedidoId] = useState([])
   const { isShowPedido, togglePedido } = useModal()
 
@@ -249,6 +249,7 @@ const GridPedidosModal = ({ isShowing, hide }) => {
         return
       default: setPedidoId(null)
     }
+    console.log('**** onButtonClick', tipo)
     togglePedido()
   }
 

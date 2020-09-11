@@ -98,7 +98,7 @@ const Input = props => {
     <div style={{ 
       fontSize: '14px',
       transition: 'all 0.2s ease',
-      // zIndex: 499,
+      zIndex: 499,
       height: '20px',
       padding: '0px',
     }}>
@@ -128,6 +128,7 @@ const customStyles = {
       backgroundColor: '#FFFFFF',
     },
   }),
+  menu: provided => ({ ...provided, zIndex: 9999 }),
   // input: styles => ({ 
   //   fontSize: '12px',
   //   transition: 'all 0.2s ease',
@@ -150,40 +151,78 @@ const Select = ({
   onBlur,
   onFocus,
   value,
+  defaultVal,
   disabled,
   options, 
   ...rest 
 }) => {
   const selectRef = useRef(null)
-  const { fieldName, defaultValue, registerField, error } = useField(name)
+  const { fieldName, registerField, defaultValue, error } = useField(name)
 
   const [focused, setFocused] = useState(false)
   const [isFocused, setIsFocused] = useState(null)
+  const [selectedOption , setSelectedOption ] = useState(null)
 
   useEffect(() => {
     registerField({
       name: fieldName,
       ref: selectRef.current,
-      path: "state.value",
-      getValue: ref => {
-        if (rest.isMulti) {
-          if (!ref.state.value) {
-            return []
-          }
-          return ref.state.value.map(option => option.value)
-        } else {
-          if (!ref.state.value) {
-            return ""
-          }
-          return ref.state.value.value
-        }
-      }
+      // path: "state.value",
+      getValue: (ref) => ref.state.value,
+      setValue: (ref, value) => {
+        ref.select.setValue(value || null)
+      },
+      // getValue: ref => {
+      //   if (rest.isMulti) {
+      //     if (!ref.state.value) {
+      //       return []
+      //     }
+      //     return ref.state.value.map(option => option.value)
+      //   } else {
+      //     if (!ref.state.value) {
+      //       return ""
+      //     }
+      //     return ref.state.value.value
+      //   }
+      // }
     })
 
     checkFocused()
 
   }, [fieldName, registerField, rest.isMulti])
 
+  /*
+  useEffect(() => {
+    let valor = value
+
+    if (valor) {
+      selectRef.current.setInputValue(valor)
+    }
+
+    if (rest.value && String(rest.value).length) {
+      valor = rest.value
+    }
+
+    if (selectRef.current && String(selectRef.current.value).length) {
+      valor = selectRef.current.value
+    }
+
+    if (selectRef.current.props.defaultValue) {
+      valor = selectRef.current.props.defaultValue
+    }
+
+    if (!valor) {
+      valor = ''
+    }
+ 
+    // selectRef.current.setInputValue(valor)
+    console.log('**** valor', name, valor)
+    
+    checkFocused()
+
+  }, [name, value, rest.value, selectRef])
+  */
+  
   const handleOnFocus = () => {
     setFocused(true)
     return onFocus
@@ -193,6 +232,14 @@ const Select = ({
     setFocused(false)
     return onBlur
   }
+
+  const handleChange = selectedOption => {
+    selectRef.current.setState({ selectedOption })
+    setSelectedOption(selectedOption)
+    // console.log('**** Option selected:', selectedOption)
+  }
+
+  console.log('**** value', name, value, defaultValue, defaultVal, selectRef.current)
 
   const checkFocused = () => { 
     if (focused) { 
@@ -235,10 +282,13 @@ const Select = ({
       <ReactSelect
         ref={selectRef}
         components={{ Placeholder, Input }}
-        placeholder={isFocused ? undefined : label}
+        placeholder={label}
+        // placeholder={isFocused ? undefined : label}
         onFocus={handleOnFocus}
         onBlur={handleOnBlur}
+        onChange={handleChange}
         disabled={disabled}
+        // value={value}
         defaultValue={
           defaultValue && options.find(option => option.value === defaultValue)
         }
