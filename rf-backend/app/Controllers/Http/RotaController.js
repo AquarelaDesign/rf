@@ -60,6 +60,7 @@ class RotaController {
       "motorista_id",
       "tipo",
       "rota_relacionada",
+      "status",
     ])
 
     const rotas = await Rota.create(data)
@@ -116,6 +117,7 @@ class RotaController {
       "motorista_id",
       "tipo",
       "rota_relacionada",
+      "status",
     ])
 
     rotas.merge(data)
