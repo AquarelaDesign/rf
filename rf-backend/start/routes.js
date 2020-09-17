@@ -46,6 +46,7 @@ Route.group(() => {
   Route.resource('veiculos', 'VeiculoController')
     .apiOnly()
   // Route.post('veiculos/:id/images', 'ImageController.store')
+  Route.post("/buscaveiculos/:id", "VeiculoController.busca")
 
   Route.post("/buscaveiculosm/:id", "VeiculosMotoristaController.busca")
   Route.resource('veiculosm', 'VeiculosMotoristaController')
@@ -60,5 +61,6 @@ Route.group(() => {
       [['rotas.update'],['UpdateRota']],
     ]))
     .apiOnly()
+  Route.post("/buscarotas/:id", "RotaController.busca")
 
 }).middleware('auth')

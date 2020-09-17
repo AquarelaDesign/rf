@@ -28,6 +28,36 @@ class RotaController {
   }
 
   /**
+   * Show a list of rota with status.
+   * GET rotas/:id
+   */
+  async busca({auth, params, request, response}) {
+    const usuarios = await Usuario.findOrFail(auth.user.id)
+    if (usuarios.tipo !== 'O') {
+      return response.status(401).send({ 
+        error: `Não autorizado [${usuarios.tipo}]`
+      })
+    }
+
+    try {    
+      const query = Rota.query()
+      if (params.id !== null){
+        query.andWhere('pedido_id','=', params.id)
+      }
+      const rota = await query.fetch()
+      return rota
+
+    }
+    catch(e) {
+      return response.status(404).send({
+        status: 404,
+        message: `Rota não encontrada ${e}`
+      })
+    }
+
+  }
+
+  /**
    * Create/save a new rota.
    * POST rotas
    */

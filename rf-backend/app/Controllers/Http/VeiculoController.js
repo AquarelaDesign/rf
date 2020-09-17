@@ -28,6 +28,36 @@ class VeiculoController {
   }
 
   /**
+   * Show a list of veiculo with status.
+   * GET veiculos/:id
+   */
+  async busca({auth, params, request, response}) {
+    const usuarios = await Usuario.findOrFail(auth.user.id)
+    if (usuarios.tipo !== 'O') {
+      return response.status(401).send({ 
+        error: `Não autorizado [${usuarios.tipo}]`
+      })
+    }
+
+    try {    
+      const query = Veiculo.query()
+      if (params.id !== null){
+        query.andWhere('pedido_id','=', params.id)
+      }
+      const veiculo = await query.fetch()
+      return veiculo
+
+    }
+    catch(e) {
+      return response.status(404).send({
+        status: 404,
+        message: `Veículo não encontrado ${e}`
+      })
+    }
+
+  }
+
+  /**
    * Create/save a new veiculo.
    * POST veiculos
    */
