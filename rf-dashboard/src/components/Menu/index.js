@@ -57,11 +57,11 @@ export default function Menu() {
             })
           }
           catch (e) {
-            console.log('*** data', data)
+            console.log('**** Menu.atualizaStatus.error.data', data)
           }
         } else if (error.request) {
-          console.error('*** lo-1.2', error)
-          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          console.log('**** Menu.atualizaStatus.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
         // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }

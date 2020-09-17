@@ -10,14 +10,14 @@ const api = axios.create({
 
 
 api.interceptors.request.use(async config => {
-  // console.log('*** config', config)
+  // console.log('**** config', config)
   const token = getToken()
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
-  // console.log('*** config', config)
+  // console.log('**** config', config)
   return config
 })
 

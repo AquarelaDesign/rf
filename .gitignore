@@ -110,3 +110,6 @@ rf-dashboard/yarn.lock
 rf-dashboard/yarn.lock
 rf-dashboard-bkp
 rf-backend-bkp.rar
+rf-dashboard/src/components/Cadastro/PedidoModal-unForm
+rf-dashboard/src/components/Cadastro/RotasModal-unForm
+rf-dashboard/src/components/Cadastro/VeiculosModal-nfForm

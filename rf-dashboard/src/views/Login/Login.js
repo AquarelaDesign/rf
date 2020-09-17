@@ -143,11 +143,11 @@ const Login = ({ history }) => {
             })
           }
           catch (e) {
-            console.log('*** data', data)
+            console.log('**** Login.atualizaStatus.error.data', data)
           }
         } else if (error.request) {
-          console.error('*** l-1.2', error)
-          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          console.log('**** Login.atualizaStatus.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
         // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }

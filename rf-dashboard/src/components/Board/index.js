@@ -83,7 +83,7 @@ const Board = () => {
     })
 
     ws.on('pong', () => {
-      console.log('*** ws pong')
+      // console.log('*** ws pong')
     })
 
     if (isConnected) {
@@ -106,11 +106,11 @@ const Board = () => {
       })
 
       chat.on('error', (error) => {
-        console.log('*** ws.error', error)
+        // console.log('*** ws.error', error)
       })
 
       chat.on('close', () => {
-        console.log('*** ws.close')
+        // console.log('*** ws.close')
         setIsConnected(false)
       })
     }
@@ -148,7 +148,7 @@ const Board = () => {
 
     return () => {
       ws.on('close', () => {
-        console.log('*** ws.close')
+        // console.log('*** ws.close')
         setIsConnected(false)
       })
     }
@@ -281,7 +281,7 @@ const Board = () => {
           // console.error('c-2',error)
         })
     } catch (error) {
-      console.log('*** vserror', error)
+      // console.log('*** vserror', error)
       const { response } = error
       if (response !== undefined) {
         if (response.status === 401) {
@@ -338,7 +338,7 @@ const Board = () => {
     // setMotorista(motorista.cards.splice(from, 1))
     setMotorista(produce(motorista, draft => {
       motorista.cards.splice(from, 1)
-      console.log('*** Board_removeItem-1', motorista)
+      // console.log('*** Board_removeItem-1', motorista)
     }))
   }
 
