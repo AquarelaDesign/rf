@@ -71,7 +71,7 @@ const Buttom = styled.div`
   top: 1px;
   right: 1px;
   z-index: 502;
-  outline:none;
+  outline: none;
 
   & > button {
     background-color: #DCDCDC;
@@ -80,20 +80,20 @@ const Buttom = styled.div`
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
     border: none;
-    outline:none;
+    outline: none;
     transition-duration: 0.4s;
   }
   
   & > button:hover {
     background-color: #CCC;
     border: none;
-    outline:none;
+    outline: none;
   }
 
   & > button:active {
     background-color: #DDD;
     border: none;
-    outline:none;
+    outline: none;
   }
 `
 
@@ -122,25 +122,27 @@ export default function Input({
       name: fieldName,
       ref: inputRef.current,
       path: 'value',
+      getValue(ref) {
+        return ref.value
+      },
       setValue(ref, value) {
         ref.setInputValue(value)
-        // ref.setValue(value)
       },
-      // clearValue(ref) {
-      //   ref.setInputValue('')
-      // },
+      clearValue(ref) {
+        ref.setInputValue('')
+      },
     })
 
-    checkFocused()
+    validaFormato()
 
   }, [fieldName, registerField])
 
   useEffect(() => {
-    let valor = value
+    validaFormato()
+  }, [inputRef.current?.value, inputRef.current?.props])
 
-    if (valor) {
-      inputRef.current.setInputValue(valor)
-    }
+  const validaFormato = () => {
+    let valor = value
 
     if (rest.value && String(rest.value).length) {
       valor = rest.value
@@ -154,14 +156,30 @@ export default function Input({
       valor = ''
     }
 
+    if (!inputRef.current.value && valor !== '' ) {
+      inputRef.current.setInputValue(valor)
+    }
+
+    /*
+    console.log('**** valor-inputRef', name, inputRef)
+    // console.log('**** valor-value', name, value)
+    // console.log('**** valor-rest.value', name, rest.value)
+    // console.log('**** valor-inputRef.current.value', name, inputRef.current.value)
+    console.log('**** valor-inputRef.current.props', name, inputRef.current.props)
+    // console.log('**** valor-inputRef.current.props.value', name, inputRef.current.props.value)
+    console.log('')
+    */
+
+    // const msk = /[^!#$%\^&*()?":{}|<>\']/gmy
+    setSMask(null) 
+
     let clearValor = undefined
-  
     switch (name.toLowerCase()) {
       case 'cpf':
       case 'cnpj':
       case 'cpfcnpj':
         clearValor = clearNumber(valor)
-        setSMask('999.999.999-99')
+        setSMask('999.999.999-99999')
         if (clearValor.length > 11) {
           setSMask('99.999.999/9999-99')
         }
@@ -170,7 +188,7 @@ export default function Input({
       case 'whats':
       case 'telefone':
         clearValor = clearNumber(valor)
-        setSMask('(99) 9999-9999')
+        setSMask('(99) 9999-99999')
         if (clearValor.length > 10) {
           setSMask('(99) 99999-9999')
         }
@@ -178,14 +196,14 @@ export default function Input({
       case 'cep':
         setSMask('99999-999')
         break
-      default:
-        setSMask(/[a-zA-Z0-9,.@\/_s-]/) // [!#$%^&*()?":{}|<>]
     }
-
     checkFocused()
+  }
 
-  }, [name, value, rest.value, inputRef])
-
+  const clearNumber = (value = '') => {
+    return value.replace(/\D+/g, '')
+  }
+  
   const handleOnFocus = () => {
     setFocused(true)
     return onFocus
@@ -195,12 +213,6 @@ export default function Input({
     setFocused(false)
     return onBlur
   }
-
-  function clearNumber(value = '') {
-    return value.replace(/\D+/g, '')
-  }
-  
-  // console.log('**** value', name, rest.value, inputRef.current, defaultValue)
 
   const checkFocused = () => { 
     if (type === "date") {
@@ -252,12 +264,14 @@ export default function Input({
     <InputContainer focused={isFocused} height={height} >
       {renderLabel()}
       {renderIcon()}
-      <ErrorBoundary>
+      {/* <ErrorBoundary> */}
         <ReactInputMask 
           ref={inputRef} 
           type={type}
           value={value}
           placeholder={isFocused ? undefined : label}
+          maskplaceholder={undefined}
+          alwaysShowMask={false}
           onFocus={handleOnFocus}
           onBlur={handleOnBlur}
           disabled={disabled}
@@ -266,7 +280,7 @@ export default function Input({
           mask={sMask}
           {...rest} 
         />
-      </ErrorBoundary>
+      {/* </ErrorBoundary> */}
       { 
         error && <span style={{ 
           color: '#E6474D',

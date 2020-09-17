@@ -151,7 +151,6 @@ const Select = ({
   onBlur,
   onFocus,
   value,
-  defaultVal,
   disabled,
   options, 
   ...rest 
@@ -161,17 +160,18 @@ const Select = ({
 
   const [focused, setFocused] = useState(false)
   const [isFocused, setIsFocused] = useState(null)
-  const [selectedOption , setSelectedOption ] = useState(null)
+  const [sMask, setSMask] = useState(null)
+  const [placeholderText , setPlaceholderText ] = useState(label)
 
   useEffect(() => {
     registerField({
       name: fieldName,
       ref: selectRef.current,
-      // path: "state.value",
-      getValue: (ref) => ref.state.value,
-      setValue: (ref, value) => {
-        ref.select.setValue(value || null)
-      },
+      path: "state.value",
+      // getValue: (ref) => ref.state.value,
+      // setValue: (ref, value) => {
+      //   ref.select.setValue(value || null)
+      // },
       // getValue: ref => {
       //   if (rest.isMulti) {
       //     if (!ref.state.value) {
@@ -182,46 +182,67 @@ const Select = ({
       //     if (!ref.state.value) {
       //       return ""
       //     }
-      //     return ref.state.value.value
+      //     // return ref.state.value.map(option => option.value)
+      //     return ref.state.value
       //   }
-      // }
+      // },
+      clearValue: ref => {
+        ref.select.select.clearValue()
+      }
     })
 
     checkFocused()
 
   }, [fieldName, registerField, rest.isMulti])
 
-  /*
   useEffect(() => {
+    retPlaceholder()
+  }, [value, selectRef.current?.selectedValue])
+
+  useEffect(() => {
+    validaFormato()
+  }, [selectRef.current?.select?.value, selectRef.current?.props])
+
+  const validaFormato = () => {
     let valor = value
 
-    if (valor) {
-      selectRef.current.setInputValue(valor)
+    if (!selectRef.current.select.value && value !== '' ) {
+      selectRef.current.select.setValue(value)
     }
-
-    if (rest.value && String(rest.value).length) {
-      valor = rest.value
-    }
-
-    if (selectRef.current && String(selectRef.current.value).length) {
-      valor = selectRef.current.value
-    }
-
-    if (selectRef.current.props.defaultValue) {
-      valor = selectRef.current.props.defaultValue
-    }
-
-    if (!valor) {
-      valor = ''
-    }
- 
-    // selectRef.current.setInputValue(valor)
-    console.log('**** valor', name, valor)
     
-    checkFocused()
+    // const msk = /[^!#$%\^&*()?":{}|<>\']/gmy
+    setSMask(null) 
 
-  }, [name, value, rest.value, selectRef])
-  */
+    let clearValor = undefined
+    switch (name.toLowerCase()) {
+      case 'cpf':
+      case 'cnpj':
+      case 'cpfcnpj':
+        clearValor = clearNumber(valor)
+        setSMask('999.999.999-99999')
+        if (clearValor.length > 11) {
+          setSMask('99.999.999/9999-99')
+        }
+        break
+      case 'celular':
+      case 'whats':
+      case 'telefone':
+        clearValor = clearNumber(valor)
+        setSMask('(99) 9999-99999')
+        if (clearValor.length > 10) {
+          setSMask('(99) 99999-9999')
+        }
+        break
+      case 'cep':
+        setSMask('99999-999')
+        break
+    }
+    checkFocused()
+  }
+
+  const clearNumber = (value = '') => {
+    return value.replace(/\D+/g, '')
+  }
   
   const handleOnFocus = () => {
     setFocused(true)
@@ -232,14 +253,6 @@ const Select = ({
     setFocused(false)
     return onBlur
   }
-
-  const handleChange = selectedOption => {
-    selectRef.current.setState({ selectedOption })
-    setSelectedOption(selectedOption)
-    // console.log('**** Option selected:', selectedOption)
-  }
-
-  console.log('**** value', name, value, defaultValue, defaultVal, selectRef.current)
 
   const checkFocused = () => { 
     if (focused) { 
@@ -273,6 +286,21 @@ const Select = ({
 
     setIsFocused(false)
   }
+
+  const retPlaceholder = () => {
+    if (value) {
+      const lb = options.find(option => option.value === value)
+      setPlaceholderText(lb.label)
+    }
+  }
+
+  const handleSelected = () => {
+    console.log('**** Select.handleSelected-selectRef.current', value, selectRef.current)
+    console.log('**** Select.handleSelected-selectRef.current.selectedValue', value, selectRef.current.selectedValue)
+    selectRef.current.select.selectOption(options.filter(option => option.value === value))
+    setPlaceholderText(options.filter(option => option.value === value))
+    return options.filter(option => option.value === value)
+  }
   
   const renderLabel = () => label && <label>{label}</label>
 
@@ -282,16 +310,18 @@ const Select = ({
       <ReactSelect
         ref={selectRef}
         components={{ Placeholder, Input }}
-        placeholder={label}
-        // placeholder={isFocused ? undefined : label}
+        placeholder={placeholderText}
         onFocus={handleOnFocus}
         onBlur={handleOnBlur}
-        onChange={handleChange}
         disabled={disabled}
         // value={value}
-        defaultValue={
-          defaultValue && options.find(option => option.value === defaultValue)
-        }
+        // value={options.filter(option => option.value === value)}
+        // value={options.filter(({ val }) => val === value)}
+        // selectedValue={options.filter(option => option.value === value)}
+        selectedValue={handleSelected}
+        // defaultValue={
+        //   defaultValue && options.find(option => option.value === defaultValue)
+        // }
         classNamePrefix="react-select"
         options={options}
         styles={customStyles}

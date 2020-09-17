@@ -23,17 +23,20 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
     marginBottom: theme.spacing(1),
     marginTop: theme.spacing(2),
-  },
+    fontFamily: ['Montserrat', 'sans Serif'],
+    fontSize: 12,
+},
 }))
 
 const CssTextField = withStyles({
   root: {
+    '& > *': {
+      fontFamily: ['Montserrat', 'sans Serif'],
+      fontSize: 14,
+    },
     '& label.Mui-focused': {
       color: '#0031FF',
     },
-    //   '& .MuiInput-underline:after': {
-    //     borderBottomColor: '#2699F8',
-    //   },
     '& .MuiOutlinedInput-root': {
       '& fieldset': {
         borderColor: '#2699F8',
@@ -48,7 +51,7 @@ const CssTextField = withStyles({
     '& .MuiFormHelperText-root': {
       margin: '1px',
       justifyContent: 'left',
-      height: '7px',
+      height: '12px',
     },
     '& .MuiFormHelperText-contained': {
       justifyContent: 'left',
@@ -72,7 +75,7 @@ export default function datePicker(props) {
 
   const handleChange = (event) => {
     const { target: { value } } = event
-    console.log('**** datapicker value', value, props)
+    // console.log('**** datapicker value', value, props)
     props.input.onChange(value)
     setData(value)
   }
@@ -89,7 +92,7 @@ export default function datePicker(props) {
         onChange={handleChange}
         variant="outlined"
         size='small'
-        defaultValue={data}
+        // defaultValue={data}
         disabled={props.disabled}
         // value={data}
         className={classes.textField}
@@ -98,6 +101,7 @@ export default function datePicker(props) {
         }}
         inputProps={{
           value: data,
+          defaultValue: data,
           validate: props.input.validate,
           disabled: props.disabled,
         }}
