@@ -19,6 +19,7 @@ class PedidoSchema extends Schema {
       table.enu('status', ['','D','A','C','T','O','E','X'])
         .defaultTo('')
         .comment('[]Em Manutenção, [D]isponivel,[A]guardando, Em [C]oleta, Em [T]ransporte, Em c[O]nferencia, [E]ntregue, [X]Cancelado')
+      table.decimal('valor', 9, 2).defaultTo(0)
       table.timestamps()
     })
   }

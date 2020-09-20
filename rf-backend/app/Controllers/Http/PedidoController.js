@@ -142,6 +142,7 @@ class PedidoController {
       "localcoleta",
       "localentrega",
       "status",
+      "valor",
     ])
     
     try {
@@ -207,6 +208,7 @@ class PedidoController {
         "localcoleta",
         "localentrega",
         "status",
+        "valor",
       ])
         
       pedidos.merge(data)
