@@ -91,6 +91,8 @@ class RotaController {
       "tipo",
       "rota_relacionada",
       "status",
+      "latitude",
+      "longitude",
     ])
 
     const rotas = await Rota.create(data)
@@ -148,6 +150,8 @@ class RotaController {
       "tipo",
       "rota_relacionada",
       "status",
+      "latitude",
+      "longitude",
     ])
 
     rotas.merge(data)

@@ -32,6 +32,8 @@ class RotaSchema extends Schema {
       table.string('tipo').comment('[C]oleta / [E]ntrega')
       table.integer('rota_relacionada').comment('Rota Relacionada')
       table.string('status').comment('[]Aguardando / [C]oletando / [A] Caminho / [E]ntregue')
+      table.decimal('latitude', 9, 6).defaultTo(0)
+      table.decimal('longitude', 9, 6).defaultTo(0)
       table.timestamps()
     })
   }
