@@ -107,7 +107,6 @@ rf-backend-1
 rf-backend-bkp
 rf-backend/package-lock.json
 rf-dashboard/yarn.lock
-rf-dashboard/yarn.lock
 rf-dashboard-bkp
 rf-backend-bkp.rar
 rf-dashboard/src/components/Cadastro/PedidoModal-unForm
