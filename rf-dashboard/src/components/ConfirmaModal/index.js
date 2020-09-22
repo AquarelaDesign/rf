@@ -19,11 +19,14 @@ import { Grid, Row, Col } from 'react-flexbox-grid'
 
 import "./modal.css"
 
-const ConfirmaModal = ({ isShowConfirma, hide, texto, texto1, callback }) => {
-
-  useEffect(() => {
-
-  }, [])
+const ConfirmaModal = ({ 
+  isShowConfirma, 
+  hide, 
+  texto, 
+  texto1,
+  modulo,
+  callback
+}) => {
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -31,7 +34,8 @@ const ConfirmaModal = ({ isShowConfirma, hide, texto, texto1, callback }) => {
     await sleep(1000)
 
     if (callback) {
-      callback()
+      console.log('**** ConfirmaModal.fechar', modulo)
+      callback(modulo)
       hide()
     }
   }
