@@ -43,7 +43,7 @@ const GridPedidosModal = ({ isShowing, hide }) => {
   const [pedidos, setPedidos] = useState(rowData)
   const [vgridApi, setVgridApi] = useState(gridApi)
   const [usuarios, setUsuarios] = useState([])
-  const [tipo, setTipo] = useState('')
+  const [tipoCad, setTipoCad] = useState('')
   const [pedidoId, setPedidoId] = useState([])
   const { isShowPedido, togglePedido } = useModal()
 
@@ -52,6 +52,8 @@ const GridPedidosModal = ({ isShowing, hide }) => {
     buscaPedidos()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isShowPedido])
+
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   const buscaUsuarios = async () => {
     await api
@@ -68,10 +70,10 @@ const GridPedidosModal = ({ isShowing, hide }) => {
             })
           }
           catch (e) {
-            console.log('*** data', data)
+            console.log('**** GridPedidosModal.buscaUsuarios.error.data', data)
           }
         } else if (error.request) {
-          console.error('*** bu-1.2', error)
+          console.log('**** GridPedidosModal.buscaUsuarios.error', error)
           // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
           // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
@@ -92,10 +94,10 @@ const GridPedidosModal = ({ isShowing, hide }) => {
             })
           }
           catch (e) {
-            console.log('*** data', data)
+            console.log('**** GridPedidosModal.buscaPedidos.error.data', data)
           }
         } else if (error.request) {
-          console.error('*** bu-1.2', error)
+          console.log('**** GridPedidosModal.buscaPedidos.error', error)
           // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
           // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
@@ -212,7 +214,8 @@ const GridPedidosModal = ({ isShowing, hide }) => {
   }
 
   function FormataData(params) {
-    const data = moment(params.value).format('DD/MM/YYYY')
+    let tmpDate = params.value ? params.value.substring(0, 10) : undefined
+    let data = tmpDate ? moment(tmpDate).format('DD/MM/YYYY') : ""
     return (<span>{data}</span>)
   }
 
@@ -224,18 +227,23 @@ const GridPedidosModal = ({ isShowing, hide }) => {
     )
   }
 
+  const onRowDoubleClicked = (params) => {
+    // console.log('**** onRowDoubleClicked', params)
+    setTipoCad('V')
+    setPedidoId(params.data.id)
+    togglePedido()
+  }
+
   const onButtonClick = async (tipo, e) => {
     e.preventDefault()
 
     const selectedNodes = vgridApi.getSelectedRows()
-    // const selectedData = selectedNodes.map( node => node.data )
-    // const selectedDataStringPresentation = selectedData.map( node => node.make + ' ' + node.model).join(', ')
-    if (selectedNodes.length === 0 && tipo === 'E') {
-      toast('Você deve selecionar um registro para editar!', { type: 'error' })
+    if (selectedNodes.length === 0 && (tipo === 'E' || tipo === 'V')) {
+      toast('Você deve selecionar um registro!', { type: 'error' })
       return
     }
 
-    setTipo(tipo)
+    setTipoCad(tipo)
 
     // alert(`Pedido: ${selectedNodes[0].id}`)
     // return
@@ -247,10 +255,81 @@ const GridPedidosModal = ({ isShowing, hide }) => {
       case 'A':
         buscaPedidos()
         return
+      case 'N':
+        novoPedido()
+        return
+      case 'V': 
+        setPedidoId(selectedNodes[0].id)
+        break
       default: setPedidoId(null)
     }
-    console.log('**** onButtonClick', tipo)
+    
+    await sleep(300)
     togglePedido()
+  }
+
+  const novoPedido = async () => {
+    const newValues = {
+      cliente_id: null,
+      limitecoleta: undefined,
+      limiteentrega: undefined,
+      localcoleta: null,
+      localentrega: null,
+      motorista_id: null,
+      status: "",
+      tipo: "C",
+    }
+
+    const apiParams = {
+      method: 'post',
+      url: `/pedidos`,
+      data: JSON.stringify(newValues),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      }
+    }
+
+    await api(apiParams)
+      .then(response => {
+        const { data } = response
+
+        setTipoCad('N')
+        setPedidoId(data.id)
+
+        if (response.status === 200) {
+          toast(`Pedido [${data.id}] gerado com sucesso!`, { type: 'success' })
+          togglePedido()
+        } else if (response.status === 400) {
+          response.data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
+        } else {
+          response.data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
+        }
+      })
+      .catch((error) => {
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('**** GridPedidoModal.novoPedido.error.data', data)
+          }
+        } else if (error.request) {
+          console.log('**** GridPedidoModal.novoPedido.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        } else {
+        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        }
+      })
+
+
   }
 
   if (isShowing) {
@@ -308,7 +387,8 @@ const GridPedidosModal = ({ isShowing, hide }) => {
                     pagination={true}
                     paginationPageSize={50}
                     localeText={agPtBr}
-                  >
+                    onRowDoubleClicked={onRowDoubleClicked}
+                    >
                   </AgGridReact>
                   {/**/}
                 </div>
@@ -321,11 +401,13 @@ const GridPedidosModal = ({ isShowing, hide }) => {
                 </Texto>
               </BoxTitulo>
             </Container>
+            {/* {console.log('**** GridPedidosModal.onButtonClick', tipo, pedidoId)} */}
             <PedidoModal
               isShowPedido={isShowPedido}
               hide={togglePedido}
-              tipo={tipo}
-              pedidoId={pedidoId}
+              tipoCad={tipoCad !== 'E' && tipoCad !== 'N' ? 'D' : tipoCad}
+              pedidoID={pedidoId}
+              disableEdit={tipoCad !== 'E' && tipoCad !== 'N' ? true : false}
             />
           </div>
         </div>

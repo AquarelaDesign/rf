@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
 
@@ -23,7 +23,7 @@ import {
 } from 'react-flexbox-grid'
 
 import {
-  Box,
+  // Box,
   InputAdornment,
   MenuItem,
   Tabs,
@@ -32,27 +32,33 @@ import {
   withStyles,
 } from '@material-ui/core'
 
+import {
+  TextField,
+} from 'final-form-material-ui'
+
 import { makeStyles } from '@material-ui/core/styles'
 
-import { Form } from './styles'
-import Input from '../../Forms/Input'
+import { Form, Field } from 'react-final-form'
+import DatePicker from '../../datepicker'
+// import { values } from 'lodash'
+import { AiOutlineSearch } from 'react-icons/ai'
 
-import * as Yup from 'yup'
-import { isCNPJ, isCPF } from 'brazilian-values'
+// import * as Yup from 'yup'
+// import { isCNPJ, isCPF } from 'brazilian-values'
 import MaskedInput from 'react-text-mask'
+import CurrencyTextField from '../../Forms/CurrencyTextField'
 
-// import { AiOutlineSearch } from 'react-icons/ai'
 import { FaIcon } from '../../Icone'
 import "./modal.css"
 
 import api from '../../../services/rf'
-import Axios from 'axios'
+// import Axios from 'axios'
 
 import { AgGridReact, gridApi } from 'ag-grid-react'
 import agPtBr from '../../agPtBr'
 
-import DocsModal from '../DocsModal'
-import useModalDocs from '../DocsModal/useModal'
+// import DocsModal from '../DocsModal'
+// import useModalDocs from '../DocsModal/useModal'
 
 import ConfirmaModal from '../../ConfirmaModal'
 import useModalConfirma from '../../ConfirmaModal/useModal'
@@ -65,6 +71,11 @@ import useModalVeiculos from '../VeiculosModal/useModal'
 
 import RotasModal from '../RotasModal'
 import useModalRotas from '../RotasModal/useModal'
+
+import moment from 'moment'
+import Map from '../../Map'
+
+import cadStatus from '../../../services/json/statusPedido.json'
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -192,10 +203,10 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'flex-end',
     position: 'absolute',
     top: 130,
-    left: 25,
+    left: 13.5,
     paddingTop: '3px',
     paddingRight: '5px',
-    width: '47%',
+    width: '48.1%',
     borderRadius: 5,
     backgroundColor: '#FFFFFF',
   },
@@ -204,10 +215,10 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'flex-end',
     position: 'absolute',
     top: 130,
-    right: 25,
+    right: 13.5,
     paddingTop: '3px',
     paddingRight: '5px',
-    width: '47%',
+    width: '48.1%',
     borderRadius: 5,
     backgroundColor: '#FFFFFF',
   },
@@ -219,43 +230,89 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
+const CssTextField = withStyles({
+  root: {
+    '& > *': {
+      fontFamily: ['Montserrat', 'sans Serif'],
+      fontSize: 14,
+    },
+    '& label.Mui-focused': {
+      color: '#0031FF',
+    }, 
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        borderColor: '#2699F8',
+      },
+      '&:hover fieldset': {
+        borderColor: '#0031FF',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: '#225378',
+      },
+    },
+    '& .MuiFormHelperText-root': {
+      margin: '1px',
+      justifyContent: 'left',
+      height: '7px',
+    },
+    '& .MuiFormHelperText-contained': {
+      justifyContent: 'left',
+    },
+  },
+
+})(TextField)
+
+const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => {
   const classes = useStyles()
-  const formRef = useRef(null)
 
-  const [pedidoID, setPedidoID] = useState(pedidoId)
+  const [initialValues, setInitialValues] = useState({})
+  // const [pedidoID, setPedidoID] = useState(pedidoId)
   const [value, setValue] = useState(0)
-  const [values, setValues] = useState({})
-  const [dadosCliente, setDadosCliente] = useState({})
+  // const [dadosCliente, setDadosCliente] = useState({})
 
-  const [disableEdit, setDisableEdit] = useState(false)
-  const [ultimoCep, setUltimoCep] = useState('')
-  const [tipoCad, setTipoCad] = useState(tipo)
+  // const [disableEdit, setDisableEdit] = useState(false)
+  // const [ultimoCep, setUltimoCep] = useState('')
+  // const [tipoCad, setTipoCad] = useState(tipo)
   const [tipoCadVei, setTipoCadVei] = useState('')
-  const [tipoCadastro, setTipoCadastro] = useState('')
+  // const [tipoCadastro, setTipoCadastro] = useState('')
   // const [modo, setModo] = useState('')
 
   const [vgridVeiculos, setVgridVeiculos] = useState(gridApi)
   const [veiculos, setVeiculos] = useState([])
   const [veiculoID, setVeiculoID] = useState(0)
   const [veiculoExclui, setVeiculoExclui] = useState(null)
+  const [VeiculoProps, setVeiculoProps] = useState(null)
+  const [veiculoData, setVeiculoData] = useState(null)
   const { isShowVeiculos, toggleVeiculos } = useModalVeiculos()
 
   const [vgridRotas, setVgridRotas] = useState(gridApi)
   const [rotas, setRotas] = useState([])
   const [rotaID, setRotaID] = useState(0)
   const [rotaExclui, setRotaExclui] = useState(null)
+  const [RotaProps, setRotaProps] = useState(null)
+  const [rotaData, setRotaData] = useState(null)
   const { isShowRotas, toggleRotas } = useModalRotas()
 
-  const [excluiId, setExcluiId] = useState(null)
-  const [propsE, setPropsE] = useState(null)
-  const [sData, setSData] = useState(null)
+  // const [excluiId, setExcluiId] = useState(null)
+  // const [propsE, setPropsE] = useState(null)
+  // const [sData, setSData] = useState(null)
 
-  const { isShowDocs, toggleDocs } = useModalDocs()
+  const [confTexto, setConfTexto] = useState('')
+  const [confTexto1, setConfTexto1] = useState('')
+  // const [confCall, setConfCall] = useState(null)
+  const [modulo, setModulo] = useState('')
+  
+  const [places, setPlaces] = useState([])
+  const [center, setCenter] = useState({
+    lat: 0,
+    lng: 0,
+  })
+
   const { isShowConfirma, toggleConfirma } = useModalConfirma()
 
   const { isShowing, toggleGridUsuarios } = useModalUsuarios()
 
+  let submit
 
   const style = {
     background: "#FFF",
@@ -270,22 +327,9 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
   useEffect(() => {
     try {
 
-      console.log('**** Inicio', tipoCad, pedidoId)
-      if (tipoCad !== 'N' && tipoCad !== 'E') {
-        setDisableEdit(true)
-      }
-
-      if (pedidoId !== null && tipoCad !== 'N') {
-        buscaPedido()
-      }
-
-      if (tipoCad === 'N' && tipoCadastro === '') {
-        setTipoCadastro('M')
-        // valTipoCadastro('M')
-        // window.setFormValue('tipo', 'M')
-        // window.setFormValue('status', 'I')
-        // window.setFormValue('estado', ' ')
-      }
+      // console.log('**** PedidoModal.useEffect', tipoCad, pedidoID)
+      setValue(0)
+      buscaPedido(pedidoID)
     } catch (error) {
       if (error.response) {
         const { data } = error.response
@@ -298,47 +342,43 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
       // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
     }
-  }, [pedidoId, tipoCad, disableEdit])
+  }, [pedidoID, tipoCad, disableEdit])
 
-  const buscaPedido = async () => {
+  const buscaPedido = async (pedidoId) => {
     if (pedidoId) {
       await api
         .get(`/pedidos/${pedidoId}`)
         .then(response => {
           const { data } = response
 
-          data.limitecoleta = data.limitecoleta ? data.limitecoleta.substring(0, 10) : null
-          data.limiteentrega = data.limiteentrega ? data.limiteentrega.substring(0, 10) : null
+          data.limitecoleta = data.limitecoleta ? data.limitecoleta.substring(0, 10) : undefined
+          data.limiteentrega = data.limiteentrega ? data.limiteentrega.substring(0, 10) : undefined
 
-          setValues(data)
-          formRef.current.setFieldValue('id', data.id)
-          formRef.current.setFieldValue('limitecoleta', data.limitecoleta)
-          formRef.current.setFieldValue('limiteentrega', data.limiteentrega)
-
-          setTipoCadastro(data.tipo)
+          // console.log('**** PedidoModal.buscaPedido.data', data)
+          setInitialValues(data)
           setVeiculos(data.veiculos)
           setRotas(data.rotas)
 
-          if (data.cliente_id !== null) {
-            buscaCliente(data.cliente_id)
-          } else {
-            setDadosCliente({
-              id: '', 
-              cpfcnpj: '', 
-              nome: '', 
-              contato: '', 
-              email: '', 
-              celular: '', 
-              whats: '',
-              logradouro: '', 
-              numero: '', 
-              complemento: '',
-              bairro: '', 
-              cidade: '', 
-              uf: '', 
-              cep: '', 
+          let rt = []
+          data.rotas.map(r => {
+            rt.push({
+              lat: parseFloat(r.latitude), 
+              lng: parseFloat(r.longitude), 
             })
+          })
+          setCenter(rt[0])
+          setPlaces(rt)
+        
+          // console.log('**** PedidoModal.buscaPedido-0', data.cliente_id)
+          if (data.cliente_id !== null) {
+            // console.log('**** PedidoModal.buscaPedido-1', data.cliente_id)
+            buscaCliente(data.cliente_id)
+            buscaVeiculos(true)
+            buscaRotas(true)
+          } else {
+            semCliente()
           }
+          window.setFormValue('valor', data.valor)
         }).catch((error) => {
           if (error.response) {
             const { data } = error.response
@@ -348,28 +388,76 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
               })
             }
             catch (e) {
-              console.log('*** data', data)
+              console.log('**** PedidosModal.buscaPedido.error.data', data)
             }
           } else if (error.request) {
-            toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+            console.log('**** PedidosModal.buscaPedido.error', error)
+            // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
           // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }
         })
+    } else {
+      // novoPedido()
     }
   }
 
+  const novoPedido = () => {
+    setInitialValues({
+      cliente_id: null,
+      limitecoleta: undefined,
+      limiteentrega: undefined,
+      localcoleta: null,
+      localentrega: null,
+      motorista_id: null,
+      status: "",
+      tipo: "C",
+    })
+    semCliente()
+    setVeiculos([])
+    setRotas([])
+  }
+
+  const semCliente = () => {
+    window.setFormValue('cpfcnpj', '')
+    window.setFormValue('nome', '')
+    window.setFormValue('contato', '')
+    window.setFormValue('email', '')
+    window.setFormValue('celular', '')
+    window.setFormValue('whats', '')
+    window.setFormValue('logradouro', '')
+    window.setFormValue('numero', '')
+    window.setFormValue('complemento', '')
+    window.setFormValue('bairro', '')
+    window.setFormValue('cidade', '')
+    window.setFormValue('uf', '')
+    window.setFormValue('cep', '')
+  }
+
+
   const buscaCliente = async (clienteID) => {
     if (clienteID) {
+      await sleep(500)
       await api
         .get(`/usuarios/${clienteID}`)
         .then(response => {
           const { data } = response
 
-          console.log('*** data', data)
-          setDadosCliente(data)
-
-          formRef.current.setFieldValue('cliente_id', data.id)
+          // console.log('**** PedidoModal.buscaCliente', data)
+          // setDadosCliente(data)
+          window.setFormValue('cpfcnpj', data.cpfcnpj)
+          window.setFormValue('nome', data.nome)
+          window.setFormValue('contato', data.contato)
+          window.setFormValue('email', data.email)
+          window.setFormValue('celular', data.celular)
+          window.setFormValue('whats', data.whats)
+          window.setFormValue('logradouro', data.logradouro)
+          window.setFormValue('numero', data.numero)
+          window.setFormValue('complemento', data.complemento)
+          window.setFormValue('bairro', data.bairro)
+          window.setFormValue('cidade', data.cidade)
+          window.setFormValue('uf', data.uf)
+          window.setFormValue('cep', data.cep)
 
         }).catch((error) => {
           if (error.response) {
@@ -380,82 +468,127 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
               })
             }
             catch (e) {
-              console.log('*** data', data)
+              console.log('**** PedidosModal.buscaCliente.error.data', data)
             }
           } else if (error.request) {
-            toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+            console.log('**** PedidosModal.buscaCliente.error', error)
+            // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
           // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }
         })
     }
   }
-
-  /* buscaVeiculos
-  const buscaVeiculos = async () => {
-    if (pedidoId) {
-      await api
-        .post(`/buscaveiculosm/${userID}`)
-        .then(response => {
-          const { data } = response
-          setVeiculos(data)
-        })
-        .catch((error) => {
-          if (error.response) {
-            const { data } = error.response
-            try {
-              data.map(mensagem => {
-                toast(mensagem.message, { type: 'error' })
-              })
-            }
-            catch (e) {
-              console.log('*** data', data)
-            }
-          } else if (error.request) {
-            toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
-          } else {
-          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
-          }
-        })
-    }
-  }
-  */
 
   const findCliente = () => {
     toggleGridUsuarios()
   }
 
   const callBackCliente = (e) => {
-    formRef.current.setFieldValue('cliente_id', e)
-    setValues({ ...values, cliente_id: e })
+    setInitialValues({ ...initialValues, cliente_id: e })
     buscaCliente(e)
     // alert(`Retorno Clientes: ${e}`)
   }
 
-  const deleteRowVeiculo = async (props, e) => {
-    e.preventDefault()
-    const selectedData = props.api.getSelectedRows()
 
-    setExcluiId(selectedData[0].id)
-    setVeiculoExclui(selectedData[0].placachassi)
-    setPropsE(props)
-    setSData(selectedData)
-    await sleep(300)
-    toggleConfirma()
+  function clearNumber(value = '') {
+    return value.replace(/\D+/g, '')
   }
-
-  const deleteRowRota = async (props, e) => {
-    e.preventDefault()
-    const selectedData = props.api.getSelectedRows()
-
-    setRotaID(selectedData[0].id)
-    setRotaExclui(selectedData[0].placachassi)
-    setPropsE(props)
-    setSData(selectedData)
-    await sleep(300)
-    toggleConfirma()
+  
+  function formatCpfCnpj(props) {
+    const { inputRef, value, ...other } = props
+  
+    // if (!value) {
+    //   return value
+    // }
+  
+    const clearValue = clearNumber(value)
+    let sMask = [/[0-9]/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/, /\d/]
+    if (clearValue.length > 11) {
+      sMask = [/[0-9]/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '/', /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/]
+    }
+  
+    return (
+      <MaskedInput
+        {...other}
+        ref={(ref) => {
+          inputRef(ref ? ref.inputElement : null);
+        }}
+        value={value}
+        mask={sMask}
+        placeholderChar={'\u2000'}
+        showMask
+      />
+    )
   }
-
+  
+  formatCpfCnpj.propTypes = {
+    inputRef: PropTypes.func.isRequired,
+    onChange: PropTypes.func.isRequired,
+  }
+  
+  function formatCelular(props) {
+    const { inputRef, value, ...other } = props
+  
+    let valor = value
+    if (!valor) {
+      valor = ''
+    }
+  
+    const clearValue = clearNumber(value)
+    let sMask = ['(', /[1-9]/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/, /\d/]
+    if (clearValue.length > 10) {
+      sMask = ['(', /[1-9]/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/]
+    }
+  
+    return (
+      <MaskedInput
+        {...other}
+        ref={(ref) => {
+          inputRef(ref ? ref.inputElement : null);
+        }}
+        value={valor}
+        mask={sMask}
+        placeholderChar={'\u2000'}
+        showMask
+      />
+    )
+  }
+  
+  formatCelular.propTypes = {
+    inputRef: PropTypes.func.isRequired,
+    onChange: PropTypes.func.isRequired,
+  }
+  
+  function formatCep(props) {
+    const { inputRef, value, ...other } = props
+  
+    let valor = value
+    if (!valor) {
+      valor = ''
+    }
+  
+    const sMask = [/[1-9]/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/]
+  
+    return (
+      <MaskedInput
+        {...other}
+        ref={(ref) => {
+          inputRef(ref ? ref.inputElement : null);
+        }}
+        value={valor}
+        mask={sMask}
+        placeholderChar={'\u2000'}
+        showMask
+      />
+    )
+  }
+  
+  formatCep.propTypes = {
+    inputRef: PropTypes.func.isRequired,
+    onChange: PropTypes.func.isRequired,
+  }
+  
   function getNumericCellEditor() {
     function isCharNumeric(charStr) {
       return !!/\d/.test(charStr)
@@ -524,6 +657,7 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
     return NumericCellEditor
   }
 
+
   const colDefsVeiculos = [
     {
       headerName: "Placa/Chassi",
@@ -556,27 +690,170 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
       width: 30,
       sortable: false,
       editable: false,
+      hide: disableEdit,
       cellRendererFramework: (props) => {
         return (
-          <button onClick={(e) => deleteRowVeiculo(props, e)}
-          disabled={disableEdit}
-          style={{ backgroundColor: 'transparent' }}
+          <Botao onClick={(e) => deleteRowVeiculo(props, e)}
+            disabled={disableEdit}
+            style={{ backgroundColor: 'transparent' }}
           >
             <Tooltip title="Excluir veículo">
               <span style={{
                 alignItems: 'center',
                 color: '#FF0000',
-                marginLeft: '-18px',
-                marginTop: '3px',
+                marginLeft: '-35px',
+                marginTop: '7px',
               }}>
                 <FaIcon icon='Deletar' size={20} />
               </span>
             </Tooltip>
-          </button>
+          </Botao>
         )
       },
     },
   ]
+
+  const onVeiculos = async (e, tipo) => {
+    e.preventDefault()
+
+    if (tipo === 'E') {
+      const selectedData = vgridVeiculos.getSelectedRows()
+
+      if (!selectedData) {
+        toast('Você deve selecionar um veículo para editar!', { type: 'error' })
+        return
+      }
+
+      if (selectedData.length === 0) {
+        toast('Você deve selecionar um veículo para editar!', { type: 'error' })
+        return
+      }
+      setVeiculoID(selectedData[0].id)
+    }
+    // console.log('**** onVeiculos', disableEdit, tipo)
+    setTipoCadVei(tipo !== 'E' && tipo !== 'N' ? 'D' : tipo)
+
+    sleep(500)
+    toggleVeiculos()
+  }
+
+  const deleteRowVeiculo = async (props, e) => {
+    e.preventDefault()
+    const selectedData = props.api.getSelectedRows()
+
+    console.log('**** PedidoModal.deleteRowVeiculo', selectedData)
+
+    setVeiculoExclui(selectedData[0].id)
+    setVeiculoProps(props)
+    setVeiculoData(selectedData)
+
+    setConfTexto('Confirma a Exclusão do Veículo?')
+    setConfTexto1(selectedData[0].placachassi)
+    setModulo('V')
+
+    await sleep(300)
+    toggleConfirma()
+  }
+
+  const excluiVeiculo = async () => {
+    if (veiculoExclui) {
+      api.delete(`/veiculos/${veiculoExclui}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          }
+        }
+      ).then(response => {
+        if (response.status === 200) {
+          toast('Veículo removido com sucesso!',
+            { type: 'success' })
+            VeiculoProps.api.applyTransaction({ remove: veiculoData })
+            
+        } else {
+          toast(response.data[0].message,
+            { type: 'error' })
+        }
+
+        setVeiculoExclui(null)
+        setVeiculoProps(null)
+        setVeiculoData(null)
+        setConfTexto('')
+        setConfTexto1('')
+        setModulo('')
+
+      }).catch((error) => {
+
+        setVeiculoExclui(null)
+        setVeiculoProps(null)
+        setVeiculoData(null)
+        setConfTexto('')
+        setConfTexto1('')
+        setModulo('')
+
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('**** PedidoModal.excluiVeiculo.error.data', data)
+          }
+        } else if (error.request) {
+          console.log('**** PedidoModal.excluiVeiculo.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        } else {
+        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        }
+      })
+    }
+  }
+
+  const callBackVeiculos = (e) => {
+    // alert(`Retorno Veiculos: ${e}`)
+    buscaVeiculos(e)
+  }
+
+  const onRowDoubleClickedVeiculo = (params) => {
+    // console.log('**** onRowDoubleClickedVeiculo', params)
+    setTipoCadVei('V')
+    setVeiculoID(params.data.id)
+    toggleVeiculos()
+  }
+
+  const buscaVeiculos = async (stRetorno) => {
+    if (stRetorno && pedidoID) {
+      await api
+        .post(`/buscaveiculos/${pedidoID}`)
+        .then(response => {
+          const { data } = response
+
+          // console.log('**** PedidoModal.buscaVeiculos', data)
+          setVeiculos(data)
+
+        }).catch((error) => {
+          if (error.response) {
+            const { data } = error.response
+            try {
+              data.map(mensagem => {
+                toast(mensagem.message, { type: 'error' })
+              })
+            }
+            catch (e) {
+              console.log('**** PedidosModal.buscaVeiculos.error.data', data)
+            }
+          } else if (error.request) {
+            console.log('**** PedidosModal.buscaVeiculos.error', error)
+            // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          } else {
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          }
+        })
+    }
+  }
+
 
   const colDefsRotas = [
     {
@@ -617,6 +894,7 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
       width: 30,
       sortable: false,
       editable: false,
+      hide: disableEdit,
       cellRendererFramework: (props) => {
         return (
           <button onClick={(e) => deleteRowRota(props, e)}
@@ -639,36 +917,6 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
     },
   ]
 
-  const onVeiculos = async (e, tipo) => {
-    e.preventDefault()
-
-    if (tipo === 'E') {
-      const selectedData = vgridVeiculos.getSelectedRows()
-
-      if (!selectedData) {
-        toast('Você deve selecionar um veículo para editar!', { type: 'error' })
-        return
-      }
-
-      if (selectedData.length === 0) {
-        toast('Você deve selecionar um veículo para editar!', { type: 'error' })
-        return
-      }
-      setVeiculoID(selectedData[0].id)
-    }
-    console.log('**** onVeiculos', disableEdit, tipo)
-    setTipoCadVei(tipo !== 'E' && tipo !== 'N' ? 'D' : tipo)
-
-    toggleVeiculos()
-  }
-
-  const callBackVeiculos = (e) => {
-    // formRef.current.setFieldValue('cliente_id', e)
-    // setValues({ ...values, cliente_id: e })
-    // buscaVeiculos(e)
-    alert(`Retorno Veiculos: ${e}`)
-  }
-
   const onRotas = async (e, tipo) => {
     e.preventDefault()
 
@@ -676,75 +924,242 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
       const selectedData = vgridRotas.getSelectedRows()
 
       if (!selectedData) {
-        toast('Você deve selecionar uma rota para editar!', { type: 'alert' })
+        toast('Você deve selecionar uma rota para editar!', { type: 'error' })
         return
       }
 
       if (selectedData.length === 0) {
-        toast('Você deve selecionar uma rota para editar!', { type: 'alert' })
+        toast('Você deve selecionar uma rota para editar!', { type: 'error' })
         return
       }
       setRotaID(selectedData[0].id)
     }
     setTipoCadVei(tipo !== 'E' && tipo !== 'N' ? 'D' : tipo)
 
+    sleep(500)
     toggleRotas()
   }
 
-  const callBackRotas = (e) => {
-    // formRef.current.setFieldValue('cliente_id', e)
-    // setValues({ ...values, cliente_id: e })
-    // buscaRotas(e)
-    alert(`Retorno Rotas: ${e}`)
+  const deleteRowRota = async (props, e) => {
+    e.preventDefault()
+    const selectedData = props.api.getSelectedRows()
+
+    console.log('**** PedidoModal.deleteRowRota', selectedData)
+
+    setRotaExclui(selectedData[0].id)
+    setRotaProps(props)
+    setRotaData(selectedData)
+
+    setConfTexto('Confirma a Exclusão da Rota?')
+    setConfTexto1(selectedData[0].cidade)
+    setModulo('R')
+    
+    await sleep(300)
+    toggleConfirma()
   }
+
+  const excluiRota = async () => {
+    if (rotaExclui) {
+      api.delete(`/rotas/${rotaExclui}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          }
+        }
+      ).then(response => {
+        if (response.status === 200) {
+          toast('Rota removida com sucesso!',
+            { type: 'success' })
+            RotaProps.api.applyTransaction({ remove: rotaData })
+            
+        } else {
+          toast(response.data[0].message,
+            { type: 'error' })
+        }
+
+        setRotaExclui(null)
+        setRotaProps(null)
+        setRotaData(null)
+        setConfTexto('')
+        setConfTexto1('')
+        setModulo('')
+
+      }).catch((error) => {
+
+        setRotaExclui(null)
+        setRotaProps(null)
+        setRotaData(null)
+        setConfTexto('')
+        setConfTexto1('')
+        setModulo('')
+
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('**** PedidoModal.excluiRota.error.data', data)
+          }
+        } else if (error.request) {
+          console.log('**** PedidoModal.excluiRota.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        } else {
+        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        }
+      })
+    }
+  }
+
+  const callBackRotas = (e) => {
+    // alert(`Retorno Rotas: ${e}`)
+    buscaRotas(e)
+  }
+
+  const onRowDoubleClickedRota = (params) => {
+    // console.log('**** onRowDoubleClickedRota', params)
+    setTipoCadVei('V')
+    setRotaID(params.data.id)
+    toggleRotas()
+  }
+
+  const buscaRotas = async (stRetorno) => {
+    if (stRetorno && pedidoID) {
+      await api
+        .post(`/buscarotas/${pedidoID}`)
+        .then(response => {
+          const { data } = response
+          // console.log('**** PedidoModal.buscaRotas', data)
+          setRotas(data)
+        }).catch((error) => {
+          if (error.response) {
+            const { data } = error.response
+            try {
+              data.map(mensagem => {
+                toast(mensagem.message, { type: 'error' })
+              })
+            }
+            catch (e) {
+              console.log('**** PedidosModal.buscaRotas.error.data', data)
+            }
+          } else if (error.request) {
+            console.log('**** PedidosModal.buscaRotas.error', error)
+            // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          } else {
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          }
+        })
+    }
+  }
+
+
+  const callBack = (e) => {
+    alert(`Retorno Confirma: ${e}`)
+
+    if (e) {
+      if (e === 'V') {
+        excluiVeiculo()
+        buscaVeiculos(true)
+      } else if (e === 'R') {
+        excluiRota()
+        buscaRotas(true)
+      }
+    }
+  }
+
 
   const handleChange = (event, newValue) => {
     setValue(newValue)
   }
 
-  async function handleSubmit (data, { reset }) {
-    try {
-      
-      const dados = {
-        tipo: 'C',
-        id: formRef.current.getFieldValue('id'),
-        limitecoleta: formRef.current.getFieldValue('limitecoleta'),
-        limiteentrega: formRef.current.getFieldValue('limiteentrega'),
-        cliente_id: formRef.current.getFieldValue('cliente_id'),
+  async function onSubmit (values) {
+
+    // console.log('**** PedidoModal.onSubmit-values', values)
+
+    let newValues = {}
+    newValues['limitecoleta'] = moment(values['limitecoleta']).format('YYYY-MM-DD')
+    newValues['limiteentrega'] = moment(values['limiteentrega']).format('YYYY-MM-DD')
+    newValues['tipo'] = values['tipo']
+    newValues['cliente_id'] = values['cliente_id']
+    newValues['motorista_id'] = values['motorista_id']
+    newValues['localcoleta'] = values['localcoleta']
+    newValues['localentrega'] = values['localentrega']
+    newValues['status'] = values['status']
+
+    let val = values['valor'].replace('.', '')
+        val = val.replace(',', '.')
+    newValues['valor'] = val
+
+    let apiParams = {}
+
+    if (pedidoID !== null && tipoCad === 'E') {
+      apiParams = {
+        method: 'put',
+        url: `/pedidos/${pedidoID}`,
+        data: JSON.stringify(newValues),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
       }
-
-      const schema = Yup.object().shape({
-        id: Yup.string().required('O pedido é obrigatório'),
-        // email: Yup.string()
-        //   .email('Digite um email válido')
-        //   .required('O email é obrigatório')
-        //   .min(3, 'No mínimo 3 caracteres'),
-      })
-
-      await schema.validate(data, {
-        abortEarly: false,
-      })
-      
-      formRef.current.setErrors({})
-
-      console.log('**** Salvar Dados', dados)
-      
-    } catch (err) {
-      if (err instanceof Yup.ValidationError) {
-        const errorMessages = {}
-
-        err.inner.forEach(error => {
-          errorMessages[error.path] = error.message
-        })
-
-        formRef.current.setErrors(errorMessages)
+    } else {
+      // newValues['status'] = 'I'
+      apiParams = {
+        method: 'post',
+        url: `/pedidos`,
+        data: JSON.stringify(newValues),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
       }
     }
+
+    // console.log('**** PedidoModal.onSubmit-newValues', newValues)
+    
+    await api(apiParams)
+      .then(response => {
+        const { data } = response
+
+        setInitialValues(data)
+        buscaCliente(data.cliente_id)
+
+        if (response.status === 200) {
+          toast('Registro atualizado com sucesso!', { type: 'success' })
+        } else if (response.status === 400) {
+          response.data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
+        } else {
+          response.data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
+        }
+      })
+      .catch((error) => {
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('**** PedidoModal.onSubmit.error.data', data)
+          }
+        } else if (error.request) {
+          console.log('**** PedidoModal.onSubmit.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        } else {
+        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        }
+      })
   }
 
-  function submitForm() {
-    formRef.current.submitForm()
-  } 
+  const required = value => (value ? undefined : '* Obrigatório!')
 
   if (isShowPedido) {
     return ReactDOM.createPortal(
@@ -765,9 +1180,13 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
                   </RLeft>
                   <RRight>
                     <Blank><FaIcon icon='blank' size={20} height={20} width={20} /></Blank>
-                    <Tooltip title="Salvar">
-                      <Botao onClick={submitForm}><FaIcon icon='Save' size={20} /></Botao>
-                    </Tooltip>
+                    { disableEdit ?
+                      <Blank><FaIcon icon='blank' size={10} height={10} width={10} /> </Blank>
+                    :
+                      <Tooltip title="Salvar">
+                        <Botao onClick={event=>{submit(event)}}><FaIcon icon='Save' size={20} /></Botao>
+                      </Tooltip>
+                    }
                     <Tooltip title="Fechar Janela">
                       <Botao onClick={hide}><FaIcon icon='GiExitDoor' size={20} /></Botao>
                     </Tooltip>
@@ -775,423 +1194,587 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
                 </GridModal>
               </BoxTitulo>
 
-              <Form ref={formRef} onSubmit={handleSubmit} height={'490px'} width={'100%'} >
+              <Form
+                onSubmit={onSubmit}
+                initialValues={initialValues}
+                validate={required} 
+                height={'490px'} width={'100%'}
+                mutators={{
+                  _setValue: ([field, value], state, { changeValue }) => {
+                    changeValue(state, field, () => value)
+                  },
+                  get setValue() {
+                    return this._setValue
+                  },
+                  set setValue(value) {
+                    this._setValue = value
+                  },
+                }}
+                render={({
+                  handleSubmit,
+                  form,
+                  submitting,
+                  pristine,
+                  values,
+                  props,
+                }) => {
+                  window.setFormValue = form.mutators.setValue
 
-                <div className={classes.demo1}>
-                  <AntTabs value={value} onChange={handleChange} aria-label="Dados do Pedido">
-                    <AntTab label="Pedido" {...a11yProps(0)} />
-                    <AntTab label="Dados" {...a11yProps(1)} />
-                    {/* <AntTab label="Rotas" {...a11yProps(2)} /> */}
-                  </AntTabs>
-                </div>
+                  submit = handleSubmit
 
-                <TabPanel value={value} index={0} style={{ width: '100%' }}>
-                  <Grid>
+                  // console.log('**** PedidoModal-Form-values', values)
 
-                    <Row>
-                      <Col xs={12}>
-                        <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10} mt={10}>
-                          <Grid>
-                            <Row style={{ height: '22px' }}>
-                              <Col xs={12}>
+                  return (
+                    <form onSubmit={handleSubmit} noValidate>
+
+                      <div className={classes.demo1}>
+                        <AntTabs value={value} onChange={handleChange} aria-label="Dados do Pedido">
+                          <AntTab label="Pedido" {...a11yProps(0)} />
+                          <AntTab label="Dados" {...a11yProps(1)} />
+                          <AntTab label="Mapa" {...a11yProps(2)} />
+                        </AntTabs>
+                      </div>
+
+                      <TabPanel value={value} index={0} style={{ width: '100%' }}>
+                        <Grid>
+
+                          <Row>
+                            <Col xs={12}>
+                              <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10} mt={10}>
+                                <Grid>
+                                  <Row style={{ height: '22px' }}>
+                                    <Col xs={12}>
+                                      <Texto
+                                        size={16} height={18} italic={true} bold={700} font='Arial'
+                                        mt={2}
+                                        color='#2699FB' shadow={true}>
+                                        PEDIDO
+                                      </Texto>
+                                    </Col>
+                                  </Row>
+                                </Grid>
+                              </BoxTitulo>
+                            </Col>
+                          </Row>
+
+                          <Row>
+                            <Col xs={12}>
+                              <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10}>
+                                <Grid>
+                                  <Row style={{ height: '65px', marginTop: '5px', alignItems: 'center' }}>
+                                    <Col xs={2}>
+                                      <Field
+                                        disabled={true}
+                                        name="id"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Pedido"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={2}>
+                                      <Field
+                                        label="Limite Coleta"
+                                        name="limitecoleta"
+                                        validate={required}
+                                        disabled={disableEdit}
+                                        message="Informe a Data Limite da Coleta"
+                                        variant="outlined"
+                                        type="text"
+                                      >
+                                        {props => (
+                                          <div>
+                                            <DatePicker {...props} />
+                                          </div>
+                                        )}
+                                      </Field>
+                                    </Col>
+                                    <Col xs={2}>
+                                      <Field
+                                        label="Limite Entrega"
+                                        name="limiteentrega"
+                                        // validate={required}
+                                        disabled={disableEdit}
+                                        message="Informe a Data Limite da Entrega"
+                                        variant="outlined"
+                                        type="text"
+                                      >
+                                        {props => (
+                                          <div>
+                                            <DatePicker {...props} />
+                                          </div>
+                                        )}
+                                      </Field>
+                                    </Col>
+                                    <Col xs={3}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="valor"
+                                        component={CurrencyTextField}
+                                        type="text"
+                                        label="Valor"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                        onChange={e => window.setFormValue('valor', e.target.value )}
+                                      />
+                                    </Col>
+                                    <Col xs={3}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="status"
+                                        component={CssTextField}
+                                        type="select"
+                                        label="Status"
+                                        variant="outlined"
+                                        fullWidth
+                                        select
+                                        size="small"
+                                        margin="dense"
+                                      >
+                                        {cadStatus.map((option) => (
+                                          <MenuItem key={option.Id} value={option.Code}>
+                                            {option.Description}
+                                          </MenuItem>
+                                        ))}
+                                      </Field>
+                                    </Col>
+                                  </Row>
+                                </Grid>
+                              </BoxTitulo>
+                            </Col>
+                          </Row>
+
+                          <Row>
+                            <Col xs={12}>
+                              <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10} mt={1}>
+                                <Grid>
+                                  <Row style={{ height: '22px' }}>
+                                    <Col xs={12}>
+                                      <Texto
+                                        size={16} height={18} italic={true} bold={700} font='Arial'
+                                        mt={2}
+                                        color='#2699FB' shadow={true}>
+                                        CONTRATANTE
+                                      </Texto>
+                                    </Col>
+                                  </Row>
+                                </Grid>
+                              </BoxTitulo>
+                            </Col>
+                          </Row>
+
+                          <Row>
+                            <Col xs={12}>
+                              <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10} pt={15}>
+                                <Grid>
+                                  <Row style={{ height: '65px' }}>
+                                    <Col xs={2}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="cliente_id"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Cliente"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                        pattern="[\d|-]{8}"
+                                        InputProps={{
+                                          // inputComponent: formatCep,
+                                          endAdornment: (
+                                            <InputAdornment position="end">
+                                              <button type="button" onClick={findCliente}
+                                                style={{ backgroundColor: 'transparent', cursor: 'pointer' }}
+                                              >
+                                                <AiOutlineSearch />
+                                              </button>
+                                            </InputAdornment>
+                                          ),
+                                        }}
+                                      />
+                                    </Col>
+                                    <Col xs={2}>
+                                      <Field
+                                        disabled={true}
+                                        name="cpfcnpj"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="CPF/CNPJ"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                        InputProps={{
+                                          inputComponent: formatCpfCnpj,
+                                        }}
+                                      />
+                                    </Col>
+                                    <Col xs={8}>
+                                      <Field
+                                        disabled={true}
+                                        name="nome"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Nome"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                  </Row>
+                                  <Row style={{ height: '65px' }}>
+                                    <Col xs={3}>
+                                      <Field
+                                        disabled={true}
+                                        name="contato"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Contato"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={5}>
+                                      <Field
+                                        disabled={true}
+                                        name="email"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="E-mail"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={2}>
+                                      <Field
+                                        disabled={true}
+                                        name="celular"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Celular"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                        pattern="[\d|(|)|-]{11,12}"
+                                        InputProps={{
+                                          inputComponent: formatCelular,
+                                        }}
+                                      />
+                                    </Col>
+                                    <Col xs={2}>
+                                      <Field
+                                        disabled={true}
+                                        name="whats"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="WhatsApp"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                        pattern="[\d|(|)|-]{11,12}"
+                                        InputProps={{
+                                          inputComponent: formatCelular,
+                                        }}
+                                      />
+                                    </Col>
+                                  </Row>
+
+                                  <Row style={{ height: '65px' }}>
+                                    <Col xs={6}>
+                                      <Field
+                                        disabled={true}
+                                        name="logradouro"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Endereço"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={2}>
+                                      <Field
+                                        disabled={true}
+                                        name="numero"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Número"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={4}>
+                                      <Field
+                                        disabled={true}
+                                        name="complemento"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Complemento"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                  </Row>
+                                  <Row style={{ height: '65px' }}>
+                                    <Col xs={3}>
+                                      <Field
+                                        disabled={true}
+                                        name="bairro"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Bairro"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={3}>
+                                      <Field
+                                        disabled={true}
+                                        name="cidade"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Cidade"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={1}>
+                                      <Field
+                                        disabled={true}
+                                        name="uf"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="UF"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={2}>
+                                      <Field
+                                        disabled={true}
+                                        name="cep"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="CEP"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                        InputProps={{
+                                          inputComponent: formatCep,
+                                        }}
+                                      />
+                                    </Col>
+                                  </Row>
+                                </Grid>
+                              </BoxTitulo>
+                            </Col>
+                          </Row>
+
+                        </Grid>
+                      </TabPanel>
+
+                      <TabPanel value={value} index={1} style={{ width: '100%', height: '455px' }}>
+                        <Grid>
+                          <Row style={{ height: '50px' }}>
+                            <Col xs={6}>
+                              <div
+                                className={classes.botoesVeiculos}
+                              >
                                 <Texto
-                                  size={16} height={18} italic={true} bold={700} font='Arial'
-                                  mt={2}
+                                  size={18} height={20} italic={true} bold={600} font='Arial'
+                                  mt={5}
                                   color='#2699FB' shadow={true}>
-                                  PEDIDO
+                                  Veículos
                                 </Texto>
-                              </Col>
-                            </Row>
-                          </Grid>
-                        </BoxTitulo>
-                      </Col>
-                    </Row>
 
-                    <Row>
-                      <Col xs={12}>
-                        <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10}>
-                          <Grid>
-                            <Row style={{ height: '54px', marginTop: '15px' }}>
-                              <Col xs={2}>
-                                <Input 
-                                  type="text" 
-                                  onFocus onBlur 
-                                  name="id" 
-                                  label="Pedido"
-                                  value={values.id}
-                                  disabled={true}
-                                />
-                              </Col>
-                              <Col xs={2}>
-                                <Input 
-                                  type="date" 
-                                  onFocus onBlur 
-                                  name="limitecoleta" 
-                                  label="Limite Coleta" 
-                                  value={values.limitecoleta}
-                                  onChange={e => setValues({ ...values, limitecoleta: e.target.value })} 
-                                />
-                              </Col>
-                              <Col xs={2}>
-                                <Input 
-                                  type="date" 
-                                  onFocus onBlur 
-                                  name="limiteentrega" 
-                                  label="Limite Entrega" 
-                                  value={values.limiteentrega}
-                                  onChange={e => setValues({ ...values, limiteentrega: e.target.value })} 
-                                />
-                              </Col>
-                            </Row>
-                          </Grid>
-                        </BoxTitulo>
-                      </Col>
-                    </Row>
+                                <button onClick={(e) => onVeiculos(e, 'E')}
+                                  style={{ backgroundColor: 'transparent' }}
+                                >
+                                  <Tooltip title="Editar Veículo">
+                                    <span style={{
+                                      alignItems: 'center',
+                                      color: '#000000',
+                                      cursor: 'pointer',
+                                      marginTop: '3px',
+                                    }}>
+                                      <FaIcon icon='Documentos' size={30} />
+                                    </span>
+                                  </Tooltip>
+                                </button>
 
-                    <Row>
-                      <Col xs={12}>
-                        <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10} mt={1}>
-                          <Grid>
-                            <Row style={{ height: '22px' }}>
-                              <Col xs={12}>
+                                {!disableEdit &&
+                                  <button onClick={(e) => onVeiculos(e, 'N')}
+                                    style={{ backgroundColor: 'transparent' }}
+                                  >
+                                    <Tooltip title="Adicionar um novo veículo">
+                                      <span style={{
+                                        alignItems: 'center',
+                                        color: '#31C417',
+                                        cursor: 'pointer',
+                                        marginTop: '3px',
+                                      }}>
+                                        <FaIcon icon='Add' size={30} />
+                                      </span>
+                                    </Tooltip>
+                                  </button>
+                                }
+                              </div>
+                            </Col>
+                            <Col xs={6}>
+                              <div
+                                className={classes.botoesRotas}
+                              >
                                 <Texto
-                                  size={16} height={18} italic={true} bold={700} font='Arial'
-                                  mt={2}
+                                  size={18} height={20} italic={true} bold={600} font='Arial'
+                                  mt={5}
                                   color='#2699FB' shadow={true}>
-                                  CONTRATANTE
+                                  Rotas
                                 </Texto>
-                              </Col>
-                            </Row>
-                          </Grid>
-                        </BoxTitulo>
-                      </Col>
-                    </Row>
 
-                    <Row>
-                      <Col xs={12}>
-                        <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10} pt={15}>
-                          <Grid>
-                            <Row style={{ height: '54px' }}>
-                              <Col xs={2}>
-                                <Input 
-                                  type="text" 
-                                  onFocus onBlur 
-                                  name="cliente_id" 
-                                  label="Cliente" 
-                                  icon={true} 
-                                  callSearch={findCliente}
-                                  value={values.cliente_id}
-                                  onChange={e => setValues({ ...values, cliente_id: e.target.value })} 
-                                  disabled={disableEdit}
-                                />
-                              </Col>
-                              <Col xs={2}>
-                                <Input
-                                  type="text" 
-                                  onFocus onBlur 
-                                  name="cpfcnpj" 
-                                  label="CPF/CNPJ" 
-                                  value={dadosCliente.cpfcnpj} 
-                                  disabled={true}
-                                />
-                              </Col>
-                              <Col xs={8}>
-                                <Input
-                                  type="text" 
-                                  onFocus onBlur 
-                                  name="nome" 
-                                  label="Nome" 
-                                  value={dadosCliente.nome} 
-                                  disabled={true}
-                                />
-                              </Col>
-                            </Row>
-                            <Row style={{ height: '54px' }}>
-                              <Col xs={3}>
-                                <Input 
-                                  type="text" 
-                                  onFocus onBlur 
-                                  name="contato" 
-                                  label="Contato" 
-                                  value={dadosCliente.contato}
-                                  disabled={true}
-                                />
-                              </Col>
-                              <Col xs={5}>
-                                <Input
-                                  type="text" 
-                                  onFocus onBlur 
-                                  name="email" 
-                                  label="E-mail" 
-                                  value={dadosCliente.email} 
-                                  disabled={true}
-                                />
-                              </Col>
-                              <Col xs={2}>
-                                <Input
-                                  type="text" 
-                                  onFocus onBlur 
-                                  name="celular" 
-                                  label="Celular" 
-                                  value={dadosCliente.celular} 
-                                  disabled={true}
-                                />
-                              </Col>
-                              <Col xs={2}>
-                                <Input
-                                  type="text" 
-                                  onFocus onBlur 
-                                  name="whats" 
-                                  label="WhatsApp" 
-                                  value={dadosCliente.whats} 
-                                  disabled={true}
-                                />
-                              </Col>
-                            </Row>
+                                <button onClick={(e) => onRotas(e, 'E')}
+                                  style={{ backgroundColor: 'transparent' }}
+                                >
+                                  <Tooltip title="Editar Rota">
+                                    <span style={{
+                                      alignItems: 'center',
+                                      color: '#000000',
+                                      cursor: 'pointer',
+                                      marginTop: '3px',
+                                    }}>
+                                      <FaIcon icon='Documentos' size={30} />
+                                    </span>
+                                  </Tooltip>
+                                </button>
 
-                            <Row style={{ height: '54px' }}>
-                              <Col xs={6}>
-                                <Input 
-                                  type="text" 
-                                  onFocus onBlur 
-                                  name="logradouro" 
-                                  label="Endereço" 
-                                  value={dadosCliente.logradouro}
-                                  disabled={true}
-                                />
-                              </Col>
-                              <Col xs={2}>
-                                <Input
-                                  type="text" 
-                                  onFocus onBlur 
-                                  name="numero" 
-                                  label="Número" 
-                                  value={dadosCliente.numero} 
-                                  disabled={true}
-                                />
-                              </Col>
-                              <Col xs={4}>
-                                <Input
-                                  type="text" 
-                                  onFocus onBlur 
-                                  name="complemento" 
-                                  label="Complemento" 
-                                  value={dadosCliente.complemento} 
-                                  disabled={true}
-                                />
-                              </Col>
-                            </Row>
-                            <Row style={{ height: '54px' }}>
-                              <Col xs={3}>
-                                <Input 
-                                  type="text" 
-                                  onFocus onBlur 
-                                  name="bairro" 
-                                  label="Bairro" 
-                                  value={dadosCliente.bairro}
-                                  disabled={true}
-                                />
-                              </Col>
-                              <Col xs={3}>
-                                <Input
-                                  type="text" 
-                                  onFocus onBlur 
-                                  name="cidade" 
-                                  label="Cidade" 
-                                  value={dadosCliente.cidade} 
-                                  disabled={true}
-                                />
-                              </Col>
-                              <Col xs={1}>
-                                <Input
-                                  type="text" 
-                                  onFocus onBlur 
-                                  name="uf" 
-                                  label="UF" 
-                                  value={dadosCliente.uf} 
-                                  disabled={true}
-                                />
-                              </Col>
-                              <Col xs={2}>
-                                <Input
-                                  type="text" 
-                                  onFocus onBlur 
-                                  name="cep" 
-                                  label="CEP" 
-                                  value={dadosCliente.cep} 
-                                  disabled={true}
-                                />
-                              </Col>
-                            </Row>
-                          </Grid>
-                        </BoxTitulo>
-                      </Col>
-                    </Row>
+                                {!disableEdit &&
+                                  <button onClick={(e) => onRotas(e, 'N')}
+                                    style={{ backgroundColor: 'transparent' }}
+                                  >
+                                    <Tooltip title="Adicionar um novo veículo">
+                                      <span style={{
+                                        alignItems: 'center',
+                                        color: '#31C417',
+                                        cursor: 'pointer',
+                                        marginTop: '3px',
+                                      }}>
+                                        <FaIcon icon='Add' size={30} />
+                                      </span>
+                                    </Tooltip>
+                                  </button>
+                                }
+                              </div>
+                            </Col>
+                          </Row>
 
-                  </Grid>
-                </TabPanel>
-
-                <TabPanel value={value} index={1} style={{ width: '100%', height: '510px' }}>
-                  <Grid>
-                    <Row style={{ height: '50px' }}>
-                      <Col xs={6}>
-                        <div
-                          className={classes.botoesVeiculos}
-                        >
-                          <Texto
-                            size={18} height={20} italic={true} bold={600} font='Arial'
-                            mt={5}
-                            color='#2699FB' shadow={true}>
-                            Veículos
-                          </Texto>
-
-                          <button onClick={(e) => onVeiculos(e, 'E')}
-                            style={{ backgroundColor: 'transparent' }}
-                          >
-                            <Tooltip title="Editar Veículo">
-                              <span style={{
-                                alignItems: 'center',
-                                color: '#000000',
-                                cursor: 'pointer',
-                                marginTop: '3px',
+                          <Row>
+                            <Col xs={6}>
+                              <div className="ag-theme-custom-react" style={{
+                                  height: '390px',
+                                  width: '100%',
+                                  // borderRadius: '10px',
+                                  backgroundColor: '#FFFFFF', 
+                                  border: '5px solid #FFFFFF',
                               }}>
-                                <FaIcon icon='Documentos' size={30} />
-                              </span>
-                            </Tooltip>
-                          </button>
-
-                          {/* {!disableEdit && */}
-                            <button onClick={(e) => onVeiculos(e, 'N')}
-                              style={{ backgroundColor: 'transparent' }}
-                            >
-                              <Tooltip title="Adicionar um novo veículo">
-                                <span style={{
-                                  alignItems: 'center',
-                                  color: '#31C417',
-                                  cursor: 'pointer',
-                                  marginTop: '3px',
-                                }}>
-                                  <FaIcon icon='Add' size={30} />
-                                </span>
-                              </Tooltip>
-                            </button>
-                          {/* } */}
-                        </div>
-                      </Col>
-                      <Col xs={6}>
-                        <div
-                          className={classes.botoesRotas}
-                        >
-                          <Texto
-                            size={18} height={20} italic={true} bold={600} font='Arial'
-                            mt={5}
-                            color='#2699FB' shadow={true}>
-                            Rotas
-                          </Texto>
-
-                          <button onClick={(e) => onRotas(e, 'E')}
-                            style={{ backgroundColor: 'transparent' }}
-                          >
-                            <Tooltip title="Editar Rota">
-                              <span style={{
-                                alignItems: 'center',
-                                color: '#000000',
-                                cursor: 'pointer',
-                                marginTop: '3px',
+                                <AgGridReact
+                                  id='agVeiculos'
+                                  name='agVeiculos'
+                                  rowSelection="single"
+                                  onGridReady={(params) => { setVgridVeiculos(params.api) }}
+                                  columnDefs={colDefsVeiculos}
+                                  rowData={veiculos}
+                                  singleClickEdit={true}
+                                  stopEditingWhenGridLosesFocus={true}
+                                  suppressNavigable={disableEdit}
+                                  // editType='fullRow'
+                                  components={{ numericCellEditor: getNumericCellEditor() }}
+                                  tooltipShowDelay={0}
+                                  pagination={true}
+                                  paginationPageSize={10}
+                                  localeText={agPtBr}
+                                  onRowDoubleClicked={onRowDoubleClickedVeiculo}
+                                >
+                                </AgGridReact>
+                              </div>
+                            </Col>
+                            <Col xs={6}>
+                              <div className="ag-theme-custom-react" style={{
+                                  height: '390px',
+                                  width: '100%',
+                                  // borderRadius: '10px',
+                                  backgroundColor: '#FFFFFF', 
+                                  border: '5px solid #FFFFFF',
                               }}>
-                                <FaIcon icon='Documentos' size={30} />
-                              </span>
-                            </Tooltip>
-                          </button>
+                                <AgGridReact
+                                  id='agRotas'
+                                  name='agRotas'
+                                  rowSelection="single"
+                                  onGridReady={(params) => { setVgridRotas(params.api) }}
+                                  columnDefs={colDefsRotas}
+                                  rowData={rotas}
+                                  singleClickEdit={true}
+                                  stopEditingWhenGridLosesFocus={true}
+                                  suppressNavigable={disableEdit}
+                                  // editType='fullRow'
+                                  components={{ numericCellEditor: getNumericCellEditor() }}
+                                  tooltipShowDelay={0}
+                                  pagination={true}
+                                  paginationPageSize={10}
+                                  localeText={agPtBr}
+                                  onRowDoubleClicked={onRowDoubleClickedRota}
+                                >
+                                </AgGridReact>
+                              </div>
+                            </Col>
+                          </Row>
+                          <Row style={{ height: '10px' }}>
+                            <Col xs={12}></Col>
+                          </Row>
+                        </Grid>
+                      </TabPanel>
 
-                          {/* {!disableEdit && */}
-                            <button onClick={(e) => onRotas(e, 'N')}
-                              style={{ backgroundColor: 'transparent' }}
-                            >
-                              <Tooltip title="Adicionar um novo veículo">
-                                <span style={{
-                                  alignItems: 'center',
-                                  color: '#31C417',
-                                  cursor: 'pointer',
-                                  marginTop: '3px',
-                                }}>
-                                  <FaIcon icon='Add' size={30} />
-                                </span>
-                              </Tooltip>
-                            </button>
-                          {/* } */}
-                        </div>
-                      </Col>
-                    </Row>
-
-                    <Row>
-                      <Col xs={6}>
-                        <div className="ag-theme-custom-react" style={{
-                            height: '345px',
-                            width: '100%',
-                            // borderRadius: '10px',
-                            backgroundColor: '#FFFFFF', 
-                            border: '5px solid #FFFFFF',
-                        }}>
-                          <AgGridReact
-                            id='agVeiculos'
-                            name='agVeiculos'
-                            rowSelection="single"
-                            onGridReady={(params) => { setVgridVeiculos(params.api) }}
-                            columnDefs={colDefsVeiculos}
-                            rowData={veiculos}
-                            singleClickEdit={true}
-                            stopEditingWhenGridLosesFocus={true}
-                            suppressNavigable={disableEdit}
-                            // editType='fullRow'
-                            components={{ numericCellEditor: getNumericCellEditor() }}
-                            tooltipShowDelay={0}
-                            pagination={true}
-                            paginationPageSize={10}
-                            localeText={agPtBr}
-                          >
-                          </AgGridReact>
-                        </div>
-                      </Col>
-                      <Col xs={6}>
-                        <div className="ag-theme-custom-react" style={{
-                            height: '345px',
-                            width: '100%',
-                            // borderRadius: '10px',
-                            backgroundColor: '#FFFFFF', 
-                            border: '5px solid #FFFFFF',
-                        }}>
-                          <AgGridReact
-                            id='agRotas'
-                            name='agRotas'
-                            rowSelection="single"
-                            onGridReady={(params) => { setVgridRotas(params.api) }}
-                            columnDefs={colDefsRotas}
-                            rowData={rotas}
-                            singleClickEdit={true}
-                            stopEditingWhenGridLosesFocus={true}
-                            suppressNavigable={disableEdit}
-                            // editType='fullRow'
-                            components={{ numericCellEditor: getNumericCellEditor() }}
-                            tooltipShowDelay={0}
-                            pagination={true}
-                            paginationPageSize={10}
-                            localeText={agPtBr}
-                          >
-                          </AgGridReact>
-                        </div>
-                      </Col>
-                    </Row>
-                    <Row style={{ height: '10px' }}>
-                      <Col xs={12}></Col>
-                    </Row>
-                  </Grid>
-                </TabPanel>
-
-                <TabPanel value={value} index={2} style={{ width: '100%' }}>
-                  Teste
-                </TabPanel>
-              </Form>
+                      <TabPanel value={value} index={2} style={{ width: '100%', height: '455px' }}>
+                        <BoxTitulo 
+                          size={465} 
+                          width='99%'
+                          bgcolor='#FFFFFF' 
+                          border='1px solid #2699F8' 
+                          mb={10}
+                        >
+                          <Map
+                            places={places}
+                            defaultCenter={center}
+                          />
+                        </BoxTitulo>
+                      </TabPanel>
+                    </form>
+                  )
+                }}
+              />
 
               <BoxTitulo height={24} mt={10}>
                 <Texto
@@ -1210,18 +1793,26 @@ const PedidoModal = ({ isShowPedido, hide, tipo, pedidoId }) => {
               hide={toggleVeiculos}
               pedidoID={pedidoID}
               veiculoID={veiculoID}
-              tipo={tipoCadVei}
-              disabled={disableEdit}
-              callback={callBackVeiculos}
+              tipoCad={tipoCadVei !== 'E' && tipoCadVei !== 'N' ? 'D' : tipoCadVei}
+              disableEdit={(tipoCadVei !== 'E' && tipoCadVei !== 'N' ? true : false) || disableEdit}
+              callback={e => callBackVeiculos(e)}
             />
             <RotasModal
               isShowRotas={isShowRotas}
               hide={toggleRotas}
               pedidoID={pedidoID}
               rotaID={rotaID}
-              tipo={tipoCadVei}
-              disabled={disableEdit}
-              callback={callBackRotas}
+              tipoCad={tipoCadVei !== 'E' && tipoCadVei !== 'N' ? 'D' : tipoCadVei}
+              disableEdit={(tipoCadVei !== 'E' && tipoCadVei !== 'N' ? true : false) || disableEdit}
+              callback={e => callBackRotas(e)}
+            />
+            <ConfirmaModal
+              isShowConfirma={isShowConfirma}
+              hide={toggleConfirma}
+              texto={confTexto}
+              texto1={confTexto1}
+              modulo={modulo}
+              callback={callBack}
             />
           </div>
         </div>

@@ -21,7 +21,7 @@
   outline: 0;
 }
 
-.modal-box {
+.modal-veiculo {
   display: flex;
   flex-direction: row;
   flex-flow: row;
@@ -33,7 +33,7 @@
   transform: translate(-50%, -50%);
   border-radius: '5px';
   padding: '20px';
-  max-width: 545px;
+  max-width: 800px;
 }
 
 .modal-header {

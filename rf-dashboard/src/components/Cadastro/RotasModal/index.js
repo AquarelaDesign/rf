@@ -1,6 +1,6 @@
-/* eslint-disable array-callback-return */
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom'
+import PropTypes from 'prop-types'
 
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -14,56 +14,101 @@ import {
   RRight,
   Blank,
 } from '../CardUsuario/styles'
+
+import {
+  TextField,
+} from 'final-form-material-ui'
+
+import MaskedInput from 'react-text-mask'
+
 import { makeStyles } from '@material-ui/core/styles'
 
-import { Tooltip, withStyles, MenuItem } from '@material-ui/core'
+import { 
+  Tooltip, 
+  withStyles, 
+  MenuItem,
+  InputAdornment,
+} from '@material-ui/core'
+
 import { FaIcon } from '../../Icone'
 
 import { Grid, Row, Col } from 'react-flexbox-grid'
 
-import { Form } from '../../Forms/Form'
-import Input from '../../Forms/Input'
-import Select from '../../Forms/Select.tsx'
-import * as Yup from 'yup'
+import { Form, Field } from 'react-final-form'
+// import DatePicker from '../../datepicker'
+// import { values } from 'lodash'
+import { AiOutlineSearch } from 'react-icons/ai'
 
 import "./modal.css"
 import api from '../../../services/rf'
 import Axios from 'axios'
+import { values } from 'lodash'
 
 import GridUsuariosModal from '../GridUsuariosModal'
 import useModalUsuarios from '../GridUsuariosModal/useModal'
 
-const useStyles = makeStyles((theme) => ({
-  botoes: {
-    position: 'absolute',
-    top: 12,
-    right: 5,
+const CssTextField = withStyles({
+  root: {
+    '& > *': {
+      fontFamily: ['Montserrat', 'sans Serif'],
+      fontSize: 14,
+    },
+    '& label.Mui-focused': {
+      color: '#0031FF',
+    }, 
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        borderColor: '#2699F8',
+      },
+      '&:hover fieldset': {
+        borderColor: '#0031FF',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: '#225378',
+      },
+    },
+    '& .MuiFormHelperText-root': {
+      margin: '1px',
+      justifyContent: 'left',
+      height: '7px',
+    },
+    '& .MuiFormHelperText-contained': {
+      justifyContent: 'left',
+    },
   },
-}))
+
+})(TextField)
 
 const tipos = [
   { value: 'C', label: 'Coleta' },
   { value: 'E', label: 'Entrega' },
 ]
 
-const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipo, disabled, callback }) => {
-  const formRef = useRef(null)
-  const classes = useStyles()
+const cadStatus = [
+  { Id: 1, Code: 'D', Description: 'Aguardando Coleta' },
+  { Id: 2, Code: 'C', Description: 'Coletando' },
+  { Id: 3, Code: 'A', Description: 'A Caminho' },
+  { Id: 4, Code: 'E', Description: 'Entregue' },
+]
 
-  const [values, setValues] = useState([])
-  const [disableEdit, setDisableEdit] = useState(disabled)
-
+const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit, callback }) => {
+  const [initialValues, setInitialValues] = useState([])
   const { isShowing, toggleGridUsuarios } = useModalUsuarios()
+  
+  const [atualizaCEP, setAtualizaCEP] = useState(false)
+  const [ultimoCep, setUltimoCep] = useState('')
+  
+  let submit
 
   useEffect(() => {
+    // console.log('**** RotasModal.buscaRota')
     const buscaRota = async () => {
       await api
         .get(`/rotas/${rotaID}`)
         .then(response => {
           const { data } = response
-          setValues(data)
-          
-          // console.log('**** buscaRota', data)
+          // console.log('**** RotasModal.buscaRota.data', data)
+          setInitialValues(data)
 
         })
         .catch((error) => {
@@ -75,25 +120,23 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipo, disabled, callb
               })
             }
             catch (e) {
-              console.log('**** error.data', data.message)
+              console.log('**** RotasModal.buscaRota.error.data', data)
             }
           } else if (error.request) {
-            toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+            console.log('**** RotasModal.buscaRota.error', error)
+            // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
           // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }
         })
     }
 
-    // console.log('**** RotasModal', rotaID, tipo)
-    // console.log('**** disableEdit', disableEdit)
-    // console.log('**** disabled', disabled)
+    // console.log('**** RotasModal', rotaID, tipoCad)
 
-    if (rotaID && rotaID > 0 && tipo === 'E') {
-      setDisableEdit(false)
+    if (rotaID && rotaID > 0 && tipoCad === 'E') {
+      // setDisableEdit(false)
       buscaRota()
-    } else if (tipo === 'N') {
-      setDisableEdit(false)
+    } else if (tipoCad === 'N') {
       var newData = {
         pedido_id: pedidoID,
         tipo: "",
@@ -114,16 +157,18 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipo, disabled, callb
         email: "",
         motorista_id: null,
         rota_relacionada: null,
+        status: "D",
       }
-      setValues(newData)
-    } else if (tipo === 'D') {
-      setDisableEdit(true)
+      setInitialValues(newData)
+    } else if (tipoCad === 'D') {
       if (rotaID && rotaID > 0) {
         buscaRota()
       }
     }
 
-  }, [rotaID, pedidoID, tipo])
+  }, [rotaID, pedidoID, tipoCad])
+
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   const findCliente = () => {
     toggleGridUsuarios()
@@ -139,28 +184,10 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipo, disabled, callb
         .get(`/usuarios/${clienteID}`)
         .then(response => {
           const { data } = response
+          // console.log('**** RotasModal.buscaCliente.data', data)
 
-          // console.log('**** buscaCliente', data)
-          setValues(data)
-
-          formRef.current.setFieldValue('cpfcnpj', data.cpfcnpj)
-          formRef.current.setFieldValue('nome', data.nome)
-          formRef.current.setFieldValue('logradouro', data.logradouro)
-          formRef.current.setFieldValue('numero', data.numero)
-          formRef.current.setFieldValue('complemento', data.complemento)
-          formRef.current.setFieldValue('bairro', data.bairro)
-          formRef.current.setFieldValue('cidade', data.cidade)
-          formRef.current.setFieldValue('uf', data.uf)
-          formRef.current.setFieldValue('pais', data.pais)
-          formRef.current.setFieldValue('cep', data.cep)
-          formRef.current.setFieldValue('contato', data.contato)
-          formRef.current.setFieldValue('celular', data.celular)
-          formRef.current.setFieldValue('telefone', data.telefone)
-          formRef.current.setFieldValue('whats', data.whats)
-          formRef.current.setFieldValue('email', data.email)
-
-          setValues({ 
-            ...values, 
+          setInitialValues({ 
+            ...initialValues, 
             cpfcnpj: data.cpfcnpj,
             nome: data.nome,
             logradouro: data.logradouro,
@@ -187,10 +214,11 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipo, disabled, callb
               })
             }
             catch (e) {
-              console.log('**** data', data)
+              console.log('**** RotasModal.buscaCliente.error.data', data)
             }
           } else if (error.request) {
-            toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+            console.log('**** RotasModal.buscaCliente.error', error)
+            // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
           // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }
@@ -198,51 +226,265 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipo, disabled, callb
     }
   }
 
-  async function handleSubmit (data, { reset }) {
-    try {
-      
-      const schema = Yup.object().shape({
-        cpfcnpj: Yup.string().required('O CNPJ é obrigatório!'),
-        // email: Yup.string()
-        //   .email('Digite um email válido')
-        //   .required('O email é obrigatório')
-        //   .min(3, 'No mínimo 3 caracteres'),
-      })
-
-      await schema.validate(data, {
-        abortEarly: false,
-      })
-      
-      formRef.current.setErrors({})
-
-      console.log('**** Salvar Dados Rotas', data)
-      
-    } catch (err) {
-      if (err instanceof Yup.ValidationError) {
-        const errorMessages = {}
-
-        err.inner.forEach(error => {
-          errorMessages[error.path] = error.message
-        })
-
-        formRef.current.setErrors(errorMessages)
-      }
+  function clearNumber(value = '') {
+    return value.replace(/\D+/g, '')
+  }
+  
+  function formatCpfCnpj(props) {
+    const { inputRef, value, ...other } = props
+  
+    // if (!value) {
+    //   return value
+    // }
+  
+    const clearValue = clearNumber(value)
+    let sMask = [/[0-9]/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/, /\d/]
+    if (clearValue.length > 11) {
+      sMask = [/[0-9]/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '/', /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/]
     }
+  
+    return (
+      <MaskedInput
+        {...other}
+        ref={(ref) => {
+          inputRef(ref ? ref.inputElement : null);
+        }}
+        value={value}
+        mask={sMask}
+        placeholderChar={'\u2000'}
+        showMask
+      />
+    )
+  }
+  
+  formatCpfCnpj.propTypes = {
+    inputRef: PropTypes.func.isRequired,
+    onChange: PropTypes.func.isRequired,
+  }
+  
+  function formatCelular(props) {
+    const { inputRef, value, ...other } = props
+  
+    let valor = value
+    if (!valor) {
+      valor = ''
+    }
+  
+    const clearValue = clearNumber(value)
+    let sMask = ['(', /[1-9]/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/, /\d/]
+    if (clearValue.length > 10) {
+      sMask = ['(', /[1-9]/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/]
+    }
+  
+    return (
+      <MaskedInput
+        {...other}
+        ref={(ref) => {
+          inputRef(ref ? ref.inputElement : null);
+        }}
+        value={valor}
+        mask={sMask}
+        placeholderChar={'\u2000'}
+        showMask
+      />
+    )
+  }
+  
+  formatCelular.propTypes = {
+    inputRef: PropTypes.func.isRequired,
+    onChange: PropTypes.func.isRequired,
+  }
+  
+  function formatCep(props) {
+    const { inputRef, value, ...other } = props
+  
+    let valor = value
+    if (!valor) {
+      valor = ''
+    }
+  
+    const sMask = [/[1-9]/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/]
+  
+    return (
+      <MaskedInput
+        {...other}
+        ref={(ref) => {
+          inputRef(ref ? ref.inputElement : null);
+        }}
+        value={valor}
+        mask={sMask}
+        placeholderChar={'\u2000'}
+        showMask
+      />
+    )
+  }
+  
+  formatCep.propTypes = {
+    inputRef: PropTypes.func.isRequired,
+    onChange: PropTypes.func.isRequired,
   }
 
-  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+  const validaCEP = async (value) => {
+    setAtualizaCEP(true)
 
-  const fechar = async () => {
-    await sleep(1000)
+    console.log('**** RotasModal.validaCEP.values', value, values.logradouro)
 
+    if (!value) {
+      setAtualizaCEP(false)
+      return value
+    }
+
+    const cep = value.replace('-', '')
+    if (cep.trim().length < 8) {
+      setAtualizaCEP(false)
+      return value
+    }
+
+    if (ultimoCep === cep) {
+      setAtualizaCEP(false)
+      return
+    }
+    setUltimoCep(cep)
+
+    const prot = window.location.protocol // === 'http' ? 'http' : 'https'
+    const port = window.location.protocol === 'http:' ? 3003 : 3004
+    const service = `${prot}//www.retornofacil.com.br:${port}/api/cep/${cep}`
+
+    console.log('**** RotasModal.validaCEP.Axios.service', service)
+
+    Axios.get(service, {})
+      .then(response => {
+        const { data } = response.data
+        if (response.data.error) {
+          // toast(response.data.message, { type: 'error' })
+          toast('O CEP informado não foi encontrado', { type: 'error' })
+          setAtualizaCEP(false)
+          return
+        }
+
+        console.log('**** RotasModal.validaCEP.Axios.data', data)
+
+        const Logradouro = `${data[0].data[0].Tipo_Logradouro} ${data[0].data[0].Logradouro}`
+        const Bairro = data[0].data[0].Bairro
+        const Cidade = data[0].data[0].Cidade
+        const UF = data[0].data[0].UF
+
+        if (values.logradouro === '' ||
+          values.logradouro === null ||
+          values.logradouro === undefined) {
+          window.setFormValue('logradouro', Logradouro.toUpperCase())
+          window.setFormValue('bairro', Bairro.toUpperCase())
+          window.setFormValue('cidade', Cidade.toUpperCase())
+          window.setFormValue('uf', UF.toUpperCase())
+          window.setFormValue('latitude', data[0].data[0].geo.latitude)
+          window.setFormValue('longitude', data[0].data[0].geo.longitude)
+        }
+        setAtualizaCEP(false)
+      }).catch((error) => {
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('**** RotasModal.validaCEP.error.data', data)
+          }
+        } else if (error.request) {
+          console.log('**** RotasModal.validaCEP.error.data', error)
+        } else {
+        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        }
+        setAtualizaCEP(false)
+      })
+  }
+  
+  const fechar = async (e) => {
+    // console.log('**** RotasModal.fechar', e)
     if (callback) {
-      callback()
+      // await sleep(1000)
+      callback(typeof e === 'object' ? false : e)
       hide()
     }
   }
 
-  // const required = value => (value ? undefined : '* Obrigatório!')
-  console.log('**** Values', values)
+  async function onSubmit (values) {
+    if (atualizaCEP) {
+      return
+    }
+
+    console.log('**** RotasModal.onSubmit-values', values)
+
+    values.cpfcnpj = clearNumber(values.cpfcnpj)
+    values.celular = clearNumber(values.celular)
+    values.whats = clearNumber(values.whats)
+    values.cep = clearNumber(values.cep)
+
+    let apiParams = {}
+    if (rotaID !== null && tipoCad === 'E') {
+      apiParams = {
+        method: 'put',
+        url: `/rotas/${rotaID}`,
+        data: JSON.stringify(values),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
+      }
+    } else {
+      apiParams = {
+        method: 'post',
+        url: `/rotas`,
+        data: JSON.stringify(values),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
+      }
+    }
+    
+    // console.log('**** RotasModal.onSubmit-apiParams', apiParams)
+    const cidade = values.cidade
+
+    await api(apiParams, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      }
+    })
+    .then(response => {
+      const { data } = response
+      if (response.status !== 200) {
+        toast(`Ocorreu um erro no processamento da rota [${cidade}]!`,
+          { type: 'error' })
+        return
+      }
+      
+      setInitialValues(data)
+      fechar(true)
+
+    }).catch((error) => {
+      if (error.response) {
+        const { data } = error.response
+        try {
+          data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
+        }
+        catch (e) {
+          console.log('**** RotasModal.onSubmit.error.data', data)
+        }
+      } else if (error.request) {
+        console.log('**** RotasModal.onSubmit.error', error)
+      } else {
+      // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+      }
+    })
+    
+  }
+
+  const required = value => (value ? undefined : '* Obrigatório!')
 
   if (isShowRotas) {
     return ReactDOM.createPortal(
@@ -258,12 +500,18 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipo, disabled, callb
                       size={22} height={24} italic={true} bold={700} font='Arial'
                       mt={3}
                       color='#2699FB' shadow={true}>
-                      {values.placachassi ? `Dados do Veículo [${values.placachassi}]` : 'Dados do Veículo'}
+                      Dados da Rota
                     </Texto>
                   </RLeft>
                   <RRight>
                     <Blank><FaIcon icon='blank' size={20} height={20} width={20} /> </Blank>
-                    {/* <Blank><FaIcon icon='blank' size={20} height={20} width={20} /> </Blank> */}
+                    { disableEdit ?
+                      <Blank><FaIcon icon='blank' size={10} height={10} width={10} /> </Blank>
+                    :
+                      <Tooltip title="Salvar">
+                        <Botao onClick={event=>{submit(event)}}><FaIcon icon='Save' size={20} /></Botao>
+                      </Tooltip>
+                    }
                     <Tooltip title="Fechar Janela">
                       <Botao onClick={fechar}><FaIcon icon='GiExitDoor' size={20} /></Botao>
                     </Tooltip>
@@ -271,186 +519,341 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipo, disabled, callb
                 </Grid>
               </BoxTitulo>
 
-              <Form 
-                ref={formRef} 
-                onSubmit={handleSubmit} 
-                initialData={values}
-                height={'370px'} 
-                width={'100%'} 
-              >
-                <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10}>
-                  <Grid>
-                    <Row style={{ height: '54px', marginTop: '15px' }}>
-                      <Col xs={6}>
-                        <Select 
-                          // onFocus onBlur 
-                          name="tipo" 
-                          // label="Tipo"
-                          // value={values.tipo}
-                          // defaultVal={values.tipo}
-                          options={tipos}
-                          // onChange={e => setValues({ ...values, tipo: e.target.value })} 
-                          disabled={disableEdit}
-                        />
-                      </Col>
-                      <Col xs={6}>
-                        <Input 
-                          type="text" 
-                          onFocus onBlur 
-                          name="cpfcnpj" 
-                          label="CPF/CNPJ"
-                          icon={true} 
-                          callSearch={findCliente}
-                          height='40px'
-                          // value={values.cpfcnpj}
-                          // onChange={e => setValues({ ...values, cpfcnpj: e.target.value })} 
-                          disabled={disableEdit}
-                        />
-                      </Col>
-                    </Row>
-                    <Row style={{ height: '54px', marginTop: '15px' }}>
-                      <Col xs={12}>
-                        <Input
-                          type="text" 
-                          onFocus onBlur 
-                          name="nome" 
-                          label="Nome" 
-                          height='40px'
-                          // value={values.nome} 
-                          disabled={true}
-                        />
-                      </Col>
-                    </Row>
-                    <Row style={{ height: '54px', marginTop: '15px' }}>
-                      <Col xs={3}>
-                        <Input 
-                          type="text" 
-                          onFocus onBlur 
-                          name="contato" 
-                          label="Contato" 
-                          height='40px'
-                          // value={values.contato}
-                          disabled={true}
-                        />
-                      </Col>
-                      <Col xs={5}>
-                        <Input
-                          type="text" 
-                          onFocus onBlur 
-                          name="email" 
-                          label="E-mail" 
-                          height='40px'
-                          // value={values.email} 
-                          disabled={true}
-                        />
-                      </Col>
-                      <Col xs={2}>
-                        <Input
-                          type="text" 
-                          onFocus onBlur 
-                          name="celular" 
-                          label="Celular" 
-                          height='40px'
-                          // value={values.celular} 
-                          disabled={true}
-                        />
-                      </Col>
-                      <Col xs={2}>
-                        <Input
-                          type="text" 
-                          onFocus onBlur 
-                          name="whats" 
-                          label="WhatsApp" 
-                          height='40px'
-                          // value={values.whats} 
-                          disabled={true}
-                        />
-                      </Col>
-                    </Row>
-                    <Row style={{ height: '54px', marginTop: '15px' }}>
-                      <Col xs={6}>
-                        <Input 
-                          type="text" 
-                          onFocus onBlur 
-                          name="logradouro" 
-                          label="Endereço" 
-                          height='40px'
-                          // value={values.logradouro}
-                          disabled={true}
-                        />
-                      </Col>
-                      <Col xs={2}>
-                        <Input
-                          type="text" 
-                          onFocus onBlur 
-                          name="numero" 
-                          label="Número" 
-                          height='40px'
-                          // value={values.numero} 
-                          disabled={true}
-                        />
-                      </Col>
-                      <Col xs={4}>
-                        <Input
-                          type="text" 
-                          onFocus onBlur 
-                          name="complemento" 
-                          label="Complemento" 
-                          height='40px'
-                          // value={values.complemento} 
-                          disabled={true}
-                        />
-                      </Col>
-                    </Row>
-                    <Row style={{ height: '54px', marginTop: '15px' }}>
-                      <Col xs={3}>
-                        <Input 
-                          type="text" 
-                          onFocus onBlur 
-                          name="bairro" 
-                          label="Bairro" 
-                          height='40px'
-                          // value={values.bairro}
-                          disabled={true}
-                        />
-                      </Col>
-                      <Col xs={3}>
-                        <Input
-                          type="text" 
-                          onFocus onBlur 
-                          name="cidade" 
-                          label="Cidade" 
-                          height='40px'
-                          // value={values.cidade} 
-                          disabled={true}
-                        />
-                      </Col>
-                      <Col xs={1}>
-                        <Input
-                          type="text" 
-                          onFocus onBlur 
-                          name="uf" 
-                          label="UF" 
-                          height='40px'
-                          // value={values.uf} 
-                          disabled={true}
-                        />
-                      </Col>
-                      <Col xs={2}>
-                        <Input
-                          type="text" 
-                          onFocus onBlur 
-                          name="cep" 
-                          label="CEP" 
-                          height='40px'
-                          // value={values.cep} 
-                          disabled={true}
-                        />
-                      </Col>
-                    </Row>
-                  </Grid>
-                </BoxTitulo>
-              </Form>
+              <Form
+                onSubmit={onSubmit}
+                initialValues={initialValues}
+                validate={required} 
+                height={'370px'} width={'100%'}
+                mutators={{
+                  _setValue: ([field, value], state, { changeValue }) => {
+                    changeValue(state, field, () => value)
+                  },
+                  get setValue() {
+                    return this._setValue
+                  },
+                  set setValue(value) {
+                    this._setValue = value
+                  },
+                }}
+                render={({
+                  handleSubmit,
+                  form,
+                  submitting,
+                  pristine,
+                  values,
+                  props,
+                }) => {
+                  window.setFormValue = form.mutators.setValue
+                  submit = handleSubmit
+
+                  return (
+                    <form onSubmit={handleSubmit} noValidate>
+
+                      <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10}>
+                        <Grid>
+                          <Row style={{ height: '54px', marginTop: '15px' }}>
+                            <Col xs={4}>
+                              <Field
+                                disabled={disableEdit}
+                                name="tipo"
+                                component={CssTextField}
+                                type="select"
+                                label="Tipo"
+                                variant="outlined"
+                                fullWidth
+                                select
+                                size="small"
+                                margin="dense"
+                              >
+                                {tipos.map((option) => (
+                                  <MenuItem key={option.value} value={option.value}>
+                                    {option.label}
+                                  </MenuItem>
+                                ))}
+                              </Field>
+                            </Col>
+                            <Col xs={4}>
+                              <Field
+                                disabled={disableEdit}
+                                name="cpfcnpj"
+                                component={CssTextField}
+                                type="text"
+                                label="CPF/CNPJ"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                                InputProps={{
+                                  inputComponent: formatCpfCnpj,
+                                  endAdornment: (
+                                    <InputAdornment position="end">
+                                      <button 
+                                        type="button" 
+                                        disabled={disableEdit}
+                                        onClick={findCliente}
+                                        style={{ backgroundColor: 'transparent', cursor: 'pointer' }}
+                                      >
+                                        <AiOutlineSearch />
+                                      </button>
+                                    </InputAdornment>
+                                  ),
+                                }}
+                              />
+                            </Col>
+                            <Col xs={4}>
+                              <Field
+                                disabled={disableEdit}
+                                name="status"
+                                component={CssTextField}
+                                type="select"
+                                label="Status"
+                                variant="outlined"
+                                fullWidth
+                                select
+                                size="small"
+                                margin="dense"
+                                >
+                                {/* { Id: 1, Code: '', Description: 'Aguardando' } */}
+                                {cadStatus.map((option) => (
+                                  <MenuItem key={option.Code} value={option.Code}>
+                                    {option.Description}
+                                  </MenuItem>
+                                ))}
+                              </Field>
+                            </Col>
+                          </Row>
+                          <Row style={{ height: '54px', marginTop: '15px' }}>
+                            <Col xs={8}>
+                              <Field
+                                disabled={disableEdit}
+                                name="nome"
+                                validate={required}
+                                component={CssTextField}
+                                type="text"
+                                label="Nome"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                              />
+                            </Col>
+                            <Col xs={4}>
+                              <Field
+                                disabled={disableEdit}
+                                name="contato"
+                                validate={required}
+                                component={CssTextField}
+                                type="text"
+                                label="Contato"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                              />
+                            </Col>
+                          </Row>
+                          <Row style={{ height: '54px', marginTop: '15px' }}>
+                            <Col xs={6}>
+                              <Field
+                                disabled={disableEdit}
+                                name="email"
+                                component={CssTextField}
+                                type="text"
+                                label="E-mail"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                              />
+                            </Col>
+                            <Col xs={3}>
+                              <Field
+                                disabled={disableEdit}
+                                name="celular"
+                                validate={required}
+                                component={CssTextField}
+                                type="text"
+                                label="Celular"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                                pattern="[\d|(|)|-]{11,12}"
+                                InputProps={{
+                                  inputComponent: formatCelular,
+                                }}
+                              />
+                            </Col>
+                            <Col xs={3}>
+                              <Field
+                                disabled={disableEdit}
+                                name="whats"
+                                component={CssTextField}
+                                type="text"
+                                label="WhatsApp"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                                pattern="[\d|(|)|-]{11,12}"
+                                InputProps={{
+                                  inputComponent: formatCelular,
+                                }}
+                              />
+                            </Col>
+                          </Row>
+                          <Row style={{ height: '54px', marginTop: '15px' }}>
+                            <Col xs={6}>
+                              <Field
+                                disabled={disableEdit}
+                                name="logradouro"
+                                validate={required}
+                                component={CssTextField}
+                                type="text"
+                                label="Endereço"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                              />
+                            </Col>
+                            <Col xs={2}>
+                              <Field
+                                disabled={disableEdit}
+                                name="numero"
+                                validate={required}
+                                component={CssTextField}
+                                type="text"
+                                label="Número"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                              />
+                            </Col>
+                            <Col xs={4}>
+                              <Field
+                                disabled={disableEdit}
+                                name="complemento"
+                                component={CssTextField}
+                                type="text"
+                                label="Complemento"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                              />
+                            </Col>
+                          </Row>
+                          <Row style={{ height: '54px', marginTop: '15px' }}>
+                            <Col xs={4}>
+                              <Field
+                                disabled={disableEdit}
+                                name="bairro"
+                                validate={required}
+                                component={CssTextField}
+                                type="text"
+                                label="Bairro"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                              />
+                            </Col>
+                            <Col xs={4}>
+                              <Field
+                                disabled={disableEdit}
+                                name="cidade"
+                                validate={required}
+                                component={CssTextField}
+                                type="text"
+                                label="Cidade"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                              />
+                            </Col>
+                            <Col xs={1}>
+                              <Field
+                                disabled={disableEdit}
+                                name="uf"
+                                validate={required}
+                                component={CssTextField}
+                                type="text"
+                                label="UF"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                              />
+                            </Col>
+                            <Col xs={3}>
+                              <Field
+                                disabled={disableEdit}
+                                name="cep"
+                                component={CssTextField}
+                                type="text"
+                                label="CEP"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                                InputProps={{
+                                  inputComponent: formatCep,
+                                  endAdornment: (
+                                    <InputAdornment position="end">
+                                      <button 
+                                        type="button" 
+                                        disabled={disableEdit}
+                                        onClick={() => validaCEP(values.cep)}
+                                        style={{ backgroundColor: 'transparent', cursor: 'pointer' }}
+                                      >
+                                        <AiOutlineSearch />
+                                      </button>
+                                    </InputAdornment>
+                                  ),
+                                }}
+                              />
+                            </Col>
+                          </Row>
+                          <Row style={{ height: '54px', marginTop: '15px' }}>
+                          <Col xs={3}>
+                              <Field
+                                disabled={disableEdit}
+                                name="latitude"
+                                // validate={required}
+                                component={CssTextField}
+                                type="text"
+                                label="Latitude"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                              />
+                            </Col>
+                            <Col xs={3}>
+                              <Field
+                                disabled={disableEdit}
+                                name="longitude"
+                                // validate={required}
+                                component={CssTextField}
+                                type="text"
+                                label="Longitude"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                              />
+                            </Col>
+                          </Row>
+                        </Grid>
+                      </BoxTitulo>
+
+                    </form>
+                  )
+                }}
+              />
 
               <BoxTitulo height={24} mt={10}>
                 <Texto

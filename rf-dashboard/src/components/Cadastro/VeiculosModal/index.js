@@ -1,6 +1,6 @@
-/* eslint-disable array-callback-return */
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom'
+// import PropTypes from 'prop-types'
 
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -14,31 +14,71 @@ import {
   RRight,
   Blank,
 } from '../CardUsuario/styles'
-import { makeStyles } from '@material-ui/core/styles'
 
-import { Tooltip, withStyles, MenuItem } from '@material-ui/core'
+import {
+  TextField,
+} from 'final-form-material-ui'
+
+// import MaskedInput from 'react-text-mask'
+
+// import { makeStyles } from '@material-ui/core/styles'
+
+import { 
+  Tooltip, 
+  withStyles, 
+  MenuItem,
+  // InputAdornment,
+} from '@material-ui/core'
+
 import { FaIcon } from '../../Icone'
 
 import { Grid, Row, Col } from 'react-flexbox-grid'
 
-import { Form } from '../../Forms/Form'
-import Input from '../../Forms/Input'
-import Select from '../../Forms/Select'
-import * as Yup from 'yup'
+import { Form, Field } from 'react-final-form'
+// import DatePicker from '../../datepicker'
+// import { values } from 'lodash'
+// import { AiOutlineSearch } from 'react-icons/ai'
 
 import "./modal.css"
 import api from '../../../services/rf'
 import Axios from 'axios'
 
+import moment from "moment"
+import CurrencyTextField from '../../Forms/CurrencyTextField'
+
 const fipeapi = 'https://fipeapi.appspot.com/api/1/'
 
-const useStyles = makeStyles((theme) => ({
-  botoes: {
-    position: 'absolute',
-    top: 12,
-    right: 5,
+const CssTextField = withStyles({
+  root: {
+    '& > *': {
+      fontFamily: ['Montserrat', 'sans Serif'],
+      fontSize: 14,
+    },
+    '& label.Mui-focused': {
+      color: '#0031FF',
+    }, 
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        borderColor: '#2699F8',
+      },
+      '&:hover fieldset': {
+        borderColor: '#0031FF',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: '#225378',
+      },
+    },
+    '& .MuiFormHelperText-root': {
+      margin: '1px',
+      justifyContent: 'left',
+      height: '7px',
+    },
+    '& .MuiFormHelperText-contained': {
+      justifyContent: 'left',
+    },
   },
-}))
+
+})(TextField)
 
 const fipeTipo = [
   { value: 'carros', label: 'Carros' },
@@ -52,28 +92,28 @@ const estado = [
   { value: 'Sinistrado', label: 'Sinistrado' },
 ]
 
-const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabled, callback }) => {
-  const formRef = useRef(null)
-  const classes = useStyles()
+const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, disableEdit, callback }) => {
+  const [initialValues, setInitialValues] = useState([])
 
-  const [values, setValues] = useState([])
   const [marcas, setMarcas] = useState([])
   const [modelos, setModelos] = useState([])
   const [anos, setAnos] = useState([])
-  const [fipe, setFipe] = useState([])
-  const [disableEdit, setDisableEdit] = useState(disabled)
+
   const [disableMarca, setDisableMarca] = useState(true)
   const [disableModelo, setDisableModelo] = useState(true)
   const [disableAno, setDisableAno] = useState(true)
+  
+  let submit
 
   useEffect(() => {
+    // console.log('**** VeiculosModal.buscaVeiculo')
     const buscaVeiculo = async () => {
       await api
         .get(`/veiculos/${veiculoID}`)
         .then(response => {
           const { data } = response
-          setValues(data)
-          // console.log('**** buscaVeiculo', data)
+          // console.log('**** VeiculosModal.buscaVeiculo.data', data)
+          setInitialValues(data)
         })
         .catch((error) => {
           if (error.response) {
@@ -84,21 +124,22 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
               })
             }
             catch (e) {
-              console.log('*** error.data', data.message)
+              console.log('**** VeiculosModal.buscaVeiculo.error.data', data)
             }
           } else if (error.request) {
-            toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+            console.log('**** VeiculosModal.buscaVeiculo.error', error)
+            // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
           // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }
         })
     }
 
-    if (veiculoID && veiculoID > 0 && tipo === 'E') {
-      setDisableEdit(false)
+    // console.log('**** VeiculosModal', veiculoID, tipoCad)
+
+    if (veiculoID && veiculoID > 0 && tipoCad === 'E') {
       buscaVeiculo()
-    } else if (tipo === 'N') {
-      setDisableEdit(false)
+    } else if (tipoCad === 'N') {
       var newData = {
         pedido_id: pedidoID,
         placachassi: "",
@@ -106,26 +147,35 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
         estado: "",
         ano: null,
         valor: null,
-        fipe_tipo: null,
-        fipe_marca_id: null,
-        fipe_modelo_id: null,
-        fipe_ano_id: null,
+        fipetipo: null,
+        fipemarcaid: null,
+        fipemodeloid: null,
+        fipeano: null,
         fipe: "",
       }
-      setValues(newData)
-    } else if (tipo === 'D') {
-      setDisableEdit(true)
+      setInitialValues(newData)
+    } else if (tipoCad === 'D') {
       if (veiculoID && veiculoID > 0) {
         buscaVeiculo()
       }
     }
 
-  }, [veiculoID, pedidoID, tipo])
+  }, [veiculoID, pedidoID, tipoCad])
+
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   const buscaMarcas = async (dados) => {
-    setValues({ ...values, fipe_tipo: dados.value })
+    
+    console.log('**** VeiculosModal.buscaMarcas', dados)
+    
+    if (!dados) {
+      return
+    }
+    
+    setInitialValues({ ...initialValues, fipetipo: dados })
+    
     await Axios
-      .get(`${fipeapi}/${dados.value}/marcas.json`)
+      .get(`${fipeapi}/${dados}/marcas.json`)
       .then(response => {
         const { data } = response
 
@@ -137,10 +187,7 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
           })
         })
         setMarcas(ma)
-        if (!disableEdit){
-          setDisableMarca(false)
-        }
-        // console.log('**** buscaMarcas', ma)
+        setDisableMarca(false)
       })
       .catch((error) => {
         if (error.response) {
@@ -151,10 +198,11 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
             })
           }
           catch (e) {
-            console.log('*** error.data', data.message)
+            console.log('**** VeiculosModal.buscaMarcas.error.data', data)
           }
         } else if (error.request) {
-          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          console.log('**** VeiculosModal.buscaMarcas.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
         // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
@@ -162,9 +210,15 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
   }
 
   const buscaModelos = async (dados) => {
-    setValues({ ...values, fipe_marca_id: dados.value })
+    // console.log('**** VeiculosModal.buscaModelos', dados)
+    if (!dados) {
+      return
+    }
+    
+    setInitialValues({ ...initialValues, fipemarcaid: dados })
+    
     await Axios
-      .get(`${fipeapi}/${values.fipe_tipo}/veiculos/${dados.value}.json`)
+      .get(`${fipeapi}/${initialValues.fipetipo}/veiculos/${dados}.json`)
       .then(response => {
         const { data } = response
 
@@ -176,9 +230,7 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
           })
         })
         setModelos(ma)
-        if (!disableEdit){
-          setDisableModelo(false)
-        }
+        setDisableModelo(false)
       })
       .catch((error) => {
         if (error.response) {
@@ -189,10 +241,11 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
             })
           }
           catch (e) {
-            console.log('*** error.data', data.message)
+            console.log('**** VeiculosModal.buscaModelos.error.data', data)
           }
         } else if (error.request) {
-          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          console.log('**** VeiculosModal.buscaModelos.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
         // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
@@ -201,26 +254,28 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
   }
   
   const buscaAnos = async (dados) => {
-    setValues({ ...values, fipe_modelo_id: dados.value })
-    // https://fipeapi.appspot.com/api/1/carros/veiculo/21/4828.json
-    // console.log('**** buscaAnos', `${fipeapi}${values.fipe_tipo}/veiculo/${values.fipe_marca_id}/${dados.value}.json`)
+    // console.log('**** VeiculosModal.buscaAnos', dados)
+    if (!dados) {
+      return
+    }
     
+    setInitialValues({ ...initialValues, fipemodeloid: dados })
+
     await Axios
-      .get(`${fipeapi}${values.fipe_tipo}/veiculo/${values.fipe_marca_id}/${dados.value}.json`)
+      .get(`${fipeapi}${initialValues.fipetipo}/veiculo/${initialValues.fipemarcaid}/${dados}.json`)
       .then(response => {
         const { data } = response
-
+        // console.log('**** VeiculosModal.buscaAnos.data', data)
         let ma = []
         data.map( m=>{
           ma.push({
+            id: m.id, 
             value: m.id, 
             label: m.name,
           })
         })
         setAnos(ma)
-        if (!disableEdit){
-          setDisableAno(false)
-        }
+        setDisableAno(false)
       })
       .catch((error) => {
         if (error.response) {
@@ -231,29 +286,47 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
             })
           }
           catch (e) {
-            console.log('*** error.data', data.message)
+            console.log('**** VeiculosModal.buscaAnos.error.data', data)
           }
         } else if (error.request) {
-          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          console.log('**** VeiculosModal.buscaAnos.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
         // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
       })
-    
   }
   
   const buscaFipe = async (dados) => {
-    setValues({ ...values, fipe_ano_id: dados.value })
-    // https://fipeapi.appspot.com/api/1/carros/veiculo/21/4828/2013-1.json
-    // console.log('**** buscaFipe', `${fipeapi}${values.fipe_tipo}/veiculo/${values.fipe_marca_id}/${values.fipe_modelo_id}/${dados.value}.json`)
-    
+    // console.log('**** VeiculosModal.buscaFipe', dados)
+    if (!dados) {
+      return
+    }
+
+    let anodes = anos.find(opt => opt.value === dados.value)
+    let ano = anodes.label.substring(0, 4)
+
+    if (ano.toLocaleLowerCase() === 'zero') {
+      ano = moment().format('YYYY')
+    }
+    // console.log('**** VeiculosModal.buscaFipe.ano', ano)
     await Axios
-      .get(`${fipeapi}${values.fipe_tipo}/veiculo/${values.fipe_marca_id}/${values.fipe_modelo_id}/${dados.value}.json`)
+      .get(`${fipeapi}${initialValues.fipetipo}/veiculo/${initialValues.fipemarcaid}/${initialValues.fipemodeloid}/${dados.value}.json`)
       .then(response => {
         const { data } = response
 
-        setValues({ ...values, fipe: data.fipe_codigo })
-        setValues({ ...values, valor: data.preco })
+        let valor = data.preco.replace('R$ ','').replace('.','').replace(',','.')
+        // let modelo = `${data.marca} ${data.name} ${data.ano_modelo} ${data.combustivel} (Tabela: ${data.referencia})`
+        let modelo = `${data.marca} ${data.name} ${anodes.label} (Tabela: ${data.referencia})`
+
+        setInitialValues({ 
+          ...initialValues,
+          ano: parseInt(ano),
+          fipeano: anodes.value,
+          fipe: data.fipe_codigo, 
+          valor: valor, 
+          modelo: modelo.toLocaleUpperCase() 
+        })
         console.log('**** buscaFipe', data)
       })
       .catch((error) => {
@@ -265,10 +338,11 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
             })
           }
           catch (e) {
-            console.log('*** error.data', data.message)
+            console.log('**** VeiculosModal.buscaFipe.error.data', data)
           }
         } else if (error.request) {
-          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          console.log('**** VeiculosModal.buscaFipe.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
         // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
@@ -276,57 +350,100 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
     
   }
   
-  async function handleSubmit (data, { reset }) {
-    try {
-      
-      const schema = Yup.object().shape({
-        placachassi: Yup.string().required('A Placa/Chassi é obrigatória!'),
-        // email: Yup.string()
-        //   .email('Digite um email válido')
-        //   .required('O email é obrigatório')
-        //   .min(3, 'No mínimo 3 caracteres'),
-      })
-
-      await schema.validate(data, {
-        abortEarly: false,
-      })
-      
-      formRef.current.setErrors({})
-
-      console.log('**** Salvar Dados Veiculos', data)
-      
-    } catch (err) {
-      if (err instanceof Yup.ValidationError) {
-        const errorMessages = {}
-
-        err.inner.forEach(error => {
-          errorMessages[error.path] = error.message
-        })
-
-        formRef.current.setErrors(errorMessages)
-      }
-    }
-  }
-
-  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
-
-  const fechar = async () => {
-    await sleep(1000)
-
+  const fechar = async (e) => {
+    // console.log('**** VeiculosModal.fechar', e)
     if (callback) {
-      callback()
+      // await sleep(1000)
+      callback(typeof e === 'object' ? false : e)
       hide()
     }
   }
 
-  // const required = value => (value ? undefined : '* Obrigatório!')
+  async function onSubmit (values) {
+    // console.log('**** VeiculosModal.onSubmit-values', values)
+
+    let newValues = {}
+
+    for (var [key, value] of Object.entries(values)) {
+      newValues[key] = value
+    }
+
+    let val = values['valor'].replace('.', '')
+        val = val.replace(',', '.')
+    newValues['valor'] = val
+
+    let apiParams = {}
+
+    if (veiculoID !== null && tipoCad === 'E') {
+      apiParams = {
+        method: 'put',
+        url: `/veiculos/${veiculoID}`,
+        data: JSON.stringify(newValues),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
+      }
+    } else {
+      apiParams = {
+        method: 'post',
+        url: `/veiculos`,
+        data: JSON.stringify(newValues),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
+      }
+    }
+    // console.log('**** VeiculosModal.onSubmit-apiParams', apiParams)
+
+    const placa = values.placachassi
+
+    await api(apiParams, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      }
+    })
+    .then(response => {
+      const { data } = response
+      if (response.status !== 200) {
+        toast(`Ocorreu um erro no processamento da placa [${placa}]!`,
+          { type: 'error' })
+        return
+      }
+      
+      setInitialValues(data)
+      fechar(true)
+
+    }).catch((error) => {
+      if (error.response) {
+        const { data } = error.response
+        try {
+          data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
+        }
+        catch (e) {
+          console.log('**** VeiculosModal.onSubmit.error.data', data)
+        }
+      } else if (error.request) {
+        console.log('**** VeiculosModal.onSubmit.error', error)
+      } else {
+      // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+      }
+    })
+
+  }
+
+  const required = value => (value ? undefined : '* Obrigatório!')
 
   if (isShowVeiculos) {
     return ReactDOM.createPortal(
       <React.Fragment>
         <div className="modal-overlay" />
         <div className="modal-wrapper" aria-modal aria-hidden tabIndex={-1} role="dialog">
-          <div className="modal-box">
+          <div className="modal-veiculo">
             <Container>
               <BoxTitulo height={24} bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10}>
                 <Grid mb={5}>
@@ -335,12 +452,18 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
                       size={22} height={24} italic={true} bold={700} font='Arial'
                       mt={3}
                       color='#2699FB' shadow={true}>
-                      {values.placachassi ? `Dados do Veículo [${values.placachassi}]` : 'Dados do Veículo'}
+                      {initialValues.placachassi ? `Dados do Veículo [${initialValues.placachassi}]` : 'Dados do Veículo'}
                     </Texto>
                   </RLeft>
                   <RRight>
-                    <Blank><FaIcon icon='blank' size={20} height={20} width={20} /> </Blank>
-                    {/* <Blank><FaIcon icon='blank' size={20} height={20} width={20} /> </Blank> */}
+                    <Blank><FaIcon icon='blank' size={10} height={10} width={10} /> </Blank>
+                    { disableEdit ?
+                      <Blank><FaIcon icon='blank' size={10} height={10} width={10} /> </Blank>
+                    :
+                      <Tooltip title="Salvar">
+                        <Botao onClick={event=>{submit(event)}}><FaIcon icon='Save' size={20} /></Botao>
+                      </Tooltip>
+                    }
                     <Tooltip title="Fechar Janela">
                       <Botao onClick={fechar}><FaIcon icon='GiExitDoor' size={20} /></Botao>
                     </Tooltip>
@@ -348,111 +471,225 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipo, disabl
                 </Grid>
               </BoxTitulo>
 
-              <Form ref={formRef} onSubmit={handleSubmit} height={'290px'} width={'100%'} >
-                <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10}>
-                  <Grid>
-                    <Row style={{ height: '54px', marginTop: '15px' }}>
-                      <Col xs={6}>
-                        <Input 
-                          type="text" 
-                          onFocus onBlur 
-                          name="placachassi" 
-                          label="Placa/Chassi"
-                          height='40px'
-                          value={values.placachassi}
-                          onChange={e => setValues({ ...values, placachassi: e.target.value })} 
-                          disabled={disableEdit}
-                        />
-                      </Col>
-                      <Col xs={6}>
-                        <Select 
-                          onFocus onBlur 
-                          name="estado" 
-                          label="Estado"
-                          defaultValue={values.estado}
-                          options={estado}
-                          // onChange={e => setValues({ ...values, estado: e.target.value })} 
-                          disabled={disableEdit}
-                        />
-                      </Col>
-                    </Row>
-                    <Row style={{ height: '54px', marginTop: '15px' }}>
-                      <Col xs={6}>
-                        <Select 
-                          onFocus onBlur 
-                          name="fipe_tipo" 
-                          label="Tipo"
-                          defaultValue={values.fipe_tipo}
-                          onChange={buscaMarcas}
-                          options={fipeTipo}
-                          disabled={disableEdit}
-                        />
-                      </Col>
-                      <Col xs={6}>
-                        <Select 
-                          onFocus onBlur 
-                          name="fipe_marca_id" 
-                          label="Marca"
-                          defaultValue={values.fipe_marca_id}
-                          onChange={buscaModelos}
-                          options={marcas}
-                          disabled={disableMarca}
-                        />
-                      </Col>
-                    </Row>
-                    <Row style={{ height: '54px', marginTop: '15px' }}>
-                      <Col xs={6}>
-                        <Select 
-                          onFocus onBlur 
-                          name="fipe_modelo_id" 
-                          label="Modelo"
-                          defaultValue={values.fipe_modelo_id}
-                          onChange={buscaAnos}
-                          options={modelos}
-                          disabled={disableModelo}
-                        />
-                      </Col>
-                      <Col xs={6}>
-                        <Select 
-                          onFocus onBlur 
-                          name="fipe_ano_id" 
-                          label="Ano"
-                          defaultValue={values.fipe_ano_id}
-                          onChange={buscaFipe}
-                          options={anos}
-                          disabled={disableAno}
-                        />
-                      </Col>
-                    </Row>
-                    <Row style={{ height: '54px', marginTop: '15px' }}>
-                      <Col xs={6}>
-                        <Input 
-                          type="text" 
-                          onFocus onBlur 
-                          name="fipe" 
-                          label="Código FIPE"
-                          height='40px'
-                          value={values.fipe}
-                          onChange={e => setValues({ ...values, fipe: e.target.value })} 
-                          disabled={disableEdit}
-                        />
-                      </Col>
-                      <Col xs={6}>
-                        <Input 
-                          type="text" 
-                          onFocus onBlur 
-                          name="valor" 
-                          label="Valor"
-                          height='40px'
-                          value={values.valor}
-                          onChange={e => setValues({ ...values, valor: e.target.value })} 
-                          disabled={disableEdit}
-                        />
-                      </Col>
-                    </Row>
-                  </Grid>
-                </BoxTitulo>
-              </Form>
+              <Form
+                onSubmit={onSubmit}
+                initialValues={initialValues}
+                validate={required} 
+                height={'290px'} width={'100%'}
+                mutators={{
+                  _setValue: ([field, value], state, { changeValue }) => {
+                    changeValue(state, field, () => value)
+                  },
+                  get setValue() {
+                    return this._setValue
+                  },
+                  set setValue(value) {
+                    this._setValue = value
+                  },
+                }}
+                render={({
+                  handleSubmit,
+                  form,
+                  submitting,
+                  pristine,
+                  values,
+                  props,
+                }) => {
+                  window.setFormValue = form.mutators.setValue
+                  submit = handleSubmit
+
+                  return (
+                    <form onSubmit={handleSubmit} noValidate>
+
+                      <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10}>
+                        <Grid>
+                          <Row style={{ height: '54px', marginTop: '15px' }}>
+                            <Col xs={6}>
+                              <Field
+                                disabled={disableEdit}
+                                name="placachassi"
+                                component={CssTextField}
+                                type="text"
+                                label="Placa/Chassi"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                              />
+                            </Col>
+                            <Col xs={6}>
+                              <Field
+                                disabled={disableEdit}
+                                name="estado"
+                                component={CssTextField}
+                                type="select"
+                                label="Estado"
+                                variant="outlined"
+                                fullWidth
+                                select
+                                size="small"
+                                margin="dense"
+                              >
+                                {estado.map((option) => (
+                                  <MenuItem key={option.value} value={option.value}>
+                                    {option.label}
+                                  </MenuItem>
+                                ))}
+                              </Field>
+                            </Col>
+                          </Row>
+                          <Row style={{ height: '54px', marginTop: '15px' }}>
+                            <Col xs={6}>
+                              <Field
+                                disabled={disableEdit}
+                                name="fipetipo"
+                                component={CssTextField}
+                                type="select"
+                                label="Tipo"
+                                variant="outlined"
+                                fullWidth
+                                select
+                                size="small"
+                                margin="dense"
+                                onClick={e => buscaMarcas(e.target.value)}
+                              >
+                                {fipeTipo.map((option) => (
+                                  <MenuItem key={option.value} value={option.value}>
+                                    {option.label}
+                                  </MenuItem>
+                                ))}
+                              </Field>
+                            </Col>
+                            <Col xs={6}>
+                              <Field
+                                disabled={disableMarca}
+                                name="fipemarcaid"
+                                component={CssTextField}
+                                type="select"
+                                label="Marca"
+                                variant="outlined"
+                                fullWidth
+                                select
+                                size="small"
+                                margin="dense"
+                                onClick={e => buscaModelos(e.target.value)}
+                              >
+                                {marcas.map((option) => (
+                                  <MenuItem key={option.value} value={option.value}>
+                                    {option.label}
+                                  </MenuItem>
+                                ))}
+                              </Field>
+                            </Col>
+                          </Row>
+                          <Row style={{ height: '54px', marginTop: '15px' }}>
+                            <Col xs={6}>
+                              <Field
+                                disabled={disableModelo}
+                                name="fipemodeloid"
+                                component={CssTextField}
+                                type="select"
+                                label="Modelo"
+                                variant="outlined"
+                                fullWidth
+                                select
+                                size="small"
+                                margin="dense"
+                                onClick={e => buscaAnos(e.target.value)}
+                              >
+                                {modelos.map((option) => (
+                                  <MenuItem key={option.value} value={option.value}>
+                                    {option.label}
+                                  </MenuItem>
+                                ))}
+                              </Field>
+                            </Col>
+                            <Col xs={6}>
+                              <Field
+                                disabled={disableAno}
+                                name="fipeano"
+                                component={CssTextField}
+                                type="select"
+                                label="Ano"
+                                variant="outlined"
+                                fullWidth
+                                select
+                                size="small"
+                                margin="dense"
+                                onClick={e => buscaFipe(e.target)}
+                              >
+                                {anos.map((option) => (
+                                  <MenuItem key={option.value} value={option.value}>
+                                    {option.label}
+                                  </MenuItem>
+                                ))}
+                              </Field>
+                            </Col>
+                          </Row>
+                          <Row style={{ height: '54px', marginTop: '15px' }}>
+                            <Col xs={12}>
+                              <Field
+                                disabled={disableEdit}
+                                name="modelo"
+                                component={CssTextField}
+                                type="text"
+                                label="Descrição do Veículo"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                              />
+                            </Col>
+                          </Row>
+                          <Row style={{ height: '54px', marginTop: '15px' }}>
+                            <Col xs={2}>
+                              <Field
+                                disabled={disableEdit}
+                                name="ano"
+                                component={CssTextField}
+                                type="text"
+                                label="Ano"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                              />
+                            </Col>
+                            <Col xs={4}>
+                              <Field
+                                disabled={disableEdit}
+                                name="fipe"
+                                component={CssTextField}
+                                type="text"
+                                label="Código FIPE"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                              />
+                            </Col>
+                            <Col xs={6}>
+                              <Field
+                                disabled={disableEdit}
+                                name="valor"
+                                component={CurrencyTextField}
+                                type="text"
+                                label="Valor"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                                onChange={e => window.setFormValue('valor', e.target.value )}
+                              />
+                            </Col>
+                          </Row>
+                        </Grid>
+                      </BoxTitulo>
+              
+                    </form>
+                  )
+                }}
+              />
 
               <BoxTitulo height={24} mt={10}>
                 <Texto
