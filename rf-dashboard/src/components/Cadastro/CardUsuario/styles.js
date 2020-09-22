@@ -39,7 +39,7 @@ export const BoxTitulo = styled.div`
   flex-direction: row;
   justify-content: left;
   margin: auto;
-  width: 100%;
+  width: ${props => props.width ? props.width : '100%'};
   height: ${props => props.size + 2}px;
   border-radius: 4px;
   border: ${props => props.border};

@@ -1,20 +1,23 @@
 /* eslint-disable array-callback-return */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
+
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+
 import { makeStyles } from '@material-ui/core/styles'
-import PropTypes from 'prop-types'
 import { isCNPJ, isCPF } from 'brazilian-values'
 import MaskedInput from 'react-text-mask'
 import Axios from 'axios'
-// import { uniqueId } from 'lodash'
-// import filesize from 'filesize'
+
 import { Grid, Row, Col } from 'react-flexbox-grid'
 import { Form, Field } from 'react-final-form'
+
 import '../../../assets/scss/agGrid.scss'
 import { AgGridReact, gridApi } from 'ag-grid-react'
 import agPtBr from '../../agPtBr'
+
 import moment from 'moment'
 
 import { AiOutlineSearch } from 'react-icons/ai'
@@ -25,7 +28,6 @@ import {
   Tabs,
   Tab,
   Tooltip,
-  // Typography,
   withStyles,
 } from '@material-ui/core'
 
@@ -103,6 +105,10 @@ const useStyles = makeStyles((theme) => ({
 
 const CssTextField = withStyles({
   root: {
+    '& > *': {
+      fontFamily: ['Montserrat', 'sans Serif'],
+      fontSize: 14,
+    },
     '& label.Mui-focused': {
       color: '#0031FF',
     },
@@ -362,7 +368,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
               })
             }
             catch (e) {
-              console.log('*** data', data)
+              console.log('**** CardUsuario.buscaUsuario.error.data', data)
             }
           } else if (error.request) {
             toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
@@ -390,7 +396,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
               })
             }
             catch (e) {
-              console.log('*** data', data)
+              console.log('**** CardUsuario.buscaVeiculosUsuario.error.data', data)
             }
           } else if (error.request) {
             toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
@@ -648,10 +654,10 @@ export default function CardUsuario({ tipo, usuarioId }) {
             })
           }
           catch (e) {
-            console.log('*** data', data)
+            console.log('**** CardUsuario.excluiVeiculo.error.data', data)
           }
         } else if (error.request) {
-          console.error('*** bu-1.2', error)
+          console.log('**** CardUsuario.excluiVeiculo.error', error)
           // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
         // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
@@ -800,10 +806,10 @@ export default function CardUsuario({ tipo, usuarioId }) {
             })
           }
           catch (e) {
-            console.log('*** data', data)
+            console.log('**** CardUsuario.onSubmit.error.data', data)
           }
         } else if (error.request) {
-          console.error('*** bu-1.2', error)
+          console.log('**** CardUsuario.onSubmit.error', error)
           // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
         // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
@@ -920,10 +926,10 @@ export default function CardUsuario({ tipo, usuarioId }) {
             })
           }
           catch (e) {
-            console.log('*** data', data)
+            console.log('**** CardUsuario.validaCEP.error.data', data)
           }
         } else if (error.request) {
-          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          console.log('**** CardUsuario.validaCEP.error.data', error)
         } else {
         // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
@@ -1567,7 +1573,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                               DOCUMENTOS
                             </Texto>
                           </Row>
-                          <Row>
+                          <Row style={{ height: '370px' }}>
                             <Col xs={6}>
                               <div style={{ border: '1px dashed #ddd', padding: '5px' }}>
 

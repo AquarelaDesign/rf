@@ -41,6 +41,10 @@ const useStyles = makeStyles((theme) => ({
 
 const CssTextField = withStyles({
   root: {
+    '& > *': {
+      fontFamily: ['Montserrat', 'sans Serif'],
+      fontSize: 14,
+    },
     '& label.Mui-focused': {
       color: '#0031FF',
     },
@@ -91,10 +95,10 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, disabled, callba
               })
             }
             catch (e) {
-              console.log('*** data', data.message)
+              console.log('**** DocsModal.buscaVeiculo.error.data', data)
             }
           } else if (error.request) {
-            toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+            console.log('**** DocsModal.buscaVeiculo.error', error)
           } else {
           // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }
@@ -209,10 +213,10 @@ const DocsModal = ({ isShowDocs, hide, userID, veiculoID, tipo, disabled, callba
               })
             }
             catch (e) {
-              console.log('*** error data', data)
+              console.log('**** DocsModal.onSubmit.error.data', data)
             }
           } else if (error.request) {
-            toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+            console.log('**** DocsModal.onSubmit.error', error)
           } else {
           // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }

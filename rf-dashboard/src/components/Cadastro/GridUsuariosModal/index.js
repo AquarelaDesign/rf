@@ -127,9 +127,10 @@ const GridUsuarioModal = ({
             })
           }
           catch (e) {
-            console.log('*** data', data)
+            console.log('**** GridUsuariosModal.buscaUsuarios.error.data', data)
           }
         } else if (error.request) {
+          console.log('**** GridUsuariosModal.buscaUsuarios.error', error)
           // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
           // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
@@ -386,10 +387,11 @@ const GridUsuarioModal = ({
           })
         }
         catch (e) {
-          console.log('*** data', data)
+          console.log('**** GridUsuariosModal.excluiUsuario.error.data', data)
         }
       } else if (error.request) {
-        toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        console.log('**** GridUsuariosModal.excluiUsuario.error', error)
+        // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
       } else {
       // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
@@ -419,10 +421,11 @@ const GridUsuarioModal = ({
           })
         }
         catch (e) {
-          console.log('*** data', data)
+          console.log('**** GridUsuariosModal.excluiVeiculo.error.data', data)
         }
       } else if (error.request) {
-        toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        console.log('**** GridUsuariosModal.excluiVeiculo.error', error)
+        // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
       } else {
       // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }

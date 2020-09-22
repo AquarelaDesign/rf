@@ -122,10 +122,11 @@ const UserModal = ({ isShowUser, hide, userID }) => {
               },{})
             }
             catch (e) {
-              console.log('*** data', data)
+              console.log('**** UserModal.buscaUsuario.error.data', data)
             }
           } else if (error.request) {
-            toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+            console.log('**** UserModal.buscaUsuario.error', error)
+            // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
           // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }
@@ -192,10 +193,11 @@ const UserModal = ({ isShowUser, hide, userID }) => {
             },{})
           }
           catch (e) {
-            console.log('*** error data', data)
+            console.log('**** UserModal.onSubmit.error.data', data)
           }
         } else if (error.request) {
-          toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          console.log('**** UserModal.onSubmit.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
         // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
@@ -224,10 +226,11 @@ const UserModal = ({ isShowUser, hide, userID }) => {
               }, {})
             }
             catch (e) {
-              console.log('*** data', data)
+              console.log('**** UserModal.atualizaUser.error.data', data)
             }
           } else if (error.request) {
-            toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+            console.log('**** UserModal.atualizaUser.error', error)
+            // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
           // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }

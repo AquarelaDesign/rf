@@ -101,7 +101,7 @@ function Dropzone(props) {
     onDrop: acceptedFiles => {
       const files = acceptedFiles.map(file => {
         setPrev(URL.createObjectURL(file))
-        console.log('**** URL', URL.createObjectURL(file))
+        // console.log('**** URL', URL.createObjectURL(file))
         return Object.assign(file, {
           preview: URL.createObjectURL(file),
           id: uniqueId(),
@@ -161,7 +161,7 @@ function Dropzone(props) {
     setOpen(false)
   }
 
-  console.log('**** width', width)
+  // console.log('**** width', width)
 
   return (
     <>
