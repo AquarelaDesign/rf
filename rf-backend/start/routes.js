@@ -61,6 +61,13 @@ Route.group(() => {
       [['rotas.update'],['UpdateRota']],
     ]))
     .apiOnly()
-  Route.post("/buscarotas/:id", "RotaController.busca")
+
+  Route.resource('metropoles', 'MetropoleController').apiOnly()
+  Route.resource('rotastabela', 'RotasTabelaController').apiOnly()
+  Route.post("/rotastabela/:id", "RotasTabelaController.busca")
+  Route.resource('seguros', 'SeguroController').apiOnly()
+  Route.resource('tiposdeveiculos', 'TiposDeVeiculoController').apiOnly()
+  Route.resource('valoresadicionais', 'ValoresAdicionaiController').apiOnly()
+
 
 }).middleware('auth')

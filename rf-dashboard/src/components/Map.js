@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useCallback, memo} from 'react'
-import { GoogleMap, LoadScript, Marker, DirectionsService, DirectionsRenderer } from '@react-google-maps/api'
+import { GoogleMap, LoadScript, Marker, DirectionsService, DirectionsRenderer,DistanceMatrixService } from '@react-google-maps/api'
 import { v4 as uuidv4 } from 'uuid'
  
 const containerStyle = {
@@ -36,6 +36,11 @@ const Map = ({ places, defaultCenter }) => {
         errorHandler,
         options
       )
+      
+      setTravelMode('DRIVING')
+      
+      console.log('**** Maps.places', places)
+
       if (places[0]) {
         setOrigin(places[0])
       }
@@ -54,34 +59,6 @@ const Map = ({ places, defaultCenter }) => {
     })
   }
 
-  const directionsCallback = (resp) => {
-    console.log(resp)
-
-    if (resp !== null) {
-      if (resp.status === 'OK') {
-        setResponse(resp)
-      } else {
-        console.log('resp: ', resp)
-      }
-    }
-  }
-
-  const checkDriving = ({ target: { checked } }) => {
-    checked && setTravelMode('DRIVING')
-  }
-
-  const checkBicycling = ({ target: { checked } }) => {
-    checked && setTravelMode('BICYCLING')
-  }
-
-  const checkTransit = ({ target: { checked } }) => {
-    checked && setTravelMode('TRANSIT')
-  }
-
-  const checkWalking = ({ target: { checked } }) => {
-    checked && setTravelMode('WALKING')
-  }
-
   const getOrigin = (ref) => {
     setOrigin(ref)
   }
@@ -98,7 +75,7 @@ const Map = ({ places, defaultCenter }) => {
   }
 
   const onMapClick = (...args) => {
-    console.log('onClick args: ', args)
+    console.log('**** onClick args: ', args)
   }
 
   const onLoad = useCallback(function callback(map) {
@@ -110,7 +87,35 @@ const Map = ({ places, defaultCenter }) => {
   const onUnmount = useCallback(function callback(map) {
     setMap(null)
   }, [])
- 
+
+  const directionsCallback = (resp) => {
+    // console.log('**** Maps.directionsCallback', resp)
+
+    if (resp !== null) {
+      if (resp.status === 'OK') {
+        setResponse(resp)
+      } else {
+        console.log('resp: ', resp)
+      }
+    }
+  }
+
+  const distanceCallback = (resp) => {
+    // console.log('**** Maps.distanceCallback', resp)
+
+    if (resp !== null) {
+      if (resp.status === "OK") {
+        console.log("**** Maps.distanceCallback.origin: ", resp.originAddresses[0])
+        console.log("**** Maps.distanceCallback.destination: ", resp.destinationAddresses[0])
+        console.log("**** Maps.distanceCallback.distance: ", resp.rows[0].elements[0].distance)
+      } else {
+        console.log("**** Maps.distanceCallback.originAddresses: ", resp.originAddresses[0])
+        console.log("**** Maps.distanceCallback.destinationAddresses: ", resp.destinationAddresses[0])
+        console.log("**** Maps.distanceCallback.distance: ", resp.rows[0].elements[0].distance)
+      }
+    }
+  }
+  
   return (
     <LoadScript
       googleMapsApiKey={apiKey}
@@ -137,24 +142,37 @@ const Map = ({ places, defaultCenter }) => {
           (
             destination !== '' && origin !== ''
           ) && (
-            <DirectionsService
-              // required
-              options={{ // eslint-disable-line react-perf/jsx-no-new-object-as-prop
-                destination: destination,
-                origin: origin,
-                travelMode: travelMode
-              }}
-              // required
-              callback={directionsCallback}
-              // optional
-              onLoad={directionsService => {
-                console.log('DirectionsService onLoad directionsService: ', directionsService)
-              }}
-              // optional
-              onUnmount={directionsService => {
-                console.log('DirectionsService onUnmount directionsService: ', directionsService)
-              }}
-            />
+            <>
+              {/* { console.log('**** Maps.origin,destination', origin, destination) } */}
+              <DirectionsService
+                // required
+                options={{ // eslint-disable-line react-perf/jsx-no-new-object-as-prop
+                  destination: destination,
+                  origin: origin,
+                  travelMode: travelMode
+                }}
+                // required
+                callback={directionsCallback}
+                // optional
+                // onLoad={directionsService => {
+                //   console.log('DirectionsService onLoad directionsService: ', directionsService)
+                // }}
+                // optional
+                // onUnmount={directionsService => {
+                //   console.log('DirectionsService onUnmount directionsService: ', directionsService)
+                // }}
+              />
+              <DistanceMatrixService
+                options={{
+                  destinations: [destination],
+                  origins: [origin],
+                  travelMode: travelMode,
+                }}
+                callback={distanceCallback}
+              />
+            </>
+
+
           )
         }
 

@@ -99,9 +99,18 @@ class VeiculoController {
       })
     }
   
-    const veiculos = await Veiculo.findOrFail(params.id)
-    // await veiculos.load('images')
-    return veiculos
+    try {
+      const veiculos = await Veiculo.findOrFail(params.id)
+      // await veiculos.load('images')
+      return veiculos
+    }
+    catch(e) {
+      return response.status(404).send({
+        status: 404,
+        message: `Nenhum registro encontrado`
+      })
+    }
+
   }
 
   /**
@@ -131,9 +140,18 @@ class VeiculoController {
       "fipe_ano_id",
     ])
 
-    veiculos.merge(data)
-    await veiculos.save()
-    return veiculos
+    try {
+      veiculos.merge(data)
+      await veiculos.save()
+      return veiculos
+    }
+    catch(e) {
+      return response.status(404).send({
+        status: 404,
+        message: `Nenhum registro encontrado`
+      })
+    }
+
   }
 
   /**

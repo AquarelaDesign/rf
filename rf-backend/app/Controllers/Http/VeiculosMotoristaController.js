@@ -116,9 +116,18 @@ class VeiculosMotoristaController {
       })
     }
   
-    const veiculos = await Veiculo.findOrFail(params.id)
-    // await veiculos.load('imagevms')
-    return veiculos
+    try {
+      const veiculos = await Veiculo.findOrFail(params.id)
+      // await veiculos.load('imagevms')
+      return veiculos
+    }
+    catch(e) {
+      return response.status(404).send({
+        status: 404,
+        message: `Nenhum registro encontrado`
+      })
+    }
+
   }
 
   /**
@@ -158,9 +167,18 @@ class VeiculosMotoristaController {
       "ANTTvct",
     ])
 
-    veiculos.merge(data)
-    await veiculos.save()
-    return veiculos
+    try {
+      veiculos.merge(data)
+      await veiculos.save()
+      return veiculos
+    }
+    catch(e) {
+      return response.status(404).send({
+        status: 404,
+        message: `Nenhum registro encontrado`
+      })
+    }
+
   }
 
   /**

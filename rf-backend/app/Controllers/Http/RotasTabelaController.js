@@ -4,18 +4,18 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
-const Rota = use('App/Models/Rota')
+const RotaTabela = use('App/Models/RotasTabela')
 const Usuario = use('App/Models/Usuario')
 
 /**
- * Resourceful controller for interacting with rotas
+ * Resourceful controller for interacting with rotastabelas
  */
-class RotaController {
+class RotasTabelaController {
   /**
-   * Show a list of all rotas.
-   * GET rotas
+   * Show a list of all rotastabelas.
+   * GET rotastabelas
    */
-  async index({ auth, response }) {
+  async index ({ auth, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
     if (usuarios.tipo !== 'O') {
       return response.status(401).send({ 
@@ -23,13 +23,13 @@ class RotaController {
       })
     }
   
-    const rotas = Rota.all()
+    const rotas = RotaTabela.all()
     return rotas
   }
 
   /**
    * Show a list of rota with status.
-   * GET rotas/:id
+   * GET rotastabela/:id
    */
   async busca({auth, params, request, response}) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
@@ -40,26 +40,26 @@ class RotaController {
     }
 
     try {    
-      const query = Rota.query()
+      const query = RotaTabela.query()
       if (params.id !== null){
-        query.andWhere('pedido_id','=', params.id)
+        query.andWhere('tipo_de_veiculo_id','=', params.id)
       }
-      const rota = await query.fetch()
-      return rota
+      const rotas = await query.fetch()
+      return rotas
 
     }
     catch(e) {
       return response.status(404).send({
         status: 404,
-        message: `Rota não encontrada ${e}`
+        message: `Tabela da Rota não encontrada ${e}`
       })
     }
 
   }
 
   /**
-   * Create/save a new rota.
-   * POST rotas
+   * Create/save a new rotastabela.
+   * POST rotastabelas
    */
   async store({ auth, request, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
@@ -69,40 +69,23 @@ class RotaController {
       })
     }
   
-    const id = request.pedido_id
     const data = request.only([
-      "pedido_id", 
+      "tipo_de_veiculo_id", 
+      "cidade_origem",
+      "uf_origem",
+      "cidade_destino",
+      "uf_destino",
       "nome",
-      "cpfcnpj",
-      "logradouro",
-      "numero",
-      "complemento",
-      "bairro",
-      "cidade",
-      "uf",
-      "pais",
-      "cep",
-      "contato",
-      "celular",
-      "telefone",
-      "whats",
-      "email",
-      "motorista_id",
-      "tipo",
-      "rota_relacionada",
-      "status",
-      "latitude",
-      "longitude",
+      "valor",
     ])
 
-    const rotas = await Rota.create(data)
-    // const rotas = await Rota.create({ ...data, pedido_id: id });
+    const rotas = await RotaTabela.create(data)
     return rotas
   }
 
   /**
-   * Display a single rota.
-   * GET rotas/:id
+   * Display a single rotastabela.
+   * GET rotastabelas/:id
    */
   async show({ auth, params, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
@@ -112,8 +95,8 @@ class RotaController {
       })
     }
   
-    try {  
-      const rotas = await Rota.findOrFail(params.id)
+    try {
+      const rotas = await RotaTabela.findOrFail(params.id)
       return rotas
     }
     catch(e) {
@@ -126,8 +109,8 @@ class RotaController {
   }
 
   /**
-   * Update rota details.
-   * PUT or PATCH rotas/:id
+   * Update rotastabela details.
+   * PUT or PATCH rotastabelas/:id
    */
   async update({ auth, params, request, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
@@ -137,30 +120,15 @@ class RotaController {
       })
     }
   
-    const rotas = await Rota.findOrFail(params.id);
+    const rotas = await RotaTabela.findOrFail(params.id);
     const data = request.only([
-      "pedido_id", 
+      "tipo_de_veiculo_id", 
+      "cidade_origem",
+      "uf_origem",
+      "cidade_destino",
+      "uf_destino",
       "nome",
-      "cpfcnpj",
-      "logradouro",
-      "numero",
-      "complemento",
-      "bairro",
-      "cidade",
-      "uf",
-      "pais",
-      "cep",
-      "contato",
-      "celular",
-      "telefone",
-      "whats",
-      "email",
-      "motorista_id",
-      "tipo",
-      "rota_relacionada",
-      "status",
-      "latitude",
-      "longitude",
+      "valor",
     ])
 
     try {
@@ -178,8 +146,8 @@ class RotaController {
   }
 
   /**
-   * Delete a rota with id.
-   * DELETE rotas/:id
+   * Delete a rotastabela with id.
+   * DELETE rotastabelas/:id
    */
   async destroy({ params, auth, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
@@ -190,7 +158,7 @@ class RotaController {
     }
   
     try {
-      const rotas = await Rota.findOrFail(params.id)
+      const rotas = await RotaTabela.findOrFail(params.id)
       await rotas.delete()
       return response.status(200).send({
         status: 200,
@@ -205,4 +173,4 @@ class RotaController {
   }
 }
 
-module.exports = RotaController
+module.exports = RotasTabelaController
