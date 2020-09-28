@@ -32,6 +32,9 @@ import StatusFilter from './StatusFilter'
 import "./modal.css"
 import moment from "moment"
 
+import * as d3 from 'd3'
+import rotascsv from '../../../services/rotas.csv'
+
 const rowData = []
 
 const GridPedidosModal = ({ isShowing, hide }) => {
@@ -40,6 +43,7 @@ const GridPedidosModal = ({ isShowing, hide }) => {
   const ref = React.createRef()
   const mensagem = ''
 
+  // const [ultReg, setUltReg] = useState(0)
   const [pedidos, setPedidos] = useState(rowData)
   const [vgridApi, setVgridApi] = useState(gridApi)
   const [usuarios, setUsuarios] = useState([])
@@ -52,6 +56,11 @@ const GridPedidosModal = ({ isShowing, hide }) => {
     buscaPedidos()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isShowPedido])
+
+  useEffect(() => {
+    // importaCSV()
+    excluiRota()
+  }, [])
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -103,6 +112,146 @@ const GridPedidosModal = ({ isShowing, hide }) => {
           // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
       })
+  }
+
+  const importaCSV = () => {
+    const cont = 0
+
+    d3.csv(rotascsv, async function(data) { 
+      for (let x = 0; x < 4; x++) {
+        let arrDados = {}
+        
+        arrDados['nome'] = `${data.cidade_origem}/${data.uf_origem} X ${data.cidade_destino}/${data.uf_destino}`
+        arrDados['cidade_origem'] = data.cidade_origem
+        arrDados['uf_origem'] = data.uf_origem
+        arrDados['cidade_destino'] = data.cidade_destino
+        arrDados['uf_destino'] = data.uf_destino
+        
+        // console.log('**** x', x)
+
+        switch (x) {
+          case 0: {
+            arrDados['tipo_de_veiculo_id'] = 1
+            arrDados['valor'] = data.CARRO
+          }
+          break
+          case 1: {
+            arrDados['tipo_de_veiculo_id'] = 2
+            arrDados['valor'] = data.CAMIONETE
+          }
+          break
+          case 2: {
+            arrDados['tipo_de_veiculo_id'] = 3
+            arrDados['valor'] = data.MOTO
+          }
+          break
+          case 3: {
+            arrDados['tipo_de_veiculo_id'] = 4
+            arrDados['valor'] = data.VAN
+          }
+          break
+        }
+        
+        const apiParams = {
+          url: `/rotastabela`,
+          method: 'post',
+          data: arrDados,
+          timeout: 1000 * 100,
+        }
+
+        // console.log(JSON.stringify(arrDados))
+      
+        gravaRota(apiParams)
+        
+      }
+      
+      await sleep(3000)
+      // console.log(data)
+    })
+  }
+
+  const gravaRota = async (apiParams) => {
+    await sleep(2000)
+
+    await api(apiParams, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      }
+    })
+    .then(response => {
+      const { data } = response
+      if (response.status !== 200) {
+        toast(`Ocorreu um erro no processamento da tabela da rota!`,
+          { type: 'error' })
+        return
+      }
+
+      console.log(`**** Rota ${data.nome} gravada...`)
+      
+    }).catch((error) => {
+      if (error.response) {
+        const { data } = error.response
+        try {
+          data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
+        }
+        catch (e) {
+          console.log('**** GridPedidosModal.importaCSV.error.data', data)
+        }
+      } else if (error.request) {
+        console.log('**** GridPedidosModal.importaCSV.error', error)
+      } else {
+      // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+      }
+    })
+
+  }
+
+  const excluiRota = async () => {
+    for (let x = 163; x < 1972; x++) {
+      const apiParams = {
+        url: `/rotastabela/${x}`,
+        method: 'delete',
+        timeout: 1000 * 100,
+      }
+
+      await api(apiParams, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
+      })
+      .then(response => {
+        const { data } = response
+        if (response.status !== 200) {
+          toast(`Ocorreu um erro no processamento da tabela da rota!`,
+            { type: 'error' })
+          return
+        }
+  
+        // console.log(`**** Rota ${data.nome} gravada...`)
+        
+      }).catch((error) => {
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('**** GridPedidosModal.excluiRota.error.data', data)
+          }
+        } else if (error.request) {
+          console.log('**** GridPedidosModal.excluiRota.error', error)
+        } else {
+        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        }
+      })
+
+    }
   }
 
   const frameworkComponents = {

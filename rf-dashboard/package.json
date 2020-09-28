@@ -29,6 +29,7 @@
     "axios": "^0.19.2",
     "bootstrap": "^4.5.0",
     "brazilian-values": "^0.7.5",
+    "d3": "^6.2.0",
     "date-fns": "^2.14.0",
     "filesize": "^6.1.0",
     "final-form": "^4.20.0",
