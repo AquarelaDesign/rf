@@ -212,9 +212,9 @@ function formatCelular(props) {
   }
 
   const clearValue = clearNumber(value)
-  let sMask = ['(', /[1-9]/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/, /\d/]
+  let sMask = ['(', /[0-9]/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/, /\d/]
   if (clearValue.length > 10) {
-    sMask = ['(', /[1-9]/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/]
+    sMask = ['(', /[0-9]/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/]
   }
 
   return (
@@ -244,7 +244,7 @@ function formatCep(props) {
     valor = ''
   }
 
-  const sMask = [/[1-9]/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/]
+  const sMask = [/[0-9]/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/]
 
   return (
     <MaskedInput
@@ -1318,7 +1318,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                         fullWidth
                         size="small"
                         margin="dense"
-                        pattern="[\d|-]{8}"
+                        // pattern="[\d|-]{8}"
                         InputProps={{
                           inputComponent: formatCep,
                           endAdornment: (
