@@ -3,9 +3,14 @@ import { useDrag, useDrop } from 'react-dnd'
 // import BoardContext from '../Board/context'
 // import { Grid } from '@material-ui/core'
 
+import { toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+
 import { Container, BoxTitulo, Item, Grid, Texto, Box } from './styles'
 
 import moment from "moment"
+import api from '../../services/rf'
+
 
 // const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -141,7 +146,7 @@ export default function CardTransportes({ data, index }) {
   const [, dropRef] = useDrop({
     accept: 'CARD',
     hover(item, monitor) {
-      /*--
+      /*--*/
       // const draggedListIndex = item.index;
       // const targetListIndex = listIndex;
 
@@ -158,7 +163,7 @@ export default function CardTransportes({ data, index }) {
       //   'destino': data
       // }
       // console.log('pedido', pedido)
-      --*/
+      /*--*/
       /*
       const targetSize = ref.current.getBoundingClientRect();
       const targetCenter = (targetSize.bottom - targetSize.top) / 2;
@@ -174,30 +179,93 @@ export default function CardTransportes({ data, index }) {
         return;
       }
       */
-      /*--
+      /*--*/
       // move(draggedListIndex, targetListIndex, draggedIndex, targetIndex);
       // removeM(draggedIndex)
 
       item.index = targetIndex
       // item.listIndex = targetListIndex;
-      --*/
+     /*--*/
     },
 
     drop(item, monitor) {
-      /*
-      removeM(index)
+      
+      // removeM(index)
+      const userID = item.data.id
+      const pedidoID = data.id
+
       const transporte = {
         transporte: {
-          Motorista_id: item.data.id,
-          Pedido_id: data.id,
+          Motorista_id: userID,
+          Pedido_id: pedidoID,
           Motorista: item.data,
           Pedido: data,
         }
       }
       console.log('transporte', transporte)
-      */
+
+      atualizaMotorista(userID)
+      atualizaPedido(pedidoID, userID)
     }
   })
+
+  const atualizaMotorista = async (userID) => {
+
+    await api.put(`/usuarios/${userID}`, {
+      estado: 'P',
+    })
+    .then(response => {
+      const { data } = response
+    })
+    .catch((error) => {
+      if (error.response) {
+        const { data } = error.response
+        try {
+          data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
+        }
+        catch (e) {
+          console.log('**** CardCargas.atualizaMotorista.error.data', data)
+        }
+      } else if (error.request) {
+        console.log('**** CardCargas.atualizaMotorista.error', error)
+        // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+      } else {
+      // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+      }
+    })
+  }
+
+  const atualizaPedido = async (pedidoID, userID) => {
+
+    await api.put(`/pedidos/${pedidoID}`, {
+      motorista_id: userID,
+      status: 'A'
+    })
+    .then(response => {
+      const { data } = response
+    })
+    .catch((error) => {
+      if (error.response) {
+        const { data } = error.response
+        try {
+          data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
+        }
+        catch (e) {
+          console.log('**** CardCargas.atualizaPedido.error.data', data)
+        }
+      } else if (error.request) {
+        console.log('**** CardCargas.atualizaPedido.error', error)
+        // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+      } else {
+      // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+      }
+    })
+    
+  }
 
   dragRef(dropRef(ref))
 

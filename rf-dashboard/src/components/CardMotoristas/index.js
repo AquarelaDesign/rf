@@ -25,6 +25,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
+const dev = window.location.hostname === "localhost" ? 'https://www.retornofacil.com.br/rf/' : ''
+
 export default function CardMotoristas({ data, index }) {
   const ref = useRef()
   const classes = useStyles()
@@ -41,23 +43,27 @@ export default function CardMotoristas({ data, index }) {
   const [, dropRef] = useDrop({
     accept: 'CARD',
     hover(item, monitor) {
-      // const draggedListIndex = item.listIndex;
-      // const targetListIndex = listIndex;
+      /*
+      const draggedListIndex = item.listIndex
+      // const targetListIndex = listIndex
 
-      // const draggedIndex = item.index;
-      // const targetIndex = index;
+      const draggedIndex = item.index
+      const targetIndex = index
+
+      console.log('**** CardMotoristas.useDrop-1', draggedListIndex, targetIndex, item, monitor)
 
       // if (draggedIndex === targetIndex && draggedListIndex === targetListIndex) {
-      // if (draggedIndex === targetIndex) {
-      //   return;
-      // }
-      // console.log('CardMotoristas_item', item, monitor)
+      if (draggedIndex === targetIndex) {
+        return
+      }
+      console.log('**** CardMotoristas.useDrop-2', item, monitor)
 
-      // const pedido = {
-      //   'origem': item,
-      //   'destino': data
-      // }
-      // console.log('pedido', pedido)
+      const pedido = {
+        'origem': item,
+        'destino': data
+      }
+      console.log('**** CardMotoristas.useDrop.pedido', pedido)
+      */
 
       /*
       const targetSize = ref.current.getBoundingClientRect();
@@ -152,7 +158,7 @@ export default function CardMotoristas({ data, index }) {
         </div>
 
         <RLeft>
-          <img src={data.foto !== null ? `images/${data.foto}` : semImagem} alt="" />
+          <img src={data.foto !== null ? `${dev}images/${data.foto}` : semImagem} alt="" />
         </RLeft>
         <RRight>
           <Texto bgcolor='#E7E6E6' size={16} bold={true}>
