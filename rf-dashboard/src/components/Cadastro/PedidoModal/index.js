@@ -368,7 +368,9 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           })
           setCenter(rt[0])
           setPlaces(rt)
-        
+
+          // console.log('**** PedidoModal.buscaPedido.rt', rt)
+          
           // console.log('**** PedidoModal.buscaPedido-0', data.cliente_id)
           if (data.cliente_id !== null) {
             // console.log('**** PedidoModal.buscaPedido-1', data.cliente_id)
@@ -1034,6 +1036,18 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           const { data } = response
           // console.log('**** PedidoModal.buscaRotas', data)
           setRotas(data)
+          
+          let rt = []
+          data.map(r => {
+            rt.push({
+              lat: parseFloat(r.latitude), 
+              lng: parseFloat(r.longitude), 
+            })
+          })
+          setCenter(rt[0])
+          setPlaces(rt)
+        
+
         }).catch((error) => {
           if (error.response) {
             const { data } = error.response
@@ -1057,7 +1071,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
 
 
   const callBack = (e) => {
-    alert(`Retorno Confirma: ${e}`)
+    // alert(`Retorno Confirma: ${e}`)
 
     if (e) {
       if (e === 'V') {

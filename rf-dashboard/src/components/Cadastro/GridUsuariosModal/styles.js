@@ -53,13 +53,13 @@ export const Label = styled.span`
 `;
 
 export const RLeft = styled.div`
-  width: 85%;
+  width: 80%;
   float: left;
 `;
 
 export const RRight = styled.div`
   display: flex;
-  width: 15%;
+  width: 20%;
   float: right;
   align-items: flex-end;
   align-self: flex-end;
@@ -191,4 +191,15 @@ export const Botao = styled.button`
     text-shadow: #B5B5B5 2px 3px 3px;
   }
 `;
+
+export const Blank = styled.div`
+  border: 0;
+  border-radius: 3px;
+  margin-left: 10px;
+  padding: 0px;
+  margin-right: 0px;
+  height: 20px;
+  width: 20px;
+`;
+
 

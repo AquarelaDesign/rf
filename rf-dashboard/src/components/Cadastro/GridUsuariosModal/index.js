@@ -14,7 +14,7 @@ import { formatToPhone } from 'brazilian-values'
 import StarRatings from 'react-star-ratings'
 
 import { Tooltip,} from '@material-ui/core'
-import { Container, BoxTitulo, Texto, Grid, Botao, RLeft, RRight } from './styles'
+import { Container, BoxTitulo, Texto, Grid, Botao, RLeft, RRight, Blank } from './styles'
 import { FaIcon } from '../../Icone'
 
 // import { msgerror } from '../../../globais'
@@ -509,6 +509,11 @@ const GridUsuarioModal = ({
                     </Texto>
                   </RLeft>
                   <RRight>
+                    { 
+                      tipoConsulta === '' &&
+                      <Blank><FaIcon icon='blank' size={20} height={20} width={20} /> </Blank>
+                    }
+                    <Blank><FaIcon icon='blank' size={20} height={20} width={20} /> </Blank>
                     <Tooltip title="Atualizar Lista">
                       <Botao onClick={(e) => onButtonClick('A', e)}>
                           <FaIcon icon='GrUpdate' size={18} />

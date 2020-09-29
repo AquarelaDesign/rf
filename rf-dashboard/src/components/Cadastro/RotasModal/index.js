@@ -131,7 +131,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
         })
     }
 
-    // console.log('**** RotasModal', rotaID, tipoCad)
+    console.log('**** RotasModal', rotaID, tipoCad)
 
     if (rotaID && rotaID > 0 && tipoCad === 'E') {
       // setDisableEdit(false)
@@ -271,9 +271,9 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
     }
   
     const clearValue = clearNumber(value)
-    let sMask = ['(', /[1-9]/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/, /\d/]
+    let sMask = ['(', /[0-9]/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/, /\d/]
     if (clearValue.length > 10) {
-      sMask = ['(', /[1-9]/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/]
+      sMask = ['(', /[0-9]/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/]
     }
   
     return (
@@ -303,7 +303,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
       valor = ''
     }
   
-    const sMask = [/[1-9]/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/]
+    const sMask = [/[0-9]/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/]
   
     return (
       <MaskedInput

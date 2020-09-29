@@ -59,7 +59,7 @@ const GridPedidosModal = ({ isShowing, hide }) => {
 
   useEffect(() => {
     // importaCSV()
-    excluiRota()
+    // excluiRota()
   }, [])
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
