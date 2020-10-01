@@ -16,10 +16,10 @@ import {
   Blank,
 } from '../CardUsuario/styles'
 
-import { 
-  Grid, 
-  Row, 
-  Col 
+import {
+  Grid,
+  Row,
+  Col
 } from 'react-flexbox-grid'
 
 import {
@@ -224,7 +224,7 @@ const useStyles = makeStyles((theme) => ({
   },
   demo1: {
     padding: '0px',
-    border: '5px solid #2699F8' ,
+    border: '5px solid #2699F8',
     backgroundColor: '#FFFFFF',
     borderRadius: '5px',
   },
@@ -238,7 +238,7 @@ const CssTextField = withStyles({
     },
     '& label.Mui-focused': {
       color: '#0031FF',
-    }, 
+    },
     '& .MuiOutlinedInput-root': {
       '& fieldset': {
         borderColor: '#2699F8',
@@ -248,6 +248,10 @@ const CssTextField = withStyles({
       },
       '&.Mui-focused fieldset': {
         borderColor: '#225378',
+      },
+      '&.Mui-disabled': {
+        color: '#666666',
+        fontWeight: 500,
       },
     },
     '& .MuiFormHelperText-root': {
@@ -259,8 +263,9 @@ const CssTextField = withStyles({
       justifyContent: 'left',
     },
   },
-
 })(TextField)
+
+const apiKey = "AIzaSyBoV-kvy8LfddqcUb6kcHvs5TmrRJ09KXY"
 
 const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => {
   const classes = useStyles()
@@ -301,11 +306,25 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
   const [confTexto1, setConfTexto1] = useState('')
   // const [confCall, setConfCall] = useState(null)
   const [modulo, setModulo] = useState('')
-  
-  const [places, setPlaces] = useState([])
-  const [center, setCenter] = useState({
+
+  const [rotasMap, setRotasMap] = useState([])
+  const [origem, setOrigem] = useState({
     lat: 0,
     lng: 0,
+  })
+  const [destino, setDestino] = useState({
+    lat: 0,
+    lng: 0,
+  })
+  const [paradas, setParadas] = useState([])
+
+  const [places, setPlaces] = useState([{
+    latitude: 0,
+    longitude: 0,
+  }])
+  const [center, setCenter] = useState({
+    lat: -25.486878,
+    lng: -49.319317,
   })
 
   const { isShowConfirma, toggleConfirma } = useModalConfirma()
@@ -320,9 +339,13 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     padding: "20px",
     boxShadow:
       "0px 1px 3px 0px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 2px 1px -1px rgba(0, 0, 0, 0.12)"
-  };
+  }
 
-  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+  // const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+  useEffect(() => {
+    novoPedido()
+  }, [])
 
   useEffect(() => {
     try {
@@ -339,7 +362,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
       } else if (error.request) {
         toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
       } else {
-      // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
     }
   }, [pedidoID, tipoCad, disableEdit])
@@ -358,19 +381,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           setInitialValues(data)
           setVeiculos(data.veiculos)
           setRotas(data.rotas)
+          updateMap(data.rotas)
 
-          let rt = []
-          data.rotas.map(r => {
-            rt.push({
-              lat: parseFloat(r.latitude), 
-              lng: parseFloat(r.longitude), 
-            })
-          })
-          setCenter(rt[0])
-          setPlaces(rt)
-
-          // console.log('**** PedidoModal.buscaPedido.rt', rt)
-          
           // console.log('**** PedidoModal.buscaPedido-0', data.cliente_id)
           if (data.cliente_id !== null) {
             // console.log('**** PedidoModal.buscaPedido-1', data.cliente_id)
@@ -380,6 +392,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           } else {
             semCliente()
           }
+
           window.setFormValue('valor', data.valor)
         }).catch((error) => {
           if (error.response) {
@@ -396,7 +409,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
             console.log('**** PedidosModal.buscaPedido.error', error)
             // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
-          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+            // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }
         })
     } else {
@@ -405,6 +418,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
   }
 
   const novoPedido = () => {
+    setValue(0)
     setInitialValues({
       cliente_id: null,
       limitecoleta: undefined,
@@ -418,28 +432,36 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     semCliente()
     setVeiculos([])
     setRotas([])
+
+    setRotasMap([])
+    setOrigem({ lat: 0, lng: 0 })
+    setDestino({ lat: 0, lng: 0 })
+    setParadas([])
+    setPlaces([{ latitude: 0, longitude: 0 }])
+    confGeo()
   }
 
   const semCliente = () => {
-    window.setFormValue('cpfcnpj', '')
-    window.setFormValue('nome', '')
-    window.setFormValue('contato', '')
-    window.setFormValue('email', '')
-    window.setFormValue('celular', '')
-    window.setFormValue('whats', '')
-    window.setFormValue('logradouro', '')
-    window.setFormValue('numero', '')
-    window.setFormValue('complemento', '')
-    window.setFormValue('bairro', '')
-    window.setFormValue('cidade', '')
-    window.setFormValue('uf', '')
-    window.setFormValue('cep', '')
+    try {
+      window.setFormValue('cpfcnpj', '')
+      window.setFormValue('nome', '')
+      window.setFormValue('contato', '')
+      window.setFormValue('email', '')
+      window.setFormValue('celular', '')
+      window.setFormValue('whats', '')
+      window.setFormValue('logradouro', '')
+      window.setFormValue('numero', '')
+      window.setFormValue('complemento', '')
+      window.setFormValue('bairro', '')
+      window.setFormValue('cidade', '')
+      window.setFormValue('uf', '')
+      window.setFormValue('cep', '')
+    } catch (error) { }
   }
-
 
   const buscaCliente = async (clienteID) => {
     if (clienteID) {
-      await sleep(500)
+      // await sleep(500)
       await api
         .get(`/usuarios/${clienteID}`)
         .then(response => {
@@ -476,7 +498,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
             console.log('**** PedidosModal.buscaCliente.error', error)
             // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
-          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+            // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }
         })
     }
@@ -496,20 +518,20 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
   function clearNumber(value = '') {
     return value.replace(/\D+/g, '')
   }
-  
+
   function formatCpfCnpj(props) {
     const { inputRef, value, ...other } = props
-  
+
     // if (!value) {
     //   return value
     // }
-  
+
     const clearValue = clearNumber(value)
     let sMask = [/[0-9]/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/, /\d/]
     if (clearValue.length > 11) {
       sMask = [/[0-9]/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '/', /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/]
     }
-  
+
     return (
       <MaskedInput
         {...other}
@@ -523,26 +545,26 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
       />
     )
   }
-  
+
   formatCpfCnpj.propTypes = {
     inputRef: PropTypes.func.isRequired,
     onChange: PropTypes.func.isRequired,
   }
-  
+
   function formatCelular(props) {
     const { inputRef, value, ...other } = props
-  
+
     let valor = value
     if (!valor) {
       valor = ''
     }
-  
+
     const clearValue = clearNumber(value)
     let sMask = ['(', /[1-9]/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/, /\d/]
     if (clearValue.length > 10) {
       sMask = ['(', /[1-9]/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/]
     }
-  
+
     return (
       <MaskedInput
         {...other}
@@ -556,22 +578,22 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
       />
     )
   }
-  
+
   formatCelular.propTypes = {
     inputRef: PropTypes.func.isRequired,
     onChange: PropTypes.func.isRequired,
   }
-  
+
   function formatCep(props) {
     const { inputRef, value, ...other } = props
-  
+
     let valor = value
     if (!valor) {
       valor = ''
     }
-  
+
     const sMask = [/[1-9]/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/]
-  
+
     return (
       <MaskedInput
         {...other}
@@ -585,12 +607,12 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
       />
     )
   }
-  
+
   formatCep.propTypes = {
     inputRef: PropTypes.func.isRequired,
     onChange: PropTypes.func.isRequired,
   }
-  
+
   function getNumericCellEditor() {
     function isCharNumeric(charStr) {
       return !!/\d/.test(charStr)
@@ -735,7 +757,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     // console.log('**** onVeiculos', disableEdit, tipo)
     setTipoCadVei(tipo !== 'E' && tipo !== 'N' ? 'D' : tipo)
 
-    sleep(500)
+    // sleep(500)
     toggleVeiculos()
   }
 
@@ -753,7 +775,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     setConfTexto1(selectedData[0].placachassi)
     setModulo('V')
 
-    await sleep(300)
+    // await sleep(300)
     toggleConfirma()
   }
 
@@ -770,8 +792,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
         if (response.status === 200) {
           toast('Veículo removido com sucesso!',
             { type: 'success' })
-            VeiculoProps.api.applyTransaction({ remove: veiculoData })
-            
+          VeiculoProps.api.applyTransaction({ remove: veiculoData })
+
         } else {
           toast(response.data[0].message,
             { type: 'error' })
@@ -807,7 +829,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           console.log('**** PedidoModal.excluiVeiculo.error', error)
           // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
-        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
       })
     }
@@ -850,7 +872,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
             console.log('**** PedidosModal.buscaVeiculos.error', error)
             // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
-          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+            // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }
         })
     }
@@ -900,8 +922,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
       cellRendererFramework: (props) => {
         return (
           <button onClick={(e) => deleteRowRota(props, e)}
-          disabled={disableEdit}
-          style={{ backgroundColor: 'transparent' }}
+            disabled={disableEdit}
+            style={{ backgroundColor: 'transparent' }}
           >
             <Tooltip title="Excluir rota">
               <span style={{
@@ -938,7 +960,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     }
     setTipoCadVei(tipo !== 'E' && tipo !== 'N' ? 'D' : tipo)
 
-    sleep(500)
+    // sleep(500)
     toggleRotas()
   }
 
@@ -955,8 +977,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     setConfTexto('Confirma a Exclusão da Rota?')
     setConfTexto1(selectedData[0].cidade)
     setModulo('R')
-    
-    await sleep(300)
+
+    // await sleep(300)
     toggleConfirma()
   }
 
@@ -973,8 +995,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
         if (response.status === 200) {
           toast('Rota removida com sucesso!',
             { type: 'success' })
-            RotaProps.api.applyTransaction({ remove: rotaData })
-            
+          RotaProps.api.applyTransaction({ remove: rotaData })
+
         } else {
           toast(response.data[0].message,
             { type: 'error' })
@@ -1010,7 +1032,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           console.log('**** PedidoModal.excluiRota.error', error)
           // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
-        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
       })
     }
@@ -1036,18 +1058,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           const { data } = response
           // console.log('**** PedidoModal.buscaRotas', data)
           setRotas(data)
-          
-          let rt = []
-          data.map(r => {
-            rt.push({
-              lat: parseFloat(r.latitude), 
-              lng: parseFloat(r.longitude), 
-            })
-          })
-          setCenter(rt[0])
-          setPlaces(rt)
-        
-
+          updateMap(data)
         }).catch((error) => {
           if (error.response) {
             const { data } = error.response
@@ -1063,12 +1074,118 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
             console.log('**** PedidosModal.buscaRotas.error', error)
             // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
-          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+            // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }
         })
     }
   }
 
+  const updateMap = (rotas) => {
+    // console.log('**** PedidoModal.buscaPedido.inicio', rotas, rotas.length)
+
+    if (rotas.length === 0) {
+      confGeo()
+      setOrigem({ lat: 0, lng: 0 })
+      setDestino({ lat: 0, lng: 0 })
+      setParadas([])
+      setPlaces([{ latitude: 0, longitude: 0 }])
+      return          
+    }
+
+    let rt = []
+    rotas.map(r => {
+      rt.push({
+        lat: parseFloat(r.latitude),
+        lng: parseFloat(r.longitude),
+      })
+    })
+
+    setCenter({
+      lat: parseFloat(rt[0].lat),
+      lng: parseFloat(rt[0].lng),
+    })
+
+    setPlaces(rt)
+    setParadas([])
+
+    if (rt.length > 0) {
+      setOrigem(rt[0])
+      setDestino(rt[rt.length - 1])
+
+      if (rt.length > 2) {
+        let waypoints = []
+        for (let x = 1; x < rt.length - 1; x++) {
+
+          // console.log('**** PedidoModal.buscaPedido.waypoints', rt[x])
+
+          waypoints.push({
+            lat: rt[x].lat,
+            lng: rt[x].lng,
+          })
+        }
+        setParadas(waypoints)
+        // console.log('**** PedidoModal.buscaPedido.waypoints', waypoints)
+      }
+    }
+    // console.log('**** PedidoModal.buscaPedido.rt', rt)
+
+    let rm = []
+    let cont = 0
+    let reg = {
+      origem: '',
+      destino: ''
+    }
+    rotas.map(r => {
+
+      if (r.tipo === 'C') {
+        reg['origem'] = `${r.latitude},${r.longitude}`
+      } else {
+        reg['destino'] = `${r.latitude},${r.longitude}`
+      }
+
+      if (cont > 0) {
+        rm.push(reg)
+        cont = 0
+        reg = {
+          origem: '',
+          destino: ''
+        }
+      } else {
+        cont++
+      }
+    })
+    setRotasMap(rm)
+
+    // console.log('**** PedidoModal.buscaPedido.rm', rm)
+    // console.log('**** PedidoModal.buscaPedido.final', origem, destino, paradas)
+  }
+
+  const confGeo = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        showLocation,
+        errorHandler,
+        { timeout: 60000 }
+      )
+    } else {
+      alert("Desculpe, o navegador não suporta geolocalização!")
+    }
+  }
+
+  const showLocation = (position) => {
+    setCenter({
+      lat: position.coords.latitude,
+      lng: position.coords.longitude
+    })
+  }
+
+  const errorHandler = (err) => {
+    if (err.code === 1) {
+      console.log("Erro: acesso negado!")
+    } else if (err.code === 2) {
+      console.log("Erro: a posição não está disponível!")
+    }
+  }
 
   const callBack = (e) => {
     // alert(`Retorno Confirma: ${e}`)
@@ -1089,7 +1206,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     setValue(newValue)
   }
 
-  async function onSubmit (values) {
+  async function onSubmit(values) {
 
     // console.log('**** PedidoModal.onSubmit-values', values)
 
@@ -1103,9 +1220,13 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     newValues['localentrega'] = values['localentrega']
     newValues['status'] = values['status']
 
-    let val = values['valor'].replace('.', '')
-        val = val.replace(',', '.')
-    newValues['valor'] = val
+    if (values['valor']) {
+      let val = values['valor'].replace('.', '')
+      val = val.replace(',', '.')
+      newValues['valor'] = val
+    } else {
+      newValues['valor'] = values['valor']
+    }
 
     let apiParams = {}
 
@@ -1133,7 +1254,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     }
 
     // console.log('**** PedidoModal.onSubmit-newValues', newValues)
-    
+
     await api(apiParams)
       .then(response => {
         const { data } = response
@@ -1168,7 +1289,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           console.log('**** PedidoModal.onSubmit.error', error)
           // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
-        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
       })
   }
@@ -1194,11 +1315,11 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                   </RLeft>
                   <RRight>
                     <Blank><FaIcon icon='blank' size={20} height={20} width={20} /></Blank>
-                    { disableEdit ?
+                    {disableEdit ?
                       <Blank><FaIcon icon='blank' size={10} height={10} width={10} /> </Blank>
-                    :
+                      :
                       <Tooltip title="Salvar">
-                        <Botao onClick={event=>{submit(event)}}><FaIcon icon='Save' size={20} /></Botao>
+                        <Botao onClick={event => { submit(event) }}><FaIcon icon='Save' size={20} /></Botao>
                       </Tooltip>
                     }
                     <Tooltip title="Fechar Janela">
@@ -1211,7 +1332,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
               <Form
                 onSubmit={onSubmit}
                 initialValues={initialValues}
-                validate={required} 
+                validate={required}
                 height={'490px'} width={'100%'}
                 mutators={{
                   _setValue: ([field, value], state, { changeValue }) => {
@@ -1334,7 +1455,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                                         fullWidth
                                         size="small"
                                         margin="dense"
-                                        onChange={e => window.setFormValue('valor', e.target.value )}
+                                        onChange={e => window.setFormValue('valor', e.target.value)}
                                       />
                                     </Col>
                                     <Col xs={3}>
@@ -1708,11 +1829,11 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                           <Row>
                             <Col xs={6}>
                               <div className="ag-theme-custom-react" style={{
-                                  height: '390px',
-                                  width: '100%',
-                                  // borderRadius: '10px',
-                                  backgroundColor: '#FFFFFF', 
-                                  border: '5px solid #FFFFFF',
+                                height: '390px',
+                                width: '100%',
+                                // borderRadius: '10px',
+                                backgroundColor: '#FFFFFF',
+                                border: '5px solid #FFFFFF',
                               }}>
                                 <AgGridReact
                                   id='agVeiculos'
@@ -1737,11 +1858,11 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                             </Col>
                             <Col xs={6}>
                               <div className="ag-theme-custom-react" style={{
-                                  height: '390px',
-                                  width: '100%',
-                                  // borderRadius: '10px',
-                                  backgroundColor: '#FFFFFF', 
-                                  border: '5px solid #FFFFFF',
+                                height: '390px',
+                                width: '100%',
+                                // borderRadius: '10px',
+                                backgroundColor: '#FFFFFF',
+                                border: '5px solid #FFFFFF',
                               }}>
                                 <AgGridReact
                                   id='agRotas'
@@ -1772,16 +1893,20 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                       </TabPanel>
 
                       <TabPanel value={value} index={2} style={{ width: '100%', height: '455px' }}>
-                        <BoxTitulo 
-                          size={465} 
+                        <BoxTitulo
+                          size={465}
                           width='99%'
-                          bgcolor='#FFFFFF' 
-                          border='1px solid #2699F8' 
+                          bgcolor='#FFFFFF'
+                          border='1px solid #2699F8'
                           mb={10}
                         >
                           <Map
-                            places={places}
+                            markers={places}
+                            origem={origem}
+                            destino={destino}
+                            paradas={paradas}
                             defaultCenter={center}
+                            defaultZoom={4}
                           />
                         </BoxTitulo>
                       </TabPanel>
@@ -1796,13 +1921,13 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                 </Texto>
               </BoxTitulo>
             </Container>
-            <GridUsuariosModal 
+            <GridUsuariosModal
               isShowing={isShowing}
               hide={toggleGridUsuarios}
               tipoConsulta='C'
               callFind={callBackCliente}
             />
-            <VeiculosModal 
+            <VeiculosModal
               isShowVeiculos={isShowVeiculos}
               hide={toggleVeiculos}
               pedidoID={pedidoID}

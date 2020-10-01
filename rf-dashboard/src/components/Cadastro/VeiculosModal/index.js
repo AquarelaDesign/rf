@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom'
-// import PropTypes from 'prop-types'
+import PropTypes from 'prop-types'
 
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -18,6 +18,10 @@ import {
 import {
   TextField,
 } from 'final-form-material-ui'
+
+import Autocomplete from '@material-ui/lab/Autocomplete'
+
+import NumberFormat from 'react-number-format'
 
 // import MaskedInput from 'react-text-mask'
 
@@ -67,6 +71,10 @@ const CssTextField = withStyles({
       '&.Mui-focused fieldset': {
         borderColor: '#225378',
       },
+      '&.Mui-disabled': {
+        color: '#666666',
+        fontWeight: 500,
+      },
     },
     '& .MuiFormHelperText-root': {
       margin: '1px',
@@ -79,6 +87,43 @@ const CssTextField = withStyles({
   },
 
 })(TextField)
+
+const CssAutocomplete = withStyles({
+  root: {
+    '& > *': {
+      fontFamily: ['Montserrat', 'sans Serif'],
+      fontSize: 14,
+    },
+    '& label.Mui-focused': {
+      color: '#0031FF',
+    }, 
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        borderColor: '#2699F8',
+      },
+      '&:hover fieldset': {
+        borderColor: '#0031FF',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: '#225378',
+      },
+      '&.Mui-disabled': {
+        color: '#666666',
+        fontWeight: 500,
+      },
+    },
+    '& .MuiFormHelperText-root': {
+      margin: '1px',
+      justifyContent: 'left',
+      height: '7px',
+    },
+    '& .MuiFormHelperText-contained': {
+      justifyContent: 'left',
+    },
+  },
+
+})(Autocomplete)
+
 
 const fipeTipo = [
   { value: 'carros', label: 'Carros' },
@@ -107,6 +152,8 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
 
   useEffect(() => {
     // console.log('**** VeiculosModal.buscaVeiculo')
+    limpaCampos()
+
     const buscaVeiculo = async () => {
       await api
         .get(`/veiculos/${veiculoID}`)
@@ -114,6 +161,22 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
           const { data } = response
           // console.log('**** VeiculosModal.buscaVeiculo.data', data)
           setInitialValues(data)
+
+          if (data.fipeTipo) {
+            buscaMarcas(data.fipeTipo)
+            setDisableMarca(false)
+          }
+
+          if (data.fipemarcaid) {
+            buscaModelos(data.fipemarcaid)
+            setDisableModelo(false)
+          }
+          
+          if (data.fipemodeloid) {
+            buscaModelos(data.fipemodeloid)
+            setDisableAno(false)
+          }
+          
         })
         .catch((error) => {
           if (error.response) {
@@ -140,20 +203,7 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
     if (veiculoID && veiculoID > 0 && tipoCad === 'E') {
       buscaVeiculo()
     } else if (tipoCad === 'N') {
-      var newData = {
-        pedido_id: pedidoID,
-        placachassi: "",
-        modelo: "",
-        estado: "",
-        ano: null,
-        valor: null,
-        fipetipo: null,
-        fipemarcaid: null,
-        fipemodeloid: null,
-        fipeano: null,
-        fipe: "",
-      }
-      setInitialValues(newData)
+      limpaCampos()
     } else if (tipoCad === 'D') {
       if (veiculoID && veiculoID > 0) {
         buscaVeiculo()
@@ -162,7 +212,30 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
 
   }, [veiculoID, pedidoID, tipoCad])
 
-  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+  const limpaCampos = () => {
+    var newData = {
+      pedido_id: pedidoID,
+      placachassi: "",
+      modelo: "",
+      estado: "",
+      ano: null,
+      valor: null,
+      fipetipo: null,
+      fipemarcaid: null,
+      fipemodeloid: null,
+      fipeano: null,
+      fipe: "",
+    }
+    setInitialValues(newData)
+    setMarcas([])
+    setModelos([])
+    setAnos([])
+    setDisableMarca(true)
+    setDisableModelo(true)
+    setDisableAno(true)
+  }
+
+  // const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   const buscaMarcas = async (dados) => {
     
@@ -303,51 +376,56 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
       return
     }
 
-    let anodes = anos.find(opt => opt.value === dados.value)
-    let ano = anodes.label.substring(0, 4)
+    try {
+      let anodes = anos.find(opt => opt.value === dados.value)
+      let ano = anodes.label.substring(0, 4)
 
-    if (ano.toLocaleLowerCase() === 'zero') {
-      ano = moment().format('YYYY')
-    }
-    // console.log('**** VeiculosModal.buscaFipe.ano', ano)
-    await Axios
-      .get(`${fipeapi}${initialValues.fipetipo}/veiculo/${initialValues.fipemarcaid}/${initialValues.fipemodeloid}/${dados.value}.json`)
-      .then(response => {
-        const { data } = response
+      if (ano.toLocaleLowerCase() === 'zero') {
+        ano = moment().format('YYYY')
+      }
+      // console.log('**** VeiculosModal.buscaFipe.ano', ano)
+      await Axios
+        .get(`${fipeapi}${initialValues.fipetipo}/veiculo/${initialValues.fipemarcaid}/${initialValues.fipemodeloid}/${dados.value}.json`)
+        .then(response => {
+          const { data } = response
 
-        let valor = data.preco.replace('R$ ','').replace('.','').replace(',','.')
-        // let modelo = `${data.marca} ${data.name} ${data.ano_modelo} ${data.combustivel} (Tabela: ${data.referencia})`
-        let modelo = `${data.marca} ${data.name} ${anodes.label} (Tabela: ${data.referencia})`
+          let valor = data.preco.replace('R$ ','').replace('.','').replace(',','.')
+          // let modelo = `${data.marca} ${data.name} ${data.ano_modelo} ${data.combustivel} (Tabela: ${data.referencia})`
+          let modelo = `${data.marca} ${data.name} ${anodes.label} (Tabela: ${data.referencia})`
 
-        setInitialValues({ 
-          ...initialValues,
-          ano: parseInt(ano),
-          fipeano: anodes.value,
-          fipe: data.fipe_codigo, 
-          valor: valor, 
-          modelo: modelo.toLocaleUpperCase() 
+          setInitialValues({ 
+            ...initialValues,
+            ano: parseInt(ano),
+            fipeano: anodes.value,
+            fipe: data.fipe_codigo, 
+            valor: valor, 
+            modelo: modelo.toLocaleUpperCase() 
+          })
+          window.setFormValue('valor', valor )
+          console.log('**** buscaFipe', data)
         })
-        console.log('**** buscaFipe', data)
-      })
-      .catch((error) => {
-        if (error.response) {
-          const { data } = error.response
-          try {
-            data.map(mensagem => {
-              toast(mensagem.message, { type: 'error' })
-            })
+        .catch((error) => {
+          if (error.response) {
+            const { data } = error.response
+            try {
+              data.map(mensagem => {
+                toast(mensagem.message, { type: 'error' })
+              })
+            }
+            catch (e) {
+              console.log('**** VeiculosModal.buscaFipe.error.data', data)
+            }
+          } else if (error.request) {
+            console.log('**** VeiculosModal.buscaFipe.error', error)
+            // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          } else {
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }
-          catch (e) {
-            console.log('**** VeiculosModal.buscaFipe.error.data', data)
-          }
-        } else if (error.request) {
-          console.log('**** VeiculosModal.buscaFipe.error', error)
-          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
-        } else {
-        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
-        }
-      })
-    
+        })
+    }
+    catch (error) {
+      console.log('**** VeiculosModal.buscaFipe.error', error)
+    }
   }
   
   const fechar = async (e) => {
@@ -368,9 +446,13 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
       newValues[key] = value
     }
 
-    let val = values['valor'].replace('.', '')
-        val = val.replace(',', '.')
-    newValues['valor'] = val
+    // let val = values['valor'].replace('.', '')
+    //     val = val.replace(',', '.')
+    // newValues['valor'] = val
+
+    //console.log('**** VeiculosModal.onSubmit-newValues', newValues)
+
+    return
 
     let apiParams = {}
 
@@ -435,6 +517,47 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
     })
 
   }
+
+  const NumberFormatCustom = (props) => {
+    const { inputRef, onChange, ...other } = props
+  
+    return (
+      <NumberFormat
+        {...other}
+        getInputRef={inputRef}
+        onValueChange={(values) => {
+          onChange({
+            target: {
+              name: props.name,
+              value: values.value,
+            },
+          });
+        }}
+        thousandSeparator="."
+        isNumericString
+        decimalSeparator=","
+        decimalScale={2} 
+        fixedDecimalScale={true}
+        prefix="R$ "
+      />
+    )
+  }
+  
+  NumberFormatCustom.propTypes = {
+    inputRef: PropTypes.func.isRequired,
+    name: PropTypes.string.isRequired,
+    onChange: PropTypes.func.isRequired,
+  }
+  
+
+  const AutocompleteAdapter = ({ input, ...rest }) => (
+    <Autocomplete
+      {...input}
+      {...rest}
+      forcePopupIcon={false}
+      renderInput={params => <CssTextField {...params} {...input} {...rest} />}
+    />
+  )
 
   const required = value => (value ? undefined : '* Obrigatório!')
 
@@ -559,6 +682,28 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
                                   </MenuItem>
                                 ))}
                               </Field>
+                              {/* 
+                              <Field
+                                disabled={disableEdit}
+                                name="fipetipo"
+                                component={CssAutocomplete}
+                                type="select"
+                                label="Tipo"
+                                variant="outlined"
+                                fullWidth
+                                // select
+                                size="small"
+                                margin="dense"
+                                onClick={e => buscaMarcas(e.target.value)}
+                                
+                                options={fipeTipo}
+                                autoHighlight
+                                getOptionLabel={(option) => {
+                                  console.log('**** getOptionLabel', option)
+                                  // option.label
+                                }}
+                                renderOption={(option) => option.label}                                
+                              /> */}
                             </Col>
                             <Col xs={6}>
                               <Field
@@ -672,14 +817,20 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
                               <Field
                                 disabled={disableEdit}
                                 name="valor"
-                                component={CurrencyTextField}
+                                // component={CurrencyTextField}
+                                component={CssTextField}
                                 type="text"
                                 label="Valor"
                                 variant="outlined"
                                 fullWidth
                                 size="small"
                                 margin="dense"
-                                onChange={e => window.setFormValue('valor', e.target.value )}
+                                // value={values.valor}
+                                // onChange={e => window.setFormValue('valor', e.target.value )}
+                                InputProps={{
+                                  inputComponent: NumberFormatCustom,
+                                  style: { justifyContent: 'right' }
+                                }}
                               />
                             </Col>
                           </Row>
