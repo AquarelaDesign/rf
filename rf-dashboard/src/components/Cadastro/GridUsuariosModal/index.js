@@ -339,10 +339,22 @@ const GridUsuarioModal = ({
   // }
 
   const onRowDoubleClicked = (params) => {
-    // console.log('**** onRowDoubleClicked', params)
-    setTipo('V')
-    setUsuarioId(params.data.id)
-    toggleUsuario()
+    // console.log('**** onRowDoubleClicked', params.data.id, tipoConsulta, tipoCadastro)
+    if (tipoConsulta !== '') {
+      if (params.data.id === 0) {
+        toast('Você deve selecionar um registro para retonar!', { type: 'error' })
+        return
+      } else {
+        hide()
+        if (callFind){
+          callFind(params.data.id)
+        }
+      }
+    } else {
+      setTipo('V')
+      setUsuarioId(params.data.id)
+      toggleUsuario()
+    }
   }
 
   function formatNumber(number) {

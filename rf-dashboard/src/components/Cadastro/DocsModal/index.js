@@ -58,6 +58,10 @@ const CssTextField = withStyles({
       '&.Mui-focused fieldset': {
         borderColor: '#225378',
       },
+      '&.Mui-disabled': {
+        color: '#666666',
+        fontWeight: 500,
+      },
     },
     '& .MuiFormHelperText-root': {
       margin: '1px',
