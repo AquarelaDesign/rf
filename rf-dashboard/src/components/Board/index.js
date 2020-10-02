@@ -16,8 +16,8 @@ import formatDate from '../CountDown/format-date'
 
 import {
   // loadMotoristas,
-  loadCargas,
-  loadTransportes,
+  // loadCargas,
+  // loadTransportes,
   loadEntregas
 } from '../../services/api'
 
@@ -27,8 +27,8 @@ import List from '../List'
 import { Container } from './styles'
 
 // const dataM = loadMotoristas()
-const dataC = loadCargas()
-const dataT = loadTransportes()
+// const dataC = loadCargas()
+// const dataT = loadTransportes()
 const dataE = loadEntregas()
 
 const prot = window.location.protocol === 'http' ? 'ws' : 'wss'
@@ -57,8 +57,16 @@ const Board = () => {
     cards: []
   })
 
+  const [transporte, setTransporte] = useState({
+    title: "TRANSPORTES", 
+    icon: "FaArrowAltCircleRight",
+    tipo: "T",
+    creatable: false,
+    cards: []
+  })
+
   // const [carga, setCarga] = useState(dataC)
-  const [transporte, setTransporte] = useState(dataT)
+  // const [transporte, setTransporte] = useState(dataT)
   const [entrega, setEntrega] = useState(dataE)
   const [countdown, setCountdown] = useState(null)
   const [dateInFuture, setDateInFuture] = useState(moment(moment().add(1, 'minute'), 'YYYY-MM-DD'))
@@ -144,6 +152,18 @@ const Board = () => {
         cards: res.data
       }
       setCarga(loadPedidos)
+    })
+
+    const channelt = pusher.subscribe('statust-channel')
+    channelt.bind('results', res => {
+      const loadTransportes = {
+        title: "TRANSPORTES", 
+        icon: "FaArrowAltCircleRight",
+        tipo: "T",
+        creatable: false,
+        cards: res.data
+      }
+      setTransporte(loadTransportes)
     })
 
     return () => {
@@ -242,6 +262,32 @@ const Board = () => {
           }, delay)
         })
 
+      // console.log('**** Transportes')
+      await api.post('/buscapedidos', {
+        status: "",
+        tipo: "T",
+        estado: "P",
+        cliente_id: "",
+        motorista_id: "", 
+      })
+        .then(res => {
+          const loadTransportes = {
+            title: "TRANSPORTES", 
+            icon: "FaArrowAltCircleRight",
+            tipo: "T",
+            creatable: false,
+            cards: res.data
+          }
+          setTransporte(loadTransportes)
+        })
+        .catch(error => {
+          let timerId = setTimeout(function request() {
+            if (request) {
+              delay *= 2
+            }
+            timerId = setTimeout(request, delay)
+          }, delay)
+        })
     } catch (error) {
       const { response } = error
       if (response !== undefined) {
@@ -381,7 +427,7 @@ const Board = () => {
         <List key={entrega.title} data={entrega} />
       </Container>
     </BoardContext.Provider>
-  );
+  )
 }
 
 export default Board

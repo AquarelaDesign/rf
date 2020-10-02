@@ -18,6 +18,7 @@ export default function CardTransportes({ data, index }) {
   const ref = useRef()
   // const { removeM } = useContext(BoardContext)
   const [pedido, setPedido] = useState([])
+  const [motorista, setMotorista] = useState(null)
   const [veiculos, setVeiculos] = useState([])
   const [enderecoc, setEnderecoc] = useState('')
   const [contatoc, setContatoc] = useState('')
@@ -28,6 +29,8 @@ export default function CardTransportes({ data, index }) {
   const [rotas, setRotas] = useState([])
   const [localColeta, setLocalColeta] = useState([])
   const [localEntrega, setLocalEntrega] = useState([])
+
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   // const dataRotas = loadRotas()
 
@@ -204,15 +207,54 @@ export default function CardTransportes({ data, index }) {
       }
       console.log('transporte', transporte)
 
-      atualizaMotorista(userID)
+      buscaMotorista(userID)
       atualizaPedido(pedidoID, userID)
     }
   })
 
-  const atualizaMotorista = async (userID) => {
+  const buscaMotorista = async (motoristaID) => {
+    if (motoristaID) {
+      // await sleep(500)
+      await api
+        .get(`/usuarios/${motoristaID}`)
+        .then(response => {
+          const { data } = response
 
-    await api.put(`/usuarios/${userID}`, {
+          console.log('**** CardCargas.buscaMotorista', data.veiculos)
+          setMotorista(data)
+          
+          const atualiza = async (Id) => {
+            await sleep(500)
+            atualizaMotorista(Id)
+          }
+          atualiza(data.id)
+        }).catch((error) => {
+          if (error.response) {
+            const { data } = error.response
+            try {
+              data.map(mensagem => {
+                toast(mensagem.message, { type: 'error' })
+              })
+            }
+            catch (e) {
+              console.log('**** CardCargas.buscaMotorista.error.data', data)
+            }
+          } else if (error.request) {
+            console.log('**** CardCargas.buscaMotorista.error', error)
+            // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          } else {
+            // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          }
+        })
+    }
+  }
+  
+  const atualizaMotorista = async (motoristaID) => {
+    const vagas = motorista.vagas - data.veiculos.length
+
+    await api.put(`/usuarios/${motoristaID}`, {
       estado: 'P',
+      // vagas: vagas,
     })
     .then(response => {
       const { data } = response
@@ -237,14 +279,16 @@ export default function CardTransportes({ data, index }) {
     })
   }
 
-  const atualizaPedido = async (pedidoID, userID) => {
+  const atualizaPedido = async (pedidoID, motoristaID) => {
 
     await api.put(`/pedidos/${pedidoID}`, {
-      motorista_id: userID,
-      status: 'A'
+      motorista_id: motoristaID,
+      status: 'A',
+      tipo: "T",
     })
     .then(response => {
       const { data } = response
+      atualizaRotas(motoristaID)
     })
     .catch((error) => {
       if (error.response) {
@@ -265,6 +309,40 @@ export default function CardTransportes({ data, index }) {
       }
     })
     
+  }
+
+  const atualizaRotas = async (motoristaID) => {
+    // associar motorista transportador (motorista_id)
+    rotas.map(rota => {
+      if (rota.status === 'D') {
+        api.put(`/rotas/${rota.id}`, {
+          motorista_id: motoristaID,
+          status: 'A',
+        })
+        .then(response => {
+          const { data } = response
+        })
+        .catch((error) => {
+          if (error.response) {
+            const { data } = error.response
+            try {
+              data.map(mensagem => {
+                toast(mensagem.message, { type: 'error' })
+              })
+            }
+            catch (e) {
+              console.log('**** CardCargas.atualizaRotas.error.data', data)
+            }
+          } else if (error.request) {
+            console.log('**** CardCargas.atualizaRotas.error', error)
+            // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          } else {
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          }
+        })
+      }
+    })
+
   }
 
   dragRef(dropRef(ref))

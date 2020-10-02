@@ -4,7 +4,7 @@ import { MdTimer } from 'react-icons/md'
 export default class CountDown extends Component {
   constructor() {
     super();
-    this.state = { time: {}, seconds: 10 };
+    this.state = { time: {}, seconds: 5 };
     this.timer = 0;
     this.startTimer = this.startTimer.bind(this);
     this.countDown = this.countDown.bind(this);
@@ -28,16 +28,8 @@ export default class CountDown extends Component {
   }
 
   componentDidMount() {
-    if (this.props.tempo) {
-      this.setState({ 
-        seconds: this.props.tempo,
-        time: this.secondsToTime(this.props.tempo) 
-      });
-    } else {
-      this.setState({ 
-        time: this.secondsToTime(this.state.seconds) 
-      });
-    }
+    let timeLeftVar = this.secondsToTime(this.state.seconds);
+    this.setState({ time: timeLeftVar });
   }
 
   startTimer() {
@@ -57,20 +49,16 @@ export default class CountDown extends Component {
     // Check if we're at zero.
     if (seconds == 0) { 
       clearInterval(this.timer);
-      this.setState({
-        time: this.secondsToTime(10),
-        seconds: 10,
-      });
-      this.timer = 0;
     }
   }
 
   render() {
     return(
       <div>
-        <button onClick={this.startTimer}><MdTimer/> </button>
+        <button onClick={this.startTimer}>Start</button>
         m: {this.state.time.m} s: {this.state.time.s}
       </div>
     );
   }
 }
+

@@ -1,12 +1,12 @@
-import React, { useRef } from 'react';
-import { useDrag, useDrop } from 'react-dnd';
+import React, { useRef } from 'react'
+import { useDrag, useDrop } from 'react-dnd'
 import StarRatings from 'react-star-ratings'
 // import BoardContext from '../Board/context';
 import { makeStyles } from '@material-ui/core/styles'
 import { Tooltip } from '@material-ui/core'
 import { formatToPhone } from 'brazilian-values'
 // import { SmtpEmail } from '../../services/smtp'
-import { Container, RLeft, RRight, Texto } from './styles';
+import { Container, RLeft, RRight, Texto } from './styles'
 
 import semImagem from '../../assets/sem_foto.png'
 import { FaIcon } from '../Icone'
@@ -30,7 +30,6 @@ const dev = window.location.hostname === "localhost" ? 'https://www.retornofacil
 export default function CardMotoristas({ data, index }) {
   const ref = useRef()
   const classes = useStyles()
-  // const { removeM } = useContext(BoardContext);
   const { isShowEmail, toggleEmail } = useModal()
 
   const [{ isDragging }, dragRef] = useDrag({
