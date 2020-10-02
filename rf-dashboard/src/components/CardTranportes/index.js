@@ -437,7 +437,7 @@ export default function CardMotoristas({ data, index }) {
         <div style={{ 
           padding: 5, 
           fontSize: '14px', 
-          backgroundColor: `${ statusMotorista === 'P' ? '#ef898d' : '#90D284' }`,
+          backgroundColor: `${ statusMotorista === 'P' ? '#ef898d' : statusMotorista === 'A' ? '#F9D36B' : statusMotorista === 'T' ? '#90D284' : '#0078D7' }`,
           width: '100%',
           height: '45px',
           borderRadius: 5,
