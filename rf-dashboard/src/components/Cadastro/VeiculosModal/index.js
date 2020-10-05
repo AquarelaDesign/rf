@@ -31,7 +31,7 @@ import {
   Tooltip, 
   withStyles, 
   MenuItem,
-  // InputAdornment,
+  InputAdornment,
 } from '@material-ui/core'
 
 import { FaIcon } from '../../Icone'
@@ -41,7 +41,7 @@ import { Grid, Row, Col } from 'react-flexbox-grid'
 import { Form, Field } from 'react-final-form'
 // import DatePicker from '../../datepicker'
 // import { values } from 'lodash'
-// import { AiOutlineSearch } from 'react-icons/ai'
+import { AiOutlineSearch } from 'react-icons/ai'
 
 import "./modal.css"
 import api from '../../../services/rf'
@@ -148,6 +148,13 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
   const [disableModelo, setDisableModelo] = useState(true)
   const [disableAno, setDisableAno] = useState(true)
   
+  const [mostraFipe, setMostraFipe] = useState(false)
+  const [tipoFipe, setTipoFipe] = useState(null)
+  const [marcaFipe, setMarcaFipe] = useState(null)
+  const [modeloFipe, setModeloFipe] = useState(null)
+  const [anoFipe, setAnoFipe] = useState(null)
+
+  
   let submit
 
   useEffect(() => {
@@ -162,21 +169,10 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
           // console.log('**** VeiculosModal.buscaVeiculo.data', data)
           setInitialValues(data)
 
-          if (data.fipeTipo) {
-            buscaMarcas(data.fipeTipo)
-            setDisableMarca(false)
-          }
-
-          if (data.fipemarcaid) {
-            buscaModelos(data.fipemarcaid)
-            setDisableModelo(false)
-          }
-          
-          if (data.fipemodeloid) {
-            buscaModelos(data.fipemodeloid)
-            setDisableAno(false)
-          }
-          
+          // setTipoFipe(data.fipeTipo)
+          // setMarcaFipe(data.fipemarcaid)
+          // setModeloFipe(data.fipemodeloid)
+          // setAnoFipe(data.fipeano)
         })
         .catch((error) => {
           if (error.response) {
@@ -245,7 +241,8 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
       return
     }
     
-    setInitialValues({ ...initialValues, fipetipo: dados })
+    setInitialValues({ ...initialValues, fipetipo: dados, tipoFipe: dados })
+    setTipoFipe(dados)
     
     await Axios
       .get(`${fipeapi}/${dados}/marcas.json`)
@@ -288,10 +285,11 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
       return
     }
     
-    setInitialValues({ ...initialValues, fipemarcaid: dados })
+    setInitialValues({ ...initialValues, fipemarcaid: dados, marcaFipe: dados })
+    setMarcaFipe(dados)
     
     await Axios
-      .get(`${fipeapi}/${initialValues.fipetipo}/veiculos/${dados}.json`)
+      .get(`${fipeapi}/${tipoFipe}/veiculos/${dados}.json`)
       .then(response => {
         const { data } = response
 
@@ -332,10 +330,11 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
       return
     }
     
-    setInitialValues({ ...initialValues, fipemodeloid: dados })
+    setInitialValues({ ...initialValues, fipemodeloid: dados, modeloFipe: dados })
+    setModeloFipe(dados)
 
     await Axios
-      .get(`${fipeapi}${initialValues.fipetipo}/veiculo/${initialValues.fipemarcaid}/${dados}.json`)
+      .get(`${fipeapi}${tipoFipe}/veiculo/${marcaFipe}/${dados}.json`)
       .then(response => {
         const { data } = response
         // console.log('**** VeiculosModal.buscaAnos.data', data)
@@ -376,7 +375,10 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
       return
     }
 
+    setAnoFipe(dados)
+
     try {
+      let anofipe = dados
       let anodes = anos.find(opt => opt.value === dados.value)
       let ano = anodes.label.substring(0, 4)
 
@@ -385,7 +387,7 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
       }
       // console.log('**** VeiculosModal.buscaFipe.ano', ano)
       await Axios
-        .get(`${fipeapi}${initialValues.fipetipo}/veiculo/${initialValues.fipemarcaid}/${initialValues.fipemodeloid}/${dados.value}.json`)
+        .get(`${fipeapi}${tipoFipe}/veiculo/${marcaFipe}/${modeloFipe}/${dados.value}.json`)
         .then(response => {
           const { data } = response
 
@@ -399,9 +401,11 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
             fipeano: anodes.value,
             fipe: data.fipe_codigo, 
             valor: valor, 
-            modelo: modelo.toLocaleUpperCase() 
+            modelo: modelo.toLocaleUpperCase(),
+            anoFipe: anofipe
           })
           window.setFormValue('valor', valor )
+          setMostraFipe(false)
           console.log('**** buscaFipe', data)
         })
         .catch((error) => {
@@ -451,8 +455,6 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
     // newValues['valor'] = val
 
     //console.log('**** VeiculosModal.onSubmit-newValues', newValues)
-
-    return
 
     let apiParams = {}
 
@@ -661,116 +663,100 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
                               </Field>
                             </Col>
                           </Row>
-                          <Row style={{ height: '54px', marginTop: '15px' }}>
-                            <Col xs={6}>
-                              <Field
-                                disabled={disableEdit}
-                                name="fipetipo"
-                                component={CssTextField}
-                                type="select"
-                                label="Tipo"
-                                variant="outlined"
-                                fullWidth
-                                select
-                                size="small"
-                                margin="dense"
-                                onClick={e => buscaMarcas(e.target.value)}
-                              >
-                                {fipeTipo.map((option) => (
-                                  <MenuItem key={option.value} value={option.value}>
-                                    {option.label}
-                                  </MenuItem>
-                                ))}
-                              </Field>
-                              {/* 
-                              <Field
-                                disabled={disableEdit}
-                                name="fipetipo"
-                                component={CssAutocomplete}
-                                type="select"
-                                label="Tipo"
-                                variant="outlined"
-                                fullWidth
-                                // select
-                                size="small"
-                                margin="dense"
-                                onClick={e => buscaMarcas(e.target.value)}
-                                
-                                options={fipeTipo}
-                                autoHighlight
-                                getOptionLabel={(option) => {
-                                  console.log('**** getOptionLabel', option)
-                                  // option.label
-                                }}
-                                renderOption={(option) => option.label}                                
-                              /> */}
-                            </Col>
-                            <Col xs={6}>
-                              <Field
-                                disabled={disableMarca}
-                                name="fipemarcaid"
-                                component={CssTextField}
-                                type="select"
-                                label="Marca"
-                                variant="outlined"
-                                fullWidth
-                                select
-                                size="small"
-                                margin="dense"
-                                onClick={e => buscaModelos(e.target.value)}
-                              >
-                                {marcas.map((option) => (
-                                  <MenuItem key={option.value} value={option.value}>
-                                    {option.label}
-                                  </MenuItem>
-                                ))}
-                              </Field>
-                            </Col>
-                          </Row>
-                          <Row style={{ height: '54px', marginTop: '15px' }}>
-                            <Col xs={6}>
-                              <Field
-                                disabled={disableModelo}
-                                name="fipemodeloid"
-                                component={CssTextField}
-                                type="select"
-                                label="Modelo"
-                                variant="outlined"
-                                fullWidth
-                                select
-                                size="small"
-                                margin="dense"
-                                onClick={e => buscaAnos(e.target.value)}
-                              >
-                                {modelos.map((option) => (
-                                  <MenuItem key={option.value} value={option.value}>
-                                    {option.label}
-                                  </MenuItem>
-                                ))}
-                              </Field>
-                            </Col>
-                            <Col xs={6}>
-                              <Field
-                                disabled={disableAno}
-                                name="fipeano"
-                                component={CssTextField}
-                                type="select"
-                                label="Ano"
-                                variant="outlined"
-                                fullWidth
-                                select
-                                size="small"
-                                margin="dense"
-                                onClick={e => buscaFipe(e.target)}
-                              >
-                                {anos.map((option) => (
-                                  <MenuItem key={option.value} value={option.value}>
-                                    {option.label}
-                                  </MenuItem>
-                                ))}
-                              </Field>
-                            </Col>
-                          </Row>
+
+                          {mostraFipe && 
+                            <div>
+                              <Row style={{ height: '54px', marginTop: '15px' }}>
+                                <Col xs={6}>
+                                  <Field
+                                    disabled={disableEdit}
+                                    name="tipoFipe"
+                                    component={CssTextField}
+                                    type="select"
+                                    label="Tipo"
+                                    variant="outlined"
+                                    fullWidth
+                                    select
+                                    size="small"
+                                    margin="dense"
+                                    onClick={e => buscaMarcas(e.target.value)}
+                                  >
+                                    {fipeTipo.map((option) => (
+                                      <MenuItem key={option.value} value={option.value}>
+                                        {option.label}
+                                      </MenuItem>
+                                    ))}
+                                  </Field>
+                                </Col>
+                                <Col xs={6}>
+                                  <Field
+                                    disabled={disableMarca}
+                                    name="marcaFipe"
+                                    component={CssTextField}
+                                    type="select"
+                                    label="Marca"
+                                    variant="outlined"
+                                    fullWidth
+                                    select
+                                    size="small"
+                                    margin="dense"
+                                    onClick={e => buscaModelos(e.target.value)}
+                                  >
+                                    {marcas.map((option) => (
+                                      <MenuItem key={option.value} value={option.value}>
+                                        {option.label}
+                                      </MenuItem>
+                                    ))}
+                                  </Field>
+                                </Col>
+                              </Row>
+                              <Row style={{ height: '54px', marginTop: '15px' }}>
+                                <Col xs={6}>
+                                  <Field
+                                    disabled={disableModelo}
+                                    name="modeloFipe"
+                                    component={CssTextField}
+                                    type="select"
+                                    label="Modelo"
+                                    variant="outlined"
+                                    fullWidth
+                                    select
+                                    size="small"
+                                    margin="dense"
+                                    onClick={e => buscaAnos(e.target.value)}
+                                  >
+                                    {modelos.map((option) => (
+                                      <MenuItem key={option.value} value={option.value}>
+                                        {option.label}
+                                      </MenuItem>
+                                    ))}
+                                  </Field>
+                                </Col>
+                                <Col xs={6}>
+                                  <Field
+                                    disabled={disableAno}
+                                    name="anoFipe"
+                                    component={CssTextField}
+                                    type="select"
+                                    label="Ano"
+                                    variant="outlined"
+                                    fullWidth
+                                    select
+                                    size="small"
+                                    margin="dense"
+                                    onClick={e => buscaFipe(e.target)}
+                                  >
+                                    {anos.map((option) => (
+                                      <MenuItem key={option.value} value={option.value}>
+                                        {option.label}
+                                      </MenuItem>
+                                    ))}
+                                  </Field>
+                                </Col>
+                              </Row>
+                            </div>
+                          }
+
                           <Row style={{ height: '54px', marginTop: '15px' }}>
                             <Col xs={12}>
                               <Field
@@ -811,7 +797,20 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
                                 fullWidth
                                 size="small"
                                 margin="dense"
-                              />
+                                InputProps={{
+                                  // inputComponent: formatCep,
+                                  endAdornment: (
+                                    <InputAdornment position="end">
+                                      <button type="button" onClick={() => { setMostraFipe(true) }}
+                                        style={{ backgroundColor: 'transparent', cursor: 'pointer' }}
+                                      >
+                                        <AiOutlineSearch />
+                                      </button>
+                                    </InputAdornment>
+                                  ),
+                                }}
+
+/>
                             </Col>
                             <Col xs={6}>
                               <Field

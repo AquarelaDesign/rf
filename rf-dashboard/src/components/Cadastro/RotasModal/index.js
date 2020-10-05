@@ -135,7 +135,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
         })
     }
 
-    console.log('**** RotasModal', rotaID, tipoCad)
+    // console.log('**** RotasModal', rotaID, tipoCad)
 
     if (rotaID && rotaID > 0 && tipoCad === 'E') {
       // setDisableEdit(false)

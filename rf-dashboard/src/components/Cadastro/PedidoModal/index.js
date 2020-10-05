@@ -52,7 +52,7 @@ import { FaIcon } from '../../Icone'
 import "./modal.css"
 
 import api from '../../../services/rf'
-// import Axios from 'axios'
+import Axios from 'axios'
 
 import { AgGridReact, gridApi } from 'ag-grid-react'
 import agPtBr from '../../agPtBr'
@@ -298,6 +298,10 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
   const [rotaData, setRotaData] = useState(null)
   const { isShowRotas, toggleRotas } = useModalRotas()
 
+  // const [response, setResponse] = useState(null)
+  const [waypoints, setWaypoints] = useState([])
+  const [dadosInfo, setDadosInfo] = useState(null)
+
   // const [excluiId, setExcluiId] = useState(null)
   // const [propsE, setPropsE] = useState(null)
   // const [sData, setSData] = useState(null)
@@ -326,6 +330,9 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     lat: -25.486878,
     lng: -49.319317,
   })
+
+  const [distancia, setDistancia] = useState([])
+
 
   const { isShowConfirma, toggleConfirma } = useModalConfirma()
 
@@ -856,6 +863,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
 
           // console.log('**** PedidoModal.buscaVeiculos', data)
           setVeiculos(data)
+          calculaValorPedido()
 
         }).catch((error) => {
           if (error.response) {
@@ -878,6 +886,83 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     }
   }
 
+
+  const calculaValorPedido = () => {
+    veiculos.map(vei => {
+      let tipoVei = vei.tipo
+
+
+    })
+    
+    // tipoDeVeiculo (cadastro)
+    // valor (cadastro)
+    // valoresAgregados (mostra = true e imposto = false)
+    // imposto -> valoresAgregados (mostra = true e imposto = true)
+    console.log('**** PedidosModal.buscaVeiculos.calculaValorPedido')
+    // busca distancia (distancia.distancia)
+    // seguro Roubo (valor do veiculo * 0.03)
+    // seguro Fluvial (valor do veiculo * 0.06)
+  }
+
+  function buscaDistancia(orig, dest) {
+    let w = []
+    paradas.map(way => {
+      w.push({
+        location: way
+      })
+    })
+
+    const uniqueW = Array.from(new Set(w.map(a => a.lat)))
+      .map(lat => {
+        return w.find(a => a.lat === lat)
+      })
+
+    setWaypoints(uniqueW)
+
+    // const consulta = `https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${origem.lat},${origem.lng}&destinations=${destino.lat},${destino.lng}&key=${apiKey}`
+    // https://retornofacil.com.br/scripts/directions.php?origins=-25.486878,-49.319317&destinations=-5.889387,-35.175128&key=AIzaSyBoV-kvy8LfddqcUb6kcHvs5TmrRJ09KXY
+
+    // const consulta = `https://retornofacil.com.br/scripts/directions.php?origins=-25.486878,-49.319317|-23.769382,-46.598601&destinations=-23.769382,-46.598601|-5.889387,-35.175128&key=AIzaSyBoV-kvy8LfddqcUb6kcHvs5TmrRJ09KXY`
+    const consulta = `https://retornofacil.com.br/scripts/directions.php?origins=${orig}&destinations=${dest}&key=${apiKey}`
+
+    console.log('**** PedidosModal.buscaDistancia.consulta', consulta)
+
+    Axios.get(consulta, {
+      // withCredentials: false,
+      // headers: {
+      //   'Access-Control-Allow-Origin' : '*',
+      //   'Access-Control-Allow-Methods':'GET,PUT,POST,DELETE,PATCH,OPTIONS',
+      // }
+    }).then(response => {
+      const { data } = response
+      let dist = 0
+      data.rows[0].elements.map(d => {
+        dist += d.distance.value
+      })
+
+      setDistancia({
+        distancia: `${Math.round(dist / 1000)} km`,
+        tempo: `${Math.round((dist / 1000) / 500)} dias`,
+      })
+
+    }).catch((error) => {
+      if (error.response) {
+        const { data } = error.response
+        try {
+          data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
+        }
+        catch (e) {
+          console.log('**** PedidosModal.buscaDistancia.error.data', data)
+        }
+      } else if (error.request) {
+        console.log('**** PedidosModal.buscaDistancia.error.data', error)
+      } else {
+      // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+      }
+    })
+  }
 
   const colDefsRotas = [
     {
@@ -1089,7 +1174,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
       setDestino({ lat: 0, lng: 0 })
       setParadas([])
       setPlaces([{ latitude: 0, longitude: 0 }])
-      return          
+      return
     }
 
     let rt = []
@@ -1130,6 +1215,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     // console.log('**** PedidoModal.buscaPedido.rt', rt)
 
     let rm = []
+    let orig = []
+    let dest = []
     let cont = 0
     let reg = {
       origem: '',
@@ -1139,8 +1226,10 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
 
       if (r.tipo === 'C') {
         reg['origem'] = `${r.latitude},${r.longitude}`
+        orig.push(reg)
       } else {
         reg['destino'] = `${r.latitude},${r.longitude}`
+        dest.push(reg)
       }
 
       if (cont > 0) {
@@ -1153,11 +1242,21 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
       } else {
         cont++
       }
-    })
-    setRotasMap(rm)
 
-    // console.log('**** PedidoModal.buscaPedido.rm', rm)
-    // console.log('**** PedidoModal.buscaPedido.final', origem, destino, paradas)
+    })
+    
+    let o = ''
+    orig.map(r => {
+      o = o + r.origem + '|'
+    })
+    
+    let d = ''
+    dest.map(r => {
+      d = d + r.destino + '|'
+    })
+
+    setRotasMap(rm)
+    buscaDistancia(o, d)
   }
 
   const confGeo = () => {
