@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme) => ({
 
 const dev = window.location.hostname === "localhost" ? 'https://www.retornofacil.com.br/rf/' : ''
 
-export default function CardMotoristas({ data, index }) {
+export default function CardTransportes({ data, index }) {
   const ref = useRef();
   const classes = useStyles()
 
@@ -56,7 +56,7 @@ export default function CardMotoristas({ data, index }) {
   const { isShowEmail, toggleEmail } = useModal()
 
   useEffect(() => {
-    console.log('**** CardMotoristas.data', data)
+    // console.log('**** CardTransportes.data', data)
     // setRotas(data.rotas)
     setLocal(`${data.rotas[0].cidade}/${data.rotas[0].uf}`)
     buscaMotorista(data.motorista_id)
@@ -69,7 +69,7 @@ export default function CardMotoristas({ data, index }) {
       const resEntrega = await BuscaRota(data.localentrega, data.rotas)
       setLocalEntrega(resEntrega[0])
 
-      console.log('**** CardMotoristas.resColeta', data.localcoleta, resColeta)
+      // console.log('**** CardTransportes.resColeta', data.localcoleta, resColeta)
 
       if (resColeta[0]) {
         let _rota = ''
@@ -202,7 +202,7 @@ export default function CardMotoristas({ data, index }) {
         .then(response => {
           const { data } = response
 
-          console.log('**** CardMotoristas.buscaMotorista', data.veiculos)
+          // console.log('**** CardTransportes.buscaMotorista', data.veiculos)
           setMotorista(data)
           setStatusMotorista(data.estado)
 
