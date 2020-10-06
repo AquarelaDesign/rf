@@ -46,7 +46,9 @@ import { AiOutlineSearch } from 'react-icons/ai'
 // import * as Yup from 'yup'
 // import { isCNPJ, isCPF } from 'brazilian-values'
 import MaskedInput from 'react-text-mask'
+import createNumberMask from 'text-mask-addons/dist/createNumberMask'
 import CurrencyTextField from '../../Forms/CurrencyTextField'
+import NumberFormat from 'react-number-format'
 
 import { FaIcon } from '../../Icone'
 import "./modal.css"
@@ -267,6 +269,14 @@ const CssTextField = withStyles({
 
 const apiKey = "AIzaSyBoV-kvy8LfddqcUb6kcHvs5TmrRJ09KXY"
 
+const numberMask = createNumberMask({
+  prefix: 'R$ ',
+  suffix: '',
+  thousandsSeparatorSymbol: '.',
+  decimalSymbol: ',',
+  requireDecimal: true, 
+})
+
 const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => {
   const classes = useStyles()
 
@@ -332,7 +342,9 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
   })
 
   const [distancia, setDistancia] = useState([])
-
+  const [valoresAgregados, setValoresAgregados] = useState([])
+  const [seguros, setSeguros] = useState([])
+  const [tabelaDeRotas, setTabelaDeRotas] = useState([])
 
   const { isShowConfirma, toggleConfirma } = useModalConfirma()
 
@@ -348,11 +360,18 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
       "0px 1px 3px 0px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 2px 1px -1px rgba(0, 0, 0, 0.12)"
   }
 
-  // const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   useEffect(() => {
     novoPedido()
+    buscaValoresAgregados() // <-- Adicionar busca direta no banco
+    buscaSeguros() // <-- Adicionar busca direta no banco
+    buscaTabRotas() // <-- Adicionar busca direta no banco
   }, [])
+
+  useEffect(() => {
+    calculaValorPedido()
+  }, [veiculos, rotas, seguros, tabelaDeRotas, initialValues])
 
   useEffect(() => {
     try {
@@ -394,8 +413,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           if (data.cliente_id !== null) {
             // console.log('**** PedidoModal.buscaPedido-1', data.cliente_id)
             buscaCliente(data.cliente_id)
-            buscaVeiculos(true)
             buscaRotas(true)
+            buscaVeiculos(true)
           } else {
             semCliente()
           }
@@ -526,6 +545,63 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     return value.replace(/\D+/g, '')
   }
 
+  function formatCurrency(props) {
+    const { inputRef, value, ...other } = props
+
+    console.log('**** PedidosModal.formatCurrency', value, initialValues.valor)
+
+    // const clearValue = clearNumber(value)
+    // let sMask = [/\d/, /\d/, /\d/, /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, ',', /\d/, /\d/]
+
+    return (
+      <MaskedInput
+        {...other}
+        ref={(ref) => {
+          inputRef(ref ? ref.inputElement : null);
+        }}
+        value={value}
+        mask={numberMask}
+        placeholderChar={'\u2000'}
+        showMask
+      />
+    )
+    
+    /*
+    let valor = value
+
+    if (valor === 0 && initialValues.valor !== 0) {
+      // window.setValue('valor', initialValues.valor)
+      valor = initialValues.valor
+    }
+    
+    return (
+      <NumberFormat 
+        {...other}
+        ref={(ref) => {
+          inputRef(ref ? ref.inputElement : null)
+        }}
+        style={{
+          textAlign:"right",
+          width: '90%',
+        }}
+        value={valor} 
+        onChange={e => e.target.value}
+        // displayType={'text'} 
+        thousandSeparator="."
+        // prefix={'R$ '}
+        decimalSeparator=","
+        fixedDecimalScale={true}
+        decimalScale={2}
+      />
+    )
+    */
+  }
+
+  formatCurrency.propTypes = {
+    inputRef: PropTypes.func.isRequired,
+    onChange: PropTypes.func.isRequired,
+  }
+
   function formatCpfCnpj(props) {
     const { inputRef, value, ...other } = props
 
@@ -567,9 +643,9 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     }
 
     const clearValue = clearNumber(value)
-    let sMask = ['(', /[1-9]/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/, /\d/]
+    let sMask = ['(', /[0-9]/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/, /\d/]
     if (clearValue.length > 10) {
-      sMask = ['(', /[1-9]/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/]
+      sMask = ['(', /[0-9]/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/]
     }
 
     return (
@@ -599,7 +675,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
       valor = ''
     }
 
-    const sMask = [/[1-9]/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/]
+    const sMask = [/[0-9]/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/]
 
     return (
       <MaskedInput
@@ -854,7 +930,11 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     toggleVeiculos()
   }
 
+  
   const buscaVeiculos = async (stRetorno) => {
+    
+    await sleep(500)
+    
     if (stRetorno && pedidoID) {
       await api
         .post(`/buscaveiculos/${pedidoID}`)
@@ -864,7 +944,6 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           // console.log('**** PedidoModal.buscaVeiculos', data)
           setVeiculos(data)
           calculaValorPedido()
-
         }).catch((error) => {
           if (error.response) {
             const { data } = error.response
@@ -886,22 +965,227 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     }
   }
 
-
-  const calculaValorPedido = () => {
-    veiculos.map(vei => {
-      let tipoVei = vei.tipo
-
-
-    })
+  async function calculaValorPedido() {
     
-    // tipoDeVeiculo (cadastro)
-    // valor (cadastro)
-    // valoresAgregados (mostra = true e imposto = false)
-    // imposto -> valoresAgregados (mostra = true e imposto = true)
-    console.log('**** PedidosModal.buscaVeiculos.calculaValorPedido')
-    // busca distancia (distancia.distancia)
-    // seguro Roubo (valor do veiculo * 0.03)
-    // seguro Fluvial (valor do veiculo * 0.06)
+    // console.log('**** PedidosModal.calculaValorPedido', veiculos, rotas, seguros, tabelaDeRotas, initialValues.valor)
+
+    if (veiculos !== undefined && 
+      rotas !== undefined && 
+      seguros !== undefined && 
+      tabelaDeRotas !== undefined && 
+      initialValues.valor === 0) 
+    {
+      let valorTotal = 0
+      let valor = 0
+      let rotaval = 0
+      let seguro = 0
+      let seguroRoubo = 0
+      let valAgregados = 0
+      let imposto = 0
+  
+      veiculos.forEach(vei => {
+        let tipoVei = 1
+        if (vei.tipo === "motos") {
+          tipoVei = 3
+        } else {
+          tipoVei = 1
+        }
+
+        valor = vei.valor // Valor do Veiculo
+
+        // Busca valores agregados
+        valAgregados = 0
+        valoresAgregados.forEach(valor => {
+          if (valor.tipo_de_veiculo_id === tipoVei && valor.imposto === 0 && valor.exclusivo === 0) {
+            valAgregados += valor.valor
+          }
+        })
+
+        // Busca os valores do seguro conforme a tabela
+        seguro = 0
+        rotaval = 0
+
+        let rtSeg = []
+        let cont = 0
+        let reg = {
+          origem: '',
+          destino: ''
+        }
+
+        rotas.forEach(r => {
+          if (r.tipo === 'C') {
+            reg['origem'] = {cidade: r.cidade, uf: r.uf}
+          } else {
+            reg['destino'] = {cidade: r.cidade, uf: r.uf}
+          }
+    
+          if (cont > 0) {
+            rtSeg.push(reg)
+            cont = 0
+            reg = {
+              origem: '',
+              destino: ''
+            }
+          } else {
+            cont++
+          }
+        })
+
+        rtSeg.forEach(r => {
+          // Busca os valores dos seguros para rotas
+          seguros.forEach(seg => {
+
+            let uf1 = seg.uf
+            let uf2 = r.origem.uf
+                
+            if (uf1.toLowerCase() === uf2.toLowerCase()) {
+              seguro += (valor * seg[r.destino.uf.toLowerCase()]) / 100
+              // console.log('**** PedidosModal.calculaValorPedido.seguro', seguro)
+            }
+          })
+
+          // Busca o valor adicional para Rota
+          tabelaDeRotas.forEach(rot => {
+            let cidade_origem = rot.cidade_origem.toLowerCase()
+            let cidade_destino = rot.cidade_destino.toLowerCase()
+            let cid_origem = r.origem.cidade.toLowerCase()
+            let cid_destino = r.destino.cidade.toLowerCase()
+
+            cidade_origem = cidade_origem.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
+            cidade_destino = cidade_destino.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
+            cid_origem = cid_origem.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
+            cid_destino = cid_destino.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
+
+            if (
+              cidade_origem === cid_origem &&
+              rot.uf_origem.toLowerCase() === r.origem.uf.toLowerCase() &&
+              cidade_destino === cid_destino &&
+              rot.uf_destino.toLowerCase() === r.destino.uf.toLowerCase() &&
+              rot.tipo_de_veiculo_id === tipoVei
+            ) {
+              rotaval += rot.valor
+            }
+          })
+
+        })
+
+        // Math.round()
+
+        // console.log('**** PedidosModal.calculaValorPedido.seguro', seguro)
+        // console.log('**** PedidosModal.calculaValorPedido.rotaval', rotaval)
+
+        // console.log('**** PedidosModal.calculaValorPedido.imposto', imposto)
+
+      })
+
+
+      seguroRoubo = (valor * 0.03) / 100
+      imposto = 1.12
+
+      valorTotal = (rotaval + seguro + seguroRoubo + valAgregados) * imposto
+
+      setInitialValues({ ...initialValues, valor: valorTotal })
+      // window.setFormValue('valor', valorTotal)
+      
+      
+      // tipoDeVeiculo (cadastro)
+      // valor (cadastro)
+      // valoresAgregados (mostra = true e imposto = false)
+      // imposto -> valoresAgregados (mostra = true e imposto = true)
+      // busca distancia (distancia.distancia)
+      // seguro Roubo (valor do veiculo * 0.03)
+      // seguro Fluvial (valor do veiculo * 0.06)
+
+      console.log(
+        '**** PedidosModal.calculaValorPedido', 
+        valor,
+        rotaval,
+        seguro,
+        seguroRoubo,
+        valAgregados,
+        imposto,
+        valorTotal
+      )
+
+    }
+  }
+
+  const buscaValoresAgregados = async () => {
+    await api
+    .get(`/valoresadicionais`)
+    .then(response => {
+      const { data } = response
+      setValoresAgregados(data)
+    }).catch((error) => {
+      if (error.response) {
+        const { data } = error.response
+        try {
+          data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
+        }
+        catch (e) {
+          console.log('**** PedidosModal.buscaValoresAgregados.error.data', data)
+        }
+      } else if (error.request) {
+        console.log('**** PedidosModal.buscaValoresAgregados.error', error)
+        // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+      } else {
+        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+      }
+    })
+  }
+
+  const buscaSeguros = async () => {
+    await api
+    .get(`/seguros`)
+    .then(response => {
+      const { data } = response
+      setSeguros(data)
+    }).catch((error) => {
+      if (error.response) {
+        const { data } = error.response
+        try {
+          data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
+        }
+        catch (e) {
+          console.log('**** PedidosModal.buscaSeguros.error.data', data)
+        }
+      } else if (error.request) {
+        console.log('**** PedidosModal.buscaSeguros.error', error)
+        // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+      } else {
+        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+      }
+    })
+  }
+
+  const buscaTabRotas = async () => {
+    await api
+    .get(`/rotastabela`)
+    .then(response => {
+      const { data } = response
+      setTabelaDeRotas(data)
+    }).catch((error) => {
+      if (error.response) {
+        const { data } = error.response
+        try {
+          data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
+        }
+        catch (e) {
+          console.log('**** PedidosModal.buscaTabRotas.error.data', data)
+        }
+      } else if (error.request) {
+        console.log('**** PedidosModal.buscaTabRotas.error', error)
+        // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+      } else {
+        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+      }
+    })
   }
 
   function buscaDistancia(orig, dest) {
@@ -925,7 +1209,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     // const consulta = `https://retornofacil.com.br/scripts/directions.php?origins=-25.486878,-49.319317|-23.769382,-46.598601&destinations=-23.769382,-46.598601|-5.889387,-35.175128&key=AIzaSyBoV-kvy8LfddqcUb6kcHvs5TmrRJ09KXY`
     const consulta = `https://retornofacil.com.br/scripts/directions.php?origins=${orig}&destinations=${dest}&key=${apiKey}`
 
-    console.log('**** PedidosModal.buscaDistancia.consulta', consulta)
+    // console.log('**** PedidosModal.buscaDistancia.consulta', consulta)
 
     Axios.get(consulta, {
       // withCredentials: false,
@@ -1069,7 +1353,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
 
   const excluiRota = async () => {
     if (rotaExclui) {
-      api.delete(`/rotas/${rotaExclui}`,
+      await api.delete(`/rotas/${rotaExclui}`,
         {
           headers: {
             'Content-Type': 'application/json',
@@ -1144,6 +1428,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           // console.log('**** PedidoModal.buscaRotas', data)
           setRotas(data)
           updateMap(data)
+          calculaValorPedido()
         }).catch((error) => {
           if (error.response) {
             const { data } = error.response
@@ -1307,7 +1592,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
 
   async function onSubmit(values) {
 
-    // console.log('**** PedidoModal.onSubmit-values', values)
+    console.log('**** PedidoModal.onSubmit-values', values)
 
     let newValues = {}
     newValues['limitecoleta'] = moment(values['limitecoleta']).format('YYYY-MM-DD')
@@ -1326,6 +1611,10 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     } else {
       newValues['valor'] = values['valor']
     }
+
+    console.log('**** PedidoModal.onSubmit-newValues', newValues)
+    return
+
 
     let apiParams = {}
 
@@ -1547,14 +1836,18 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                                       <Field
                                         disabled={disableEdit}
                                         name="valor"
-                                        component={CurrencyTextField}
+                                        // component={CurrencyTextField}
+                                        component={CssTextField}
                                         type="text"
                                         label="Valor"
                                         variant="outlined"
                                         fullWidth
                                         size="small"
                                         margin="dense"
-                                        onChange={e => window.setFormValue('valor', e.target.value)}
+                                        // onChange={e => window.setFormValue('valor', e.target.value)}
+                                        InputProps={{
+                                          inputComponent: formatCurrency,
+                                        }}
                                       />
                                     </Col>
                                     <Col xs={3}>
