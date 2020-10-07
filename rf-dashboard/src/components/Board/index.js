@@ -178,7 +178,7 @@ const Board = () => {
   // const dateInFuture = moment(moment().add(1, 'minute'), 'YYYY-MM-DD')
   const onCountdownEnd = () => {
     // console.log('**** Contador Resetado', moment().format('HH:mm:ss'))
-    setDateInFuture(moment(moment().add(1, 'minute'), 'YYYY-MM-DD'))
+    setDateInFuture(moment(moment().add(2, 'seconds'), 'YYYY-MM-DD'))
     verificaStatus()
   }
 

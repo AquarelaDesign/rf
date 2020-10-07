@@ -150,15 +150,15 @@ export default function CardTransportes({ data, index }) {
     accept: 'CARD',
     hover(item, monitor) {
       /*--*/
-      // const draggedListIndex = item.index;
-      // const targetListIndex = listIndex;
+      // const draggedListIndex = item.index
+      // const targetListIndex = listIndex
 
-      const draggedIndex = item.index;
-      const targetIndex = index;
+      const draggedIndex = item.index
+      const targetIndex = index
 
       // if (draggedIndex === targetIndex && draggedListIndex === targetListIndex) {
       if (draggedIndex === targetIndex) {
-        return;
+        return
       }
 
       // const pedido = {
@@ -168,26 +168,26 @@ export default function CardTransportes({ data, index }) {
       // console.log('pedido', pedido)
       /*--*/
       /*
-      const targetSize = ref.current.getBoundingClientRect();
-      const targetCenter = (targetSize.bottom - targetSize.top) / 2;
+      const targetSize = ref.current.getBoundingClientRect()
+      const targetCenter = (targetSize.bottom - targetSize.top) / 2
 
-      const draggedOffset = monitor.getClientOffset();
-      const draggedTop = draggedOffset.y - targetSize.top;
+      const draggedOffset = monitor.getClientOffset()
+      const draggedTop = draggedOffset.y - targetSize.top
 
       if (draggedIndex < targetIndex && draggedTop < targetCenter) {
-        return;
+        return
       }
 
       if (draggedIndex > targetIndex && draggedTop > targetCenter) {
-        return;
+        return
       }
       */
       /*--*/
-      // move(draggedListIndex, targetListIndex, draggedIndex, targetIndex);
+      // move(draggedListIndex, targetListIndex, draggedIndex, targetIndex)
       // removeM(draggedIndex)
 
       item.index = targetIndex
-      // item.listIndex = targetListIndex;
+      // item.listIndex = targetListIndex
      /*--*/
     },
 
@@ -205,7 +205,7 @@ export default function CardTransportes({ data, index }) {
           Pedido: data,
         }
       }
-      console.log('transporte', transporte)
+      // console.log('transporte', transporte)
 
       buscaMotorista(userID)
       atualizaPedido(pedidoID, userID)
@@ -220,7 +220,7 @@ export default function CardTransportes({ data, index }) {
         .then(response => {
           const { data } = response
 
-          console.log('**** CardCargas.buscaMotorista', data.veiculos)
+          // console.log('**** CardCargas.buscaMotorista', data.veiculos)
           setMotorista(data)
           
           const atualiza = async (Id) => {
@@ -250,10 +250,10 @@ export default function CardTransportes({ data, index }) {
   }
   
   const atualizaMotorista = async (motoristaID) => {
-    const vagas = motorista.vagas - data.veiculos.length
+    // const vagas = motorista.vagas - data.veiculos.length
 
     await api.put(`/usuarios/${motoristaID}`, {
-      estado: 'P',
+      estado: 'P', // Aguardando Aprovacao
       // vagas: vagas,
     })
     .then(response => {
@@ -283,8 +283,8 @@ export default function CardTransportes({ data, index }) {
 
     await api.put(`/pedidos/${pedidoID}`, {
       motorista_id: motoristaID,
-      status: 'A',
-      tipo: "T",
+      status: 'A', // Aguardando
+      tipo: "T", // Transportes
     })
     .then(response => {
       const { data } = response
@@ -401,5 +401,5 @@ export default function CardTransportes({ data, index }) {
       <p>{data.nome}</p>
       */}
     </Container>
-  );
+  )
 }

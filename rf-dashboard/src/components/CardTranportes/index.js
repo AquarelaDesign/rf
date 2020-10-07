@@ -19,6 +19,10 @@ import { MdTimer } from 'react-icons/md'
 
 import api from '../../services/rf'
 
+import PedidoModal from '../Cadastro/PedidoModal'
+import useModalPedido from '../Cadastro/PedidoModal/useModal'
+
+
 const useStyles = makeStyles((theme) => ({
   botoes: {
     display: 'flex',
@@ -46,7 +50,7 @@ export default function CardTransportes({ data, index }) {
   const [statusMotorista, setStatusMotorista] = useState('')
   const [statusCor, setStatusCor] = useState('')
   // const [rotas, setRotas] = useState([])
-  const [counter, setCounter] = useState(10 * 60)
+  const [counter, setCounter] = useState(3 * 60) // <-- Tempo de espera para aceite
   const [tempo, setTempo] = useState({
     "h": 0,
     "m": 0,
@@ -54,6 +58,8 @@ export default function CardTransportes({ data, index }) {
   })
 
   const { isShowEmail, toggleEmail } = useModal()
+  const { isShowPedido, togglePedido } = useModalPedido()
+
 
   useEffect(() => {
     // console.log('**** CardTransportes.data', data)
@@ -132,6 +138,12 @@ export default function CardTransportes({ data, index }) {
     secondsToTime(counter)
     const timer =
       counter > 0 && setInterval(() => setCounter(counter - 1), 1000)
+
+    if (counter <= 0 || data.status === 'D') {
+      // console.log('**** CardTransportes.atualizaPedido.data.motorista_id', data.motorista_id)
+      atualizaPedido(data.id, data.motorista_id)
+    }
+
     return () => {
       clearInterval(timer)
       // setCounter(0)
@@ -171,7 +183,7 @@ export default function CardTransportes({ data, index }) {
         .then(response => {
           const { data } = response
 
-          console.log('**** CardMotoristas.buscaCliente', data)
+          console.log('**** CardTransportes.buscaCliente', data)
           setCliente(data)
         }).catch((error) => {
           if (error.response) {
@@ -182,10 +194,10 @@ export default function CardTransportes({ data, index }) {
               })
             }
             catch (e) {
-              console.log('**** CardMotoristas.buscaCliente.error.data', data)
+              console.log('**** CardTransportes.buscaCliente.error.data', data)
             }
           } else if (error.request) {
-            console.log('**** CardMotoristas.buscaCliente.error', error)
+            console.log('**** CardTransportes.buscaCliente.error', error)
             // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
             // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
@@ -221,10 +233,10 @@ export default function CardTransportes({ data, index }) {
               })
             }
             catch (e) {
-              console.log('**** CardMotoristas.buscaMotorista.error.data', data)
+              console.log('**** CardTransportes.buscaMotorista.error.data', data)
             }
           } else if (error.request) {
-            console.log('**** CardMotoristas.buscaMotorista.error', error)
+            console.log('**** CardTransportes.buscaMotorista.error', error)
             // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
             // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
@@ -233,46 +245,18 @@ export default function CardTransportes({ data, index }) {
     }
   }
 
-  const atualizaMotorista = async (motoristaID) => {
-    const vagas = motorista.vagas - data.veiculos.length
-
-    await api.put(`/usuarios/${motoristaID}`, {
-      estado: ' ',
-      // vagas: vagas,
-    })
-    .then(response => {
-      const { data } = response
-    })
-    .catch((error) => {
-      if (error.response) {
-        const { data } = error.response
-        try {
-          data.map(mensagem => {
-            toast(mensagem.message, { type: 'error' })
-          })
-        }
-        catch (e) {
-          console.log('**** CardCargas.atualizaMotorista.error.data', data)
-        }
-      } else if (error.request) {
-        console.log('**** CardCargas.atualizaMotorista.error', error)
-        // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
-      } else {
-      // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
-      }
-    })
-  }
-
   const atualizaPedido = async (pedidoID, motoristaID) => {
+    // console.log('**** CardTransportes.atualizaPedido.pedidoID, motoristaID', pedidoID, motoristaID)
+    atualizaRotas()
+    atualizaMotorista(motoristaID)
 
     await api.put(`/pedidos/${pedidoID}`, {
-      motorista_id: motoristaID,
-      status: 'D',
-      tipo: "C",
+      motorista_id: null,
+      status: 'D', // Disponivel
+      tipo: "C", // Cargas
     })
     .then(response => {
       const { data } = response
-      atualizaRotas(motoristaID)
     })
     .catch((error) => {
       if (error.response) {
@@ -283,10 +267,10 @@ export default function CardTransportes({ data, index }) {
           })
         }
         catch (e) {
-          console.log('**** CardCargas.atualizaPedido.error.data', data)
+          console.log('**** CardTransportes.atualizaPedido.error.data', data)
         }
       } else if (error.request) {
-        console.log('**** CardCargas.atualizaPedido.error', error)
+        console.log('**** CardTransportes.atualizaPedido.error', error)
         // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
       } else {
       // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
@@ -295,7 +279,7 @@ export default function CardTransportes({ data, index }) {
     
   }
 
-  const atualizaRotas = async (motoristaID) => {
+  const atualizaRotas = async () => {
     // verificar filtro somente para o motorista (motorista_id)
     data.rotas.map(rota => {
       if (rota.status !== 'D') {
@@ -315,10 +299,10 @@ export default function CardTransportes({ data, index }) {
               })
             }
             catch (e) {
-              console.log('**** CardCargas.atualizaRotas.error.data', data)
+              console.log('**** CardTransportes.atualizaRotas.error.data', data)
             }
           } else if (error.request) {
-            console.log('**** CardCargas.atualizaRotas.error', error)
+            console.log('**** CardTransportes.atualizaRotas.error', error)
             // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
           // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
@@ -329,7 +313,61 @@ export default function CardTransportes({ data, index }) {
 
   }
 
+  const atualizaMotorista = async (motoristaID) => {
+    const vagas = motorista.vagas - data.veiculos.length
 
+    await api.put(`/usuarios/${motoristaID}`, {
+      estado: ' ', // Aguardando Aprovacao
+      // vagas: vagas,
+    })
+    .then(response => {
+      const { data } = response
+    })
+    .catch((error) => {
+      if (error.response) {
+        const { data } = error.response
+        try {
+          data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
+        }
+        catch (e) {
+          console.log('**** CardTransportes.atualizaMotorista.error.data', data)
+        }
+      } else if (error.request) {
+        console.log('**** CardTransportes.atualizaMotorista.error', error)
+        // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+      } else {
+      // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+      }
+    })
+  }
+
+  const [{ isDragging }, dragRef] = useDrag({
+    item: { type: 'CARD', index, data },
+    collect: monitor => ({
+      isDragging: monitor.isDragging(),
+    }),
+  })
+
+  const [, dropRef] = useDrop({
+    accept: 'CARD',
+    hover(item, monitor) {
+      // item.index = targetIndex
+      
+      console.log('**** CardTransportes.item', item)
+    },
+
+    drop(item, monitor) {
+      
+      // removeM(index)
+      const userID = item.data.id
+      const pedidoID = data.id
+
+      // console.log('transporte', transporte)
+
+    }
+  })
   
   return (
     <>
@@ -468,6 +506,13 @@ export default function CardTransportes({ data, index }) {
       <Email 
         isShowEmail={isShowEmail}
         hide={toggleEmail}
+      />
+      <PedidoModal
+        isShowPedido={isShowPedido}
+        hide={togglePedido}
+        tipoCad={'V'}
+        pedidoID={data.id}
+        disableEdit={true}
       />
     </>
   )

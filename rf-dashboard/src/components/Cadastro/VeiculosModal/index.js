@@ -538,8 +538,6 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
 
     let val = value
     val = val.toString().replace('.', ',')
-    // console.log('**** VeiculosModal.formatCurrency.value', value, val)
-
 
     return (
       <MaskedInput

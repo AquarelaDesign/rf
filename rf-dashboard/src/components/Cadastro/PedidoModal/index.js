@@ -542,11 +542,14 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
   function formatCurrency(props) {
     const { inputRef, value, ...other } = props
 
+    let val = value
+    val = val.toString().replace('.', ',')
+
     return (
       <MaskedInput
         {...other}
         ref={(ref) => {
-          inputRef(ref ? ref.inputElement : null);
+          inputRef(ref ? ref.inputElement : null)
         }}
         value={value}
         mask={numberMask}
