@@ -42,13 +42,14 @@ import { Form, Field } from 'react-final-form'
 import DatePicker from '../../datepicker'
 // import { values } from 'lodash'
 import { AiOutlineSearch } from 'react-icons/ai'
+import { RiMoneyDollarBoxLine } from 'react-icons/ri'
 
 // import * as Yup from 'yup'
 // import { isCNPJ, isCPF } from 'brazilian-values'
 import MaskedInput from 'react-text-mask'
 import createNumberMask from 'text-mask-addons/dist/createNumberMask'
-import CurrencyTextField from '../../Forms/CurrencyTextField'
-import NumberFormat from 'react-number-format'
+// import CurrencyTextField from '../../Forms/CurrencyTextField'
+// import NumberFormat from 'react-number-format'
 
 import { FaIcon } from '../../Icone'
 import "./modal.css"
@@ -270,10 +271,12 @@ const CssTextField = withStyles({
 const apiKey = "AIzaSyBoV-kvy8LfddqcUb6kcHvs5TmrRJ09KXY"
 
 const numberMask = createNumberMask({
-  prefix: 'R$ ',
+  prefix: '',
   suffix: '',
   thousandsSeparatorSymbol: '.',
   decimalSymbol: ',',
+  decimalScale: 2,
+  fixedDecimalScale: true,
   requireDecimal: true, 
 })
 
@@ -370,13 +373,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
   }, [])
 
   useEffect(() => {
-    calculaValorPedido()
-  }, [veiculos, rotas, seguros, tabelaDeRotas, initialValues])
-
-  useEffect(() => {
     try {
-
-      // console.log('**** PedidoModal.useEffect', tipoCad, pedidoID)
       setValue(0)
       buscaPedido(pedidoID)
     } catch (error) {
@@ -403,15 +400,12 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           data.limitecoleta = data.limitecoleta ? data.limitecoleta.substring(0, 10) : undefined
           data.limiteentrega = data.limiteentrega ? data.limiteentrega.substring(0, 10) : undefined
 
-          // console.log('**** PedidoModal.buscaPedido.data', data)
           setInitialValues(data)
           setVeiculos(data.veiculos)
           setRotas(data.rotas)
           updateMap(data.rotas)
 
-          // console.log('**** PedidoModal.buscaPedido-0', data.cliente_id)
           if (data.cliente_id !== null) {
-            // console.log('**** PedidoModal.buscaPedido-1', data.cliente_id)
             buscaCliente(data.cliente_id)
             buscaRotas(true)
             buscaVeiculos(true)
@@ -548,11 +542,6 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
   function formatCurrency(props) {
     const { inputRef, value, ...other } = props
 
-    console.log('**** PedidosModal.formatCurrency', value, initialValues.valor)
-
-    // const clearValue = clearNumber(value)
-    // let sMask = [/\d/, /\d/, /\d/, /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, ',', /\d/, /\d/]
-
     return (
       <MaskedInput
         {...other}
@@ -561,40 +550,14 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
         }}
         value={value}
         mask={numberMask}
+        // displayType={'text'}
         placeholderChar={'\u2000'}
         showMask
-      />
-    )
-    
-    /*
-    let valor = value
-
-    if (valor === 0 && initialValues.valor !== 0) {
-      // window.setValue('valor', initialValues.valor)
-      valor = initialValues.valor
-    }
-    
-    return (
-      <NumberFormat 
-        {...other}
-        ref={(ref) => {
-          inputRef(ref ? ref.inputElement : null)
-        }}
         style={{
           textAlign:"right",
-          width: '90%',
         }}
-        value={valor} 
-        onChange={e => e.target.value}
-        // displayType={'text'} 
-        thousandSeparator="."
-        // prefix={'R$ '}
-        decimalSeparator=","
-        fixedDecimalScale={true}
-        decimalScale={2}
       />
     )
-    */
   }
 
   formatCurrency.propTypes = {
@@ -837,10 +800,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
       }
       setVeiculoID(selectedData[0].id)
     }
-    // console.log('**** onVeiculos', disableEdit, tipo)
     setTipoCadVei(tipo !== 'E' && tipo !== 'N' ? 'D' : tipo)
 
-    // sleep(500)
     toggleVeiculos()
   }
 
@@ -858,7 +819,6 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     setConfTexto1(selectedData[0].placachassi)
     setModulo('V')
 
-    // await sleep(300)
     toggleConfirma()
   }
 
@@ -919,12 +879,10 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
   }
 
   const callBackVeiculos = (e) => {
-    // alert(`Retorno Veiculos: ${e}`)
     buscaVeiculos(e)
   }
 
   const onRowDoubleClickedVeiculo = (params) => {
-    // console.log('**** onRowDoubleClickedVeiculo', params)
     setTipoCadVei('V')
     setVeiculoID(params.data.id)
     toggleVeiculos()
@@ -934,16 +892,12 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
   const buscaVeiculos = async (stRetorno) => {
     
     await sleep(500)
-    
     if (stRetorno && pedidoID) {
       await api
         .post(`/buscaveiculos/${pedidoID}`)
         .then(response => {
           const { data } = response
-
-          // console.log('**** PedidoModal.buscaVeiculos', data)
           setVeiculos(data)
-          calculaValorPedido()
         }).catch((error) => {
           if (error.response) {
             const { data } = error.response
@@ -966,15 +920,12 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
   }
 
   async function calculaValorPedido() {
-    
-    // console.log('**** PedidosModal.calculaValorPedido', veiculos, rotas, seguros, tabelaDeRotas, initialValues.valor)
-
     if (veiculos !== undefined && 
       rotas !== undefined && 
       seguros !== undefined && 
-      tabelaDeRotas !== undefined && 
-      initialValues.valor === 0) 
-    {
+      tabelaDeRotas !== undefined 
+      // initialValues.valor === 0
+    ) {
       let valorTotal = 0
       let valor = 0
       let rotaval = 0
@@ -1068,44 +1019,29 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           })
 
         })
-
-        // Math.round()
-
-        // console.log('**** PedidosModal.calculaValorPedido.seguro', seguro)
-        // console.log('**** PedidosModal.calculaValorPedido.rotaval', rotaval)
-
-        // console.log('**** PedidosModal.calculaValorPedido.imposto', imposto)
-
       })
-
 
       seguroRoubo = (valor * 0.03) / 100
       imposto = 1.12
 
       valorTotal = (rotaval + seguro + seguroRoubo + valAgregados) * imposto
 
-      setInitialValues({ ...initialValues, valor: valorTotal })
-      // window.setFormValue('valor', valorTotal)
-      
-      
-      // tipoDeVeiculo (cadastro)
-      // valor (cadastro)
-      // valoresAgregados (mostra = true e imposto = false)
-      // imposto -> valoresAgregados (mostra = true e imposto = true)
-      // busca distancia (distancia.distancia)
-      // seguro Roubo (valor do veiculo * 0.03)
-      // seguro Fluvial (valor do veiculo * 0.06)
+      try {
+        let val = valorTotal.toString().replace('.', ',')
+        window.setFormValue('valor', val)
 
-      console.log(
-        '**** PedidosModal.calculaValorPedido', 
-        valor,
-        rotaval,
-        seguro,
-        seguroRoubo,
-        valAgregados,
-        imposto,
-        valorTotal
-      )
+        // console.log(
+        //   '**** PedidosModal.calculaValorPedido', 
+        //   valor,
+        //   rotaval,
+        //   seguro,
+        //   seguroRoubo,
+        //   valAgregados,
+        //   imposto,
+        //   valorTotal
+        // )
+      }
+      catch(e) {}
 
     }
   }
@@ -1212,11 +1148,6 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     // console.log('**** PedidosModal.buscaDistancia.consulta', consulta)
 
     Axios.get(consulta, {
-      // withCredentials: false,
-      // headers: {
-      //   'Access-Control-Allow-Origin' : '*',
-      //   'Access-Control-Allow-Methods':'GET,PUT,POST,DELETE,PATCH,OPTIONS',
-      // }
     }).then(response => {
       const { data } = response
       let dist = 0
@@ -1329,7 +1260,6 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     }
     setTipoCadVei(tipo !== 'E' && tipo !== 'N' ? 'D' : tipo)
 
-    // sleep(500)
     toggleRotas()
   }
 
@@ -1347,7 +1277,6 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     setConfTexto1(selectedData[0].cidade)
     setModulo('R')
 
-    // await sleep(300)
     toggleConfirma()
   }
 
@@ -1408,12 +1337,10 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
   }
 
   const callBackRotas = (e) => {
-    // alert(`Retorno Rotas: ${e}`)
     buscaRotas(e)
   }
 
   const onRowDoubleClickedRota = (params) => {
-    // console.log('**** onRowDoubleClickedRota', params)
     setTipoCadVei('V')
     setRotaID(params.data.id)
     toggleRotas()
@@ -1425,7 +1352,6 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
         .post(`/buscarotas/${pedidoID}`)
         .then(response => {
           const { data } = response
-          // console.log('**** PedidoModal.buscaRotas', data)
           setRotas(data)
           updateMap(data)
           calculaValorPedido()
@@ -1451,7 +1377,6 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
   }
 
   const updateMap = (rotas) => {
-    // console.log('**** PedidoModal.buscaPedido.inicio', rotas, rotas.length)
 
     if (rotas.length === 0) {
       confGeo()
@@ -1572,8 +1497,6 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
   }
 
   const callBack = (e) => {
-    // alert(`Retorno Confirma: ${e}`)
-
     if (e) {
       if (e === 'V') {
         excluiVeiculo()
@@ -1592,8 +1515,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
 
   async function onSubmit(values) {
 
-    console.log('**** PedidoModal.onSubmit-values', values)
-
+    // console.log('**** PedidoModal.onSubmit-values', values)
     let newValues = {}
     newValues['limitecoleta'] = moment(values['limitecoleta']).format('YYYY-MM-DD')
     newValues['limiteentrega'] = moment(values['limiteentrega']).format('YYYY-MM-DD')
@@ -1607,14 +1529,13 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     if (values['valor']) {
       let val = values['valor'].replace('.', '')
       val = val.replace(',', '.')
-      newValues['valor'] = val
+      newValues['valor'] = Math.round(val)
     } else {
-      newValues['valor'] = values['valor']
+      newValues['valor'] = Math.round(values['valor'])
     }
 
-    console.log('**** PedidoModal.onSubmit-newValues', newValues)
-    return
-
+    // console.log('**** PedidoModal.onSubmit-newValues', newValues)
+    // return
 
     let apiParams = {}
 
@@ -1836,7 +1757,6 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                                       <Field
                                         disabled={disableEdit}
                                         name="valor"
-                                        // component={CurrencyTextField}
                                         component={CssTextField}
                                         type="text"
                                         label="Valor"
@@ -1847,6 +1767,15 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                                         // onChange={e => window.setFormValue('valor', e.target.value)}
                                         InputProps={{
                                           inputComponent: formatCurrency,
+                                          endAdornment: (
+                                            <InputAdornment position="end">
+                                              <button type="button" onClick={calculaValorPedido}
+                                                style={{ backgroundColor: 'transparent', cursor: 'pointer' }}
+                                              >
+                                                <RiMoneyDollarBoxLine />
+                                              </button>
+                                            </InputAdornment>
+                                          ),
                                         }}
                                       />
                                     </Col>

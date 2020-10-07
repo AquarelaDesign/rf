@@ -21,9 +21,8 @@ import {
 
 import Autocomplete from '@material-ui/lab/Autocomplete'
 
-import NumberFormat from 'react-number-format'
-
-// import MaskedInput from 'react-text-mask'
+import MaskedInput from 'react-text-mask'
+// import NumberFormat from 'react-number-format'
 
 // import { makeStyles } from '@material-ui/core/styles'
 
@@ -48,7 +47,8 @@ import api from '../../../services/rf'
 import Axios from 'axios'
 
 import moment from "moment"
-import CurrencyTextField from '../../Forms/CurrencyTextField'
+// import CurrencyTextField from '../../Forms/CurrencyTextField'
+import createNumberMask from 'text-mask-addons/dist/createNumberMask'
 
 const fipeapi = 'https://fipeapi.appspot.com/api/1/'
 
@@ -123,6 +123,16 @@ const CssAutocomplete = withStyles({
   },
 
 })(Autocomplete)
+
+const numberMask = createNumberMask({
+  prefix: '',
+  suffix: '',
+  thousandsSeparatorSymbol: '.',
+  decimalSymbol: ',',
+  decimalScale: 2,
+  fixedDecimalScale: true,
+  requireDecimal: true, 
+})
 
 
 const fipeTipo = [
@@ -392,6 +402,9 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
           const { data } = response
 
           let valor = data.preco.replace('R$ ','').replace('.','').replace(',','.')
+
+          console.log('**** VeiculosModal.buscaFipe.valor', valor)
+
           // let modelo = `${data.marca} ${data.name} ${data.ano_modelo} ${data.combustivel} (Tabela: ${data.referencia})`
           let modelo = `${data.marca} ${data.name} ${anodes.label} (Tabela: ${data.referencia})`
 
@@ -406,7 +419,7 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
           })
           window.setFormValue('valor', valor )
           setMostraFipe(false)
-          console.log('**** buscaFipe', data)
+          // console.log('**** buscaFipe', data)
         })
         .catch((error) => {
           if (error.response) {
@@ -520,46 +533,37 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
 
   }
 
-  const NumberFormatCustom = (props) => {
-    const { inputRef, onChange, ...other } = props
-  
+  function formatCurrency(props) {
+    const { inputRef, value, ...other } = props
+
+    let val = value
+    val = val.toString().replace('.', ',')
+    // console.log('**** VeiculosModal.formatCurrency.value', value, val)
+
+
     return (
-      <NumberFormat
+      <MaskedInput
         {...other}
-        getInputRef={inputRef}
-        onValueChange={(values) => {
-          onChange({
-            target: {
-              name: props.name,
-              value: values.value,
-            },
-          });
+        ref={(ref) => {
+          inputRef(ref ? ref.inputElement : null);
         }}
-        thousandSeparator="."
-        isNumericString
-        decimalSeparator=","
-        decimalScale={2} 
-        fixedDecimalScale={true}
-        prefix="R$ "
+        value={val}
+        mask={numberMask}
+        // displayType={'text'}
+        placeholderChar={'\u2000'}
+        showMask
+        style={{
+          textAlign:"right",
+        }}
       />
     )
   }
-  
-  NumberFormatCustom.propTypes = {
+
+  formatCurrency.propTypes = {
     inputRef: PropTypes.func.isRequired,
-    name: PropTypes.string.isRequired,
     onChange: PropTypes.func.isRequired,
   }
   
-
-  const AutocompleteAdapter = ({ input, ...rest }) => (
-    <Autocomplete
-      {...input}
-      {...rest}
-      forcePopupIcon={false}
-      renderInput={params => <CssTextField {...params} {...input} {...rest} />}
-    />
-  )
 
   const required = value => (value ? undefined : '* Obrigatório!')
 
@@ -816,7 +820,6 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
                               <Field
                                 disabled={disableEdit}
                                 name="valor"
-                                // component={CurrencyTextField}
                                 component={CssTextField}
                                 type="text"
                                 label="Valor"
@@ -824,13 +827,11 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
                                 fullWidth
                                 size="small"
                                 margin="dense"
-                                // value={values.valor}
                                 // onChange={e => window.setFormValue('valor', e.target.value )}
                                 InputProps={{
-                                  inputComponent: NumberFormatCustom,
-                                  style: { justifyContent: 'right' }
+                                  inputComponent: formatCurrency,
                                 }}
-                              />
+                                />
                             </Col>
                           </Row>
                         </Grid>
