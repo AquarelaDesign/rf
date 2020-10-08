@@ -75,6 +75,9 @@ import useModalVeiculos from '../VeiculosModal/useModal'
 import RotasModal from '../RotasModal'
 import useModalRotas from '../RotasModal/useModal'
 
+import RotasPedidoModal from '../RotasPedidoModal'
+import useModalRotasPedido from '../RotasPedidoModal/useModal'
+
 import moment from 'moment'
 import Map from '../../Map'
 
@@ -310,6 +313,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
   const [RotaProps, setRotaProps] = useState(null)
   const [rotaData, setRotaData] = useState(null)
   const { isShowRotas, toggleRotas } = useModalRotas()
+  
+  const { isShowRotasPedido, toggleRotasPedido } = useModalRotasPedido()
 
   // const [response, setResponse] = useState(null)
   const [waypoints, setWaypoints] = useState([])
@@ -1677,8 +1682,10 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                       <div className={classes.demo1}>
                         <AntTabs value={value} onChange={handleChange} aria-label="Dados do Pedido">
                           <AntTab label="Pedido" {...a11yProps(0)} />
-                          <AntTab label="Dados" {...a11yProps(1)} />
-                          <AntTab label="Mapa" {...a11yProps(2)} />
+                          <AntTab label="Veiculos" {...a11yProps(1)} />
+                          <AntTab label="Rotas" {...a11yProps(2)} />
+                          <AntTab label="Mapa" {...a11yProps(3)} />
+                          <AntTab label="Histórico" {...a11yProps(4)} />
                         </AntTabs>
                       </div>
 
@@ -2224,6 +2231,17 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                           border='1px solid #2699F8'
                           mb={10}
                         >
+                        </BoxTitulo>
+                      </TabPanel>
+
+                      <TabPanel value={value} index={3} style={{ width: '100%', height: '455px' }}>
+                        <BoxTitulo
+                          size={465}
+                          width='99%'
+                          bgcolor='#FFFFFF'
+                          border='1px solid #2699F8'
+                          mb={10}
+                        >
                           <Map
                             markers={places}
                             origem={origem}
@@ -2234,6 +2252,18 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                           />
                         </BoxTitulo>
                       </TabPanel>
+
+                      <TabPanel value={value} index={4} style={{ width: '100%', height: '455px' }}>
+                        <BoxTitulo
+                          size={465}
+                          width='99%'
+                          bgcolor='#FFFFFF'
+                          border='1px solid #2699F8'
+                          mb={10}
+                        >
+                        </BoxTitulo>
+                      </TabPanel>
+
                     </form>
                   )
                 }}
