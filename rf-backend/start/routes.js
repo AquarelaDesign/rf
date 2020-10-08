@@ -70,5 +70,16 @@ Route.group(() => {
   Route.resource('tiposdeveiculos', 'TiposDeVeiculoController').apiOnly()
   Route.resource('valoresadicionais', 'ValoresAdicionaiController').apiOnly()
 
+  Route
+    .resource('rotaspedidos', 'RotasPedidoController')
+    .validator( new Map([
+      [['rotaspedidos.store'],['UpdateRotaPedido']],
+      [['rotaspedidos.update'],['UpdateRotaPedido']],
+    ]))
+    .apiOnly()
+  Route.get("/buscarotaspedidos/:id", "RotasPedidoController.busca")
+
+  Route.resource('historicos', 'HistoricoController').apiOnly()
+  Route.get("/buscahistoricos", "HistoricoController.busca")
 
 }).middleware('auth')

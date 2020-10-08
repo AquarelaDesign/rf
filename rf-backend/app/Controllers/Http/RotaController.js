@@ -28,7 +28,7 @@ class RotaController {
   }
 
   /**
-   * Show a list of rota with status.
+   * Show a list of rota with pedido.
    * GET rotas/:id
    */
   async busca({auth, params, request, response}) {

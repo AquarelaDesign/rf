@@ -28,6 +28,7 @@ class PedidoController {
       const pedidos = Pedido.query()
                             .with('veiculos')
                             .with('rotas')
+                            .with('rotaspedido')
                             .fetch()
       return pedidos
     }
@@ -76,7 +77,8 @@ class PedidoController {
       query
         .with('veiculos')
         .with('rotas')
-      const pedido = await query.fetch()
+        .with('rotaspedido')
+        const pedido = await query.fetch()
 
       return pedido
     }
@@ -104,7 +106,10 @@ class PedidoController {
       const query = Pedido.query()
       query.where('tipo','=',"C")
       query.andWhere('status','=',"D")
-      query.with('veiculos').with('rotas')
+      query
+        .with('veiculos')
+        .with('rotas')
+        .with('rotaspedido')
       const pedido = await query.fetch()
   
       Event.fire('statusp::results', pedido)
@@ -173,6 +178,7 @@ class PedidoController {
       const pedidos = await Pedido.findOrFail(params.id)
       await pedidos.load('veiculos')
       await pedidos.load('rotas')
+      await pedidos.load('rotaspedido')
       return pedidos
     }
     catch(e) {

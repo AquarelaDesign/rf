@@ -1,6 +1,6 @@
 'use strict'
 
-class StoreUsuario {
+class StoreRota {
   get rules () {
     return {
       email: 'email',
@@ -22,4 +22,4 @@ class StoreUsuario {
   
 }
 
-module.exports = StoreUsuario
+module.exports = StoreRota

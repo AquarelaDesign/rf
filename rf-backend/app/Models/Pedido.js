@@ -12,6 +12,10 @@ class Pedido extends Model {
     return this.hasMany('App/Models/Rota')
   }
 
+  rotaspedido() {
+    return this.hasMany('App/Models/RotasPedido')
+  }
+
 }
 
 module.exports = Pedido
