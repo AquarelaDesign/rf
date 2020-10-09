@@ -51,7 +51,7 @@ const CssTextField = withStyles({
   root: {
     '& > *': {
       fontFamily: ['Montserrat', 'sans Serif'],
-      fontSize: 14,
+      fontSize: 12,
     },
     '& label.Mui-focused': {
       color: '#0031FF',
@@ -75,6 +75,7 @@ const CssTextField = withStyles({
       margin: '1px',
       justifyContent: 'left',
       height: '7px',
+      fontSize: 10,
     },
     '& .MuiFormHelperText-contained': {
       justifyContent: 'left',
@@ -106,8 +107,8 @@ const RotasPedidoModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disabl
         .get(`/buscarotaspedidos/${rotaID}`)
         .then(response => {
           const { data } = response
-          // console.log('**** RotasPedidoModal.buscaRota.data', data)
-          setInitialValues(data)
+          console.log('**** RotasPedidoModal.buscaRota.data', data)
+          setInitialValues(data[0])
         })
         .catch((error) => {
           if (error.response) {
@@ -320,10 +321,10 @@ const RotasPedidoModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disabl
     onChange: PropTypes.func.isRequired,
   }
 
-  const validaCEP = async (e, value) => {
+  const validaCEP = async (value, campo) => {
     setAtualizaCEP(true)
 
-    console.log('**** RotasPedidoModal.validaCEP.values', e, value, values.logradouro)
+    // console.log('**** RotasPedidoModal.validaCEP.campo', campo, value)
 
     if (!value) {
       setAtualizaCEP(false)
@@ -346,7 +347,7 @@ const RotasPedidoModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disabl
     const port = window.location.protocol === 'http:' ? 3003 : 3004
     const service = `${prot}//www.retornofacil.com.br:${port}/api/cep/${cep}`
 
-    console.log('**** RotasPedidoModal.validaCEP.Axios.service', service)
+    // console.log('**** RotasPedidoModal.validaCEP.Axios.service', service)
 
     Axios.get(service, {})
       .then(response => {
@@ -358,7 +359,7 @@ const RotasPedidoModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disabl
           return
         }
 
-        console.log('**** RotasPedidoModal.validaCEP.Axios.data', data)
+        // console.log('**** RotasPedidoModal.validaCEP.Axios.data', data)
 
         const Logradouro = `${data[0].data[0].Tipo_Logradouro} ${data[0].data[0].Logradouro}`
         const Bairro = data[0].data[0].Bairro
@@ -367,16 +368,31 @@ const RotasPedidoModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disabl
         const latitude = data[0].data[0].geo.latitude
         const longitude = data[0].data[0].geo.longitude
 
-        if (values.logradouro === '' ||
-          values.logradouro === null ||
-          values.logradouro === undefined) {
-          window.setFormValue('logradouro', Logradouro.toUpperCase())
-          window.setFormValue('bairro', Bairro.toUpperCase())
-          window.setFormValue('cidade', Cidade.toUpperCase())
-          window.setFormValue('uf', UF.toUpperCase())
-          window.setFormValue('latitude', latitude)
-          window.setFormValue('longitude', longitude)
+        if (campo === 'O') {
+          if (values.logradouro_origem === '' ||
+            values.logradouro_origem === null ||
+            values.logradouro_origem === undefined) {
+            window.setFormValue('logradouro_origem', Logradouro.toUpperCase())
+            window.setFormValue('bairro_origem', Bairro.toUpperCase())
+            window.setFormValue('cidade_origem', Cidade.toUpperCase())
+            window.setFormValue('uf_origem', UF.toUpperCase())
+            window.setFormValue('latitude_origem', latitude)
+            window.setFormValue('longitude_origem', longitude)
+          }
         }
+        if (campo === 'D') {
+          if (values.logradouro_destino === '' ||
+            values.logradouro_destino === null ||
+            values.logradouro_destino === undefined) {
+            window.setFormValue('logradouro_destino', Logradouro.toUpperCase())
+            window.setFormValue('bairro_destino', Bairro.toUpperCase())
+            window.setFormValue('cidade_destino', Cidade.toUpperCase())
+            window.setFormValue('uf_destino', UF.toUpperCase())
+            window.setFormValue('latitude_destino', latitude)
+            window.setFormValue('longitude_destino', longitude)
+          }
+        }
+
         setAtualizaCEP(false)
       }).catch((error) => {
         if (error.response) {
@@ -493,7 +509,7 @@ const RotasPedidoModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disabl
         <div className="modal-overlay" />
         <div className="modal-wrapper" aria-modal aria-hidden tabIndex={-1} role="dialog">
           <div className="modal-rotas-pedido">
-            <Container>
+            <Container width={1250}>
               <BoxTitulo height={24} bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10}>
                 <Grid mb={5}>
                   <RLeft>
@@ -505,6 +521,7 @@ const RotasPedidoModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disabl
                     </Texto>
                   </RLeft>
                   <RRight>
+                    <Blank><FaIcon icon='blank' size={20} height={20} width={20} /> </Blank>
                     <Blank><FaIcon icon='blank' size={20} height={20} width={20} /> </Blank>
                     {disableEdit ?
                       <Blank><FaIcon icon='blank' size={10} height={10} width={10} /> </Blank>
@@ -524,7 +541,7 @@ const RotasPedidoModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disabl
                 onSubmit={onSubmit}
                 initialValues={initialValues}
                 validate={required}
-                height={'370px'} width={'100%'}
+                height={'410px'} width={'100%'}
                 mutators={{
                   _setValue: ([field, value], state, { changeValue }) => {
                     changeValue(state, field, () => value)
@@ -552,286 +569,529 @@ const RotasPedidoModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disabl
 
                       <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10}>
                         <Grid>
+                          <Row style={{ height: '54px', marginTop: '15px' }}>
+                            <Col xs={6}>
+                              <Field
+                                disabled={disableEdit}
+                                name="nome"
+                                validate={required}
+                                component={CssTextField}
+                                type="text"
+                                label="Nome"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                              />
+                            </Col>
+                            <Col xs={2}>
+                              <Field
+                                disabled={disableEdit}
+                                name="cpfcnpj"
+                                component={CssTextField}
+                                type="text"
+                                label="CPF/CNPJ"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                                InputProps={{
+                                  inputComponent: formatCpfCnpj,
+                                  endAdornment: (
+                                    <InputAdornment position="end">
+                                      <button
+                                        type="button"
+                                        disabled={disableEdit}
+                                        onClick={findCliente}
+                                        style={{ backgroundColor: 'transparent', cursor: 'pointer' }}
+                                      >
+                                        <AiOutlineSearch />
+                                      </button>
+                                    </InputAdornment>
+                                  ),
+                                }}
+                              />
+                            </Col>
+                            <Col xs={4}>
+                              <Field
+                                disabled={disableEdit}
+                                name="status"
+                                component={CssTextField}
+                                type="select"
+                                label="Status"
+                                variant="outlined"
+                                fullWidth
+                                select
+                                size="small"
+                                margin="dense"
+                              >
+                                {/* { Id: 1, Code: '', Description: 'Aguardando' } */}
+                                {cadStatus.map((option) => (
+                                  <MenuItem key={option.Code} value={option.Code}>
+                                    {option.Description}
+                                  </MenuItem>
+                                ))}
+                              </Field>
+                            </Col>
+                          </Row>
+
+                          <Row>
+                            <Col xs={6}>
+                              <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10} mt={10}>
+                                <Grid>
+                                  <Row style={{ height: '45px', marginTop: '10px' }}>
+                                    <Col xs={8}>
+                                      <Texto
+                                        size={22} height={24} italic={true} bold={700} font='Arial'
+                                        mt={8}
+                                        color='#2699FB' shadow={true}>
+                                        ORIGEM
+                                      </Texto>
+                                    </Col>
+                                    <Col xs={4}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="cep_origem"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="CEP"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                        InputProps={{
+                                          inputComponent: formatCep,
+                                          endAdornment: (
+                                            <InputAdornment position="end">
+                                              <button
+                                                type="button"
+                                                disabled={disableEdit}
+                                                onClick={() => validaCEP(values.cep_origem, 'O')}
+                                                style={{ backgroundColor: 'transparent', cursor: 'pointer' }}
+                                              >
+                                                <AiOutlineSearch />
+                                              </button>
+                                            </InputAdornment>
+                                          ),
+                                        }}
+                                      />
+                                    </Col>
+                                  </Row>
+                                  <Row style={{ height: '54px', marginTop: '15px' }}>
+                                    <Col xs={6}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="contato_origem"
+                                        validate={required}
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Contato"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={3}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="celular_origem"
+                                        validate={required}
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Celular"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                        pattern="[\d|(|)|-]{11,12}"
+                                        InputProps={{
+                                          inputComponent: formatCelular,
+                                        }}
+                                      />
+                                    </Col>
+                                    <Col xs={3}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="whats_origem"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="WhatsApp"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                        pattern="[\d|(|)|-]{11,12}"
+                                        InputProps={{
+                                          inputComponent: formatCelular,
+                                        }}
+                                      />
+                                    </Col>
+                                  </Row>
+                                  <Row style={{ height: '54px', marginTop: '15px' }}>
+                                    <Col xs={6}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="email_origem"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="E-mail"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={3}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="latitude_origem"
+                                        // validate={required}
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Latitude"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={3}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="longitude_origem"
+                                        // validate={required}
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Longitude"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                  </Row>
+                                  <Row style={{ height: '54px', marginTop: '15px' }}>
+                                    <Col xs={6}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="logradouro_origem"
+                                        validate={required}
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Endereço"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={2}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="numero_origem"
+                                        validate={required}
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Número"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={4}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="complemento_origem"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Complemento"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                  </Row>
+                                  <Row style={{ height: '54px', marginTop: '15px', marginBottom: '15px' }}>
+                                    <Col xs={5}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="bairro_origem"
+                                        validate={required}
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Bairro"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={5}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="cidade_origem"
+                                        validate={required}
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Cidade"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={2}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="uf_origem"
+                                        validate={required}
+                                        component={CssTextField}
+                                        type="text"
+                                        label="UF"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                  </Row>
+                                </Grid>
+                              </BoxTitulo>
+                            </Col>
+                            <Col xs={6}>
+                              <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10} mt={10}>
+                                <Grid>
+                                  <Row style={{ height: '45px', marginTop: '10px' }}>
+                                    <Col xs={8}>
+                                      <Texto
+                                        size={22} height={24} italic={true} bold={700} font='Arial'
+                                        mt={8}
+                                        color='#2699FB' shadow={true}>
+                                        DESTINO
+                                      </Texto>
+                                    </Col>
+                                    <Col xs={4}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="cep_destino"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="CEP"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                        InputProps={{
+                                          inputComponent: formatCep,
+                                          endAdornment: (
+                                            <InputAdornment position="end">
+                                              <button
+                                                type="button"
+                                                disabled={disableEdit}
+                                                onClick={() => validaCEP(values.cep_destino, 'D')}
+                                                style={{ backgroundColor: 'transparent', cursor: 'pointer' }}
+                                              >
+                                                <AiOutlineSearch />
+                                              </button>
+                                            </InputAdornment>
+                                          ),
+                                        }}
+                                      />
+                                    </Col>
+                                  </Row>
+                                  <Row style={{ height: '54px', marginTop: '15px' }}>
+                                    <Col xs={6}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="contato_destino"
+                                        validate={required}
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Contato"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={3}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="celular_destino"
+                                        validate={required}
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Celular"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                        pattern="[\d|(|)|-]{11,12}"
+                                        InputProps={{
+                                          inputComponent: formatCelular,
+                                        }}
+                                      />
+                                    </Col>
+                                    <Col xs={3}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="whats_destino"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="WhatsApp"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                        pattern="[\d|(|)|-]{11,12}"
+                                        InputProps={{
+                                          inputComponent: formatCelular,
+                                        }}
+                                      />
+                                    </Col>
+                                  </Row>
+                                  <Row style={{ height: '54px', marginTop: '15px' }}>
+                                    <Col xs={6}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="email_destino"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="E-mail"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={3}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="latitude_destino"
+                                        // validate={required}
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Latitude"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={3}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="longitude_destino"
+                                        // validate={required}
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Longitude"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                  </Row>
+                                  <Row style={{ height: '54px', marginTop: '15px' }}>
+                                    <Col xs={6}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="logradouro_destino"
+                                        validate={required}
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Endereço"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={2}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="numero_destino"
+                                        validate={required}
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Número"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={4}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="complemento_destino"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Complemento"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                  </Row>
+                                  <Row style={{ height: '54px', marginTop: '15px', marginBottom: '15px' }}>
+                                    <Col xs={5}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="bairro_destino"
+                                        validate={required}
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Bairro"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={5}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="cidade_destino"
+                                        validate={required}
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Cidade"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                    <Col xs={2}>
+                                      <Field
+                                        disabled={disableEdit}
+                                        name="uf_destino"
+                                        validate={required}
+                                        component={CssTextField}
+                                        type="text"
+                                        label="UF"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    </Col>
+                                  </Row>
+                                </Grid>
+                              </BoxTitulo>
+                            </Col>
+                          </Row>
+
                           <Row>
                             <Col xs={6}>
 
                               <Grid>
-                                <Row style={{ height: '54px', marginTop: '15px' }}>
-                                  <Col xs={4}>
-                                    <Field
-                                      disabled={disableEdit}
-                                      name="cpfcnpj"
-                                      component={CssTextField}
-                                      type="text"
-                                      label="CPF/CNPJ"
-                                      variant="outlined"
-                                      fullWidth
-                                      size="small"
-                                      margin="dense"
-                                      InputProps={{
-                                        inputComponent: formatCpfCnpj,
-                                        endAdornment: (
-                                          <InputAdornment position="end">
-                                            <button
-                                              type="button"
-                                              disabled={disableEdit}
-                                              onClick={findCliente}
-                                              style={{ backgroundColor: 'transparent', cursor: 'pointer' }}
-                                            >
-                                              <AiOutlineSearch />
-                                            </button>
-                                          </InputAdornment>
-                                        ),
-                                      }}
-                                    />
-                                  </Col>
-                                  <Col xs={4}>
-                                    <Field
-                                      disabled={disableEdit}
-                                      name="status"
-                                      component={CssTextField}
-                                      type="select"
-                                      label="Status"
-                                      variant="outlined"
-                                      fullWidth
-                                      select
-                                      size="small"
-                                      margin="dense"
-                                    >
-                                      {/* { Id: 1, Code: '', Description: 'Aguardando' } */}
-                                      {cadStatus.map((option) => (
-                                        <MenuItem key={option.Code} value={option.Code}>
-                                          {option.Description}
-                                        </MenuItem>
-                                      ))}
-                                    </Field>
-                                  </Col>
-                                  <Col xs={4}>
-                                    <Field
-                                      disabled={disableEdit}
-                                      name="cep_origem"
-                                      component={CssTextField}
-                                      type="text"
-                                      label="CEP"
-                                      variant="outlined"
-                                      fullWidth
-                                      size="small"
-                                      margin="dense"
-                                      InputProps={{
-                                        inputComponent: formatCep,
-                                        endAdornment: (
-                                          <InputAdornment position="end">
-                                            <button
-                                              type="button"
-                                              disabled={disableEdit}
-                                              onClick={(e) => validaCEP(e, values.cep)}
-                                              style={{ backgroundColor: 'transparent', cursor: 'pointer' }}
-                                            >
-                                              <AiOutlineSearch />
-                                            </button>
-                                          </InputAdornment>
-                                        ),
-                                      }}
-                                    />
-                                  </Col>
-                                </Row>
-                                <Row style={{ height: '54px', marginTop: '15px' }}>
-                                  <Col xs={8}>
-                                    <Field
-                                      disabled={disableEdit}
-                                      name="nome"
-                                      validate={required}
-                                      component={CssTextField}
-                                      type="text"
-                                      label="Nome"
-                                      variant="outlined"
-                                      fullWidth
-                                      size="small"
-                                      margin="dense"
-                                    />
-                                  </Col>
-                                  <Col xs={4}>
-                                    <Field
-                                      disabled={disableEdit}
-                                      name="contato_origem"
-                                      validate={required}
-                                      component={CssTextField}
-                                      type="text"
-                                      label="Contato"
-                                      variant="outlined"
-                                      fullWidth
-                                      size="small"
-                                      margin="dense"
-                                    />
-                                  </Col>
-                                </Row>
-                                <Row style={{ height: '54px', marginTop: '15px' }}>
-                                  <Col xs={6}>
-                                    <Field
-                                      disabled={disableEdit}
-                                      name="email_origem"
-                                      component={CssTextField}
-                                      type="text"
-                                      label="E-mail"
-                                      variant="outlined"
-                                      fullWidth
-                                      size="small"
-                                      margin="dense"
-                                    />
-                                  </Col>
-                                  <Col xs={3}>
-                                    <Field
-                                      disabled={disableEdit}
-                                      name="celular_origem"
-                                      validate={required}
-                                      component={CssTextField}
-                                      type="text"
-                                      label="Celular"
-                                      variant="outlined"
-                                      fullWidth
-                                      size="small"
-                                      margin="dense"
-                                      pattern="[\d|(|)|-]{11,12}"
-                                      InputProps={{
-                                        inputComponent: formatCelular,
-                                      }}
-                                    />
-                                  </Col>
-                                  <Col xs={3}>
-                                    <Field
-                                      disabled={disableEdit}
-                                      name="whats_origem"
-                                      component={CssTextField}
-                                      type="text"
-                                      label="WhatsApp"
-                                      variant="outlined"
-                                      fullWidth
-                                      size="small"
-                                      margin="dense"
-                                      pattern="[\d|(|)|-]{11,12}"
-                                      InputProps={{
-                                        inputComponent: formatCelular,
-                                      }}
-                                    />
-                                  </Col>
-                                </Row>
-                                <Row style={{ height: '54px', marginTop: '15px' }}>
-                                  <Col xs={6}>
-                                    <Field
-                                      disabled={disableEdit}
-                                      name="logradouro_origem"
-                                      validate={required}
-                                      component={CssTextField}
-                                      type="text"
-                                      label="Endereço"
-                                      variant="outlined"
-                                      fullWidth
-                                      size="small"
-                                      margin="dense"
-                                    />
-                                  </Col>
-                                  <Col xs={2}>
-                                    <Field
-                                      disabled={disableEdit}
-                                      name="numero_origem"
-                                      validate={required}
-                                      component={CssTextField}
-                                      type="text"
-                                      label="Número"
-                                      variant="outlined"
-                                      fullWidth
-                                      size="small"
-                                      margin="dense"
-                                    />
-                                  </Col>
-                                  <Col xs={4}>
-                                    <Field
-                                      disabled={disableEdit}
-                                      name="complemento_origem"
-                                      component={CssTextField}
-                                      type="text"
-                                      label="Complemento"
-                                      variant="outlined"
-                                      fullWidth
-                                      size="small"
-                                      margin="dense"
-                                    />
-                                  </Col>
-                                </Row>
-                                <Row style={{ height: '54px', marginTop: '15px' }}>
-                                  <Col xs={4}>
-                                    <Field
-                                      disabled={disableEdit}
-                                      name="bairro_origem"
-                                      validate={required}
-                                      component={CssTextField}
-                                      type="text"
-                                      label="Bairro"
-                                      variant="outlined"
-                                      fullWidth
-                                      size="small"
-                                      margin="dense"
-                                    />
-                                  </Col>
-                                  <Col xs={4}>
-                                    <Field
-                                      disabled={disableEdit}
-                                      name="cidade_origem"
-                                      validate={required}
-                                      component={CssTextField}
-                                      type="text"
-                                      label="Cidade"
-                                      variant="outlined"
-                                      fullWidth
-                                      size="small"
-                                      margin="dense"
-                                    />
-                                  </Col>
-                                  <Col xs={1}>
-                                    <Field
-                                      disabled={disableEdit}
-                                      name="uf_origem"
-                                      validate={required}
-                                      component={CssTextField}
-                                      type="text"
-                                      label="UF"
-                                      variant="outlined"
-                                      fullWidth
-                                      size="small"
-                                      margin="dense"
-                                    />
-                                  </Col>
-                                </Row>
-                                <Row style={{ height: '54px', marginTop: '15px' }}>
-                                  <Col xs={3}>
-                                    <Field
-                                      disabled={disableEdit}
-                                      name="latitude_origem"
-                                      // validate={required}
-                                      component={CssTextField}
-                                      type="text"
-                                      label="Latitude"
-                                      variant="outlined"
-                                      fullWidth
-                                      size="small"
-                                      margin="dense"
-                                    />
-                                  </Col>
-                                  <Col xs={3}>
-                                    <Field
-                                      disabled={disableEdit}
-                                      name="longitude_origem"
-                                      // validate={required}
-                                      component={CssTextField}
-                                      type="text"
-                                      label="Longitude"
-                                      variant="outlined"
-                                      fullWidth
-                                      size="small"
-                                      margin="dense"
-                                    />
-                                  </Col>
-                                </Row>
                               </Grid>
 
                             </Col>
@@ -844,11 +1104,6 @@ const RotasPedidoModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disabl
                 }}
               />
 
-              <BoxTitulo height={24} mt={10}>
-                <Texto
-                  size={22} height={24} italic={true} bold={700} font='Arial'>
-                </Texto>
-              </BoxTitulo>
             </Container>
             <GridUsuariosModal
               isShowing={isShowing}

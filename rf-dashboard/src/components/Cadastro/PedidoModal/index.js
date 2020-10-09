@@ -220,11 +220,11 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     justifyContent: 'flex-end',
     position: 'absolute',
-    top: 130,
-    right: 13.5,
+    top: 120,
+    right: 20,
     paddingTop: '3px',
     paddingRight: '5px',
-    width: '48.1%',
+    width: '95%',
     borderRadius: 5,
     backgroundColor: '#FFFFFF',
   },
@@ -404,6 +404,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
 
           data.limitecoleta = data.limitecoleta ? data.limitecoleta.substring(0, 10) : undefined
           data.limiteentrega = data.limiteentrega ? data.limiteentrega.substring(0, 10) : undefined
+
+          // console.log('**** PedidosModal.buscaPedido.data', data)
 
           setInitialValues(data)
           setVeiculos(data.veiculos)
@@ -756,6 +758,29 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
       // },
     },
     {
+      headerName: "Ano",
+      field: "ano",
+      width: 80,
+      sortable: false,
+      // editable: true,
+      // cellEditor: 'agSelectCellEditor',
+      // cellEditorParams: {
+      //   values: TipoVeiculo(), // ['CARRETA', 'CAVALO', 'PLATAFORMA'],
+      // },
+    },
+    {
+      headerName: "Valor",
+      field: "valor",
+      width: 100,
+      sortable: false,
+      valueFormatter: params => params.data.valor.toFixed(2),
+      // editable: true,
+      // cellEditor: 'agSelectCellEditor',
+      // cellEditorParams: {
+      //   values: TipoVeiculo(), // ['CARRETA', 'CAVALO', 'PLATAFORMA'],
+      // },
+    },
+    {
       headerName: "Situação",
       field: "estado",
       width: 140,
@@ -934,107 +959,110 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
       tabelaDeRotas !== undefined 
       // initialValues.valor === 0
     ) {
-      let valorTotal = 0
-      let valor = 0
-      let rotaval = 0
-      let seguro = 0
-      let seguroRoubo = 0
-      let valAgregados = 0
-      let imposto = 0
-  
-      veiculos.forEach(vei => {
-        let tipoVei = 1
-        if (vei.tipo === "motos") {
-          tipoVei = 3
-        } else {
-          tipoVei = 1
-        }
-
-        valor = vei.valor // Valor do Veiculo
-
-        // Busca valores agregados
-        valAgregados = 0
-        valoresAgregados.forEach(valor => {
-          if (valor.tipo_de_veiculo_id === tipoVei && valor.imposto === 0 && valor.exclusivo === 0) {
-            valAgregados += valor.valor
-          }
-        })
-
-        // Busca os valores do seguro conforme a tabela
-        seguro = 0
-        rotaval = 0
-
-        let rtSeg = []
-        let cont = 0
-        let reg = {
-          origem: '',
-          destino: ''
-        }
-
-        rotas.forEach(r => {
-          if (r.tipo === 'C') {
-            reg['origem'] = {cidade: r.cidade, uf: r.uf}
-          } else {
-            reg['destino'] = {cidade: r.cidade, uf: r.uf}
-          }
-    
-          if (cont > 0) {
-            rtSeg.push(reg)
-            cont = 0
-            reg = {
-              origem: '',
-              destino: ''
-            }
-          } else {
-            cont++
-          }
-        })
-
-        rtSeg.forEach(r => {
-          // Busca os valores dos seguros para rotas
-          seguros.forEach(seg => {
-
-            let uf1 = seg.uf
-            let uf2 = r.origem.uf
-                
-            if (uf1.toLowerCase() === uf2.toLowerCase()) {
-              seguro += (valor * seg[r.destino.uf.toLowerCase()]) / 100
-              // console.log('**** PedidosModal.calculaValorPedido.seguro', seguro)
-            }
-          })
-
-          // Busca o valor adicional para Rota
-          tabelaDeRotas.forEach(rot => {
-            let cidade_origem = rot.cidade_origem.toLowerCase()
-            let cidade_destino = rot.cidade_destino.toLowerCase()
-            let cid_origem = r.origem.cidade.toLowerCase()
-            let cid_destino = r.destino.cidade.toLowerCase()
-
-            cidade_origem = cidade_origem.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
-            cidade_destino = cidade_destino.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
-            cid_origem = cid_origem.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
-            cid_destino = cid_destino.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
-
-            if (
-              cidade_origem === cid_origem &&
-              rot.uf_origem.toLowerCase() === r.origem.uf.toLowerCase() &&
-              cidade_destino === cid_destino &&
-              rot.uf_destino.toLowerCase() === r.destino.uf.toLowerCase() &&
-              rot.tipo_de_veiculo_id === tipoVei
-            ) {
-              rotaval += rot.valor
-            }
-          })
-
-        })
-      })
-
-      seguroRoubo = (valor * 0.03) / 100
-      imposto = 1.12
-
-      valorTotal = (rotaval + seguro + seguroRoubo + valAgregados) * imposto
 
       try {
+
+        let valorTotal = 0
+        let valor = 0
+        let rotaval = 0
+        let seguro = 0
+        let seguroRoubo = 0
+        let valAgregados = 0
+        let imposto = 0
+    
+        veiculos.forEach(vei => {
+          let tipoVei = 1
+          if (vei.tipo === "motos") {
+            tipoVei = 3
+          } else {
+            tipoVei = 1
+          }
+
+          valor = vei.valor // Valor do Veiculo
+
+          // Busca valores agregados
+          valAgregados = 0
+          valoresAgregados.forEach(valor => {
+            if (valor.tipo_de_veiculo_id === tipoVei && valor.imposto === 0 && valor.exclusivo === 0) {
+              valAgregados += valor.valor
+            }
+          })
+
+          // Busca os valores do seguro conforme a tabela
+          seguro = 0
+          rotaval = 0
+
+          let rtSeg = []
+          let cont = 0
+          let reg = {
+            origem: '',
+            destino: ''
+          }
+
+          rotas.forEach(r => {
+            if (r.tipo === 'C') {
+              reg['origem'] = {cidade: r.cidade, uf: r.uf}
+            } else {
+              reg['destino'] = {cidade: r.cidade, uf: r.uf}
+            }
+      
+            if (cont > 0) {
+              rtSeg.push(reg)
+              cont = 0
+              reg = {
+                origem: '',
+                destino: ''
+              }
+            } else {
+              cont++
+            }
+          })
+
+          rtSeg.forEach(r => {
+            // Busca os valores dos seguros para rotas
+            seguros.forEach(seg => {
+
+              let uf1 = seg.uf
+              let uf2 = r.origem.uf
+                  
+              if (uf1.toLowerCase() === uf2.toLowerCase()) {
+                seguro += (valor * seg[r.destino.uf.toLowerCase()]) / 100
+                // console.log('**** PedidosModal.calculaValorPedido.seguro', seguro)
+              }
+            })
+
+            // Busca o valor adicional para Rota
+            tabelaDeRotas.forEach(rot => {
+              let cidade_origem = rot.cidade_origem.toLowerCase()
+              let cidade_destino = rot.cidade_destino.toLowerCase()
+              let cid_origem = r.origem.cidade.toLowerCase()
+              let cid_destino = r.destino.cidade.toLowerCase()
+
+              cidade_origem = cidade_origem.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
+              cidade_destino = cidade_destino.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
+              cid_origem = cid_origem.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
+              cid_destino = cid_destino.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
+
+              if (
+                cidade_origem === cid_origem &&
+                rot.uf_origem.toLowerCase() === r.origem.uf.toLowerCase() &&
+                cidade_destino === cid_destino &&
+                rot.uf_destino.toLowerCase() === r.destino.uf.toLowerCase() &&
+                rot.tipo_de_veiculo_id === tipoVei
+              ) {
+                rotaval += rot.valor
+              }
+            })
+
+          })
+        })
+
+        seguroRoubo = (valor * 0.03) / 100
+        imposto = 1.12
+
+        valorTotal = (rotaval + seguro + seguroRoubo + valAgregados) * imposto
+
+      // try {
         let val = valorTotal.toString().replace('.', ',')
         window.setFormValue('valor', val)
 
@@ -1189,16 +1217,24 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
 
   const colDefsRotas = [
     {
+      headerName: "O",
+      field: "rota_relacionada",
+      width: 30,
+      sortable: false,
+      // editable: true,
+      rowDrag: true,      
+    },
+    {
       headerName: "Cidade",
       field: "cidade",
-      width: 100,
+      width: 200,
       sortable: false,
       // editable: true,
     },
     {
       headerName: "UF",
       field: "uf",
-      width: 70,
+      width: 100,
       sortable: false,
       // editable: true,
     },
@@ -1216,7 +1252,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     {
       headerName: "Telefone",
       field: "telefone",
-      width: 100,
+      width: 150,
       sortable: true,
       // editable: true,
       // cellEditor: 'numericCellEditor',
@@ -1514,6 +1550,83 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
         buscaRotas(true)
       }
     }
+  }
+
+
+  const onRowDragEnter = (e) => {
+    // console.log('**** PedidoModal.onRowDragEnter', e)
+  }
+
+  const onRowDragEnd = async (e) => {
+    // console.log('**** PedidoModal.onRowDragEnd', e)
+    console.log('**** PedidoModal.onRowDragEnd.setVgridRotas.data', vgridRotas)
+
+    vgridRotas.forEachNode(function(rowNode, index) {
+      // console.log(index +' node ' + rowNode.data.id + ' is in the grid')
+      atualizaOrdem(rowNode.data.id, index)
+    })
+
+    await sleep(1000)
+    await buscaRotas(true)
+
+  }
+
+  const onRowDragMove = (e) => {
+    // console.log('**** PedidoModal.onRowDragMove', e)
+  }
+
+  const onRowDragLeave = (e) => {
+    // console.log('**** PedidoModal.onRowDragLeave', e)
+  }
+
+
+  const atualizaOrdem = async (rotaID, Ordem) => {
+
+    const apiParams = {
+      method: 'put',
+      url: `/rotas/${rotaID}`,
+      data: {
+        rota_relacionada: Ordem,
+      },
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      }
+    }
+    
+    // console.log('**** PedidoModal.atualizaOrdem', apiParams)
+
+    await api(apiParams, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      }
+    })
+    .then(response => {
+      const { data } = response
+      if (response.status !== 200) {
+        toast(`Ocorreu um erro na ordenação da rota!`,
+          { type: 'error' })
+        return
+      }
+    }).catch((error) => {
+      if (error.response) {
+        const { data } = error.response
+        try {
+          data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
+        }
+        catch (e) {
+          console.log('**** PedidoModal.atualizaOrdem.error.data', data)
+        }
+      } else if (error.request) {
+        console.log('**** PedidoModal.atualizaOrdem.error', error)
+      } else {
+      // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+      }
+    })
+    
   }
 
 
@@ -2065,162 +2178,87 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                       </TabPanel>
 
                       <TabPanel value={value} index={1} style={{ width: '100%', height: '455px' }}>
-                        <Grid>
-                          <Row style={{ height: '50px' }}>
-                            <Col xs={6}>
-                              <div
-                                className={classes.botoesVeiculos}
-                              >
-                                <Texto
-                                  size={18} height={20} italic={true} bold={600} font='Arial'
-                                  mt={5}
-                                  color='#2699FB' shadow={true}>
-                                  Veículos
-                                </Texto>
-
-                                <button onClick={(e) => onVeiculos(e, 'E')}
-                                  style={{ backgroundColor: 'transparent' }}
+                        <BoxTitulo
+                            size={465}
+                            width='99%'
+                            bgcolor='#FFFFFF'
+                            border='1px solid #2699F8'
+                            mb={10}
+                        >
+                          <Grid>
+                            <Row style={{ height: '45px' }}>
+                              <Col xs={12}>
+                                <div
+                                  className={classes.botoesRotas}
                                 >
-                                  <Tooltip title="Editar Veículo">
-                                    <span style={{
-                                      alignItems: 'center',
-                                      color: '#000000',
-                                      cursor: 'pointer',
-                                      marginTop: '3px',
-                                    }}>
-                                      <FaIcon icon='Documentos' size={30} />
-                                    </span>
-                                  </Tooltip>
-                                </button>
-
-                                {!disableEdit &&
-                                  <button onClick={(e) => onVeiculos(e, 'N')}
+                                  <button onClick={(e) => onVeiculos(e, 'E')}
                                     style={{ backgroundColor: 'transparent' }}
                                   >
-                                    <Tooltip title="Adicionar um novo veículo">
+                                    <Tooltip title="Editar Veículo">
                                       <span style={{
                                         alignItems: 'center',
-                                        color: '#31C417',
+                                        color: '#000000',
                                         cursor: 'pointer',
                                         marginTop: '3px',
                                       }}>
-                                        <FaIcon icon='Add' size={30} />
+                                        <FaIcon icon='Documentos' size={30} />
                                       </span>
                                     </Tooltip>
                                   </button>
-                                }
-                              </div>
-                            </Col>
-                            <Col xs={6}>
-                              <div
-                                className={classes.botoesRotas}
-                              >
-                                <Texto
-                                  size={18} height={20} italic={true} bold={600} font='Arial'
-                                  mt={5}
-                                  color='#2699FB' shadow={true}>
-                                  Rotas
-                                </Texto>
 
-                                <button onClick={(e) => onRotas(e, 'E')}
-                                  style={{ backgroundColor: 'transparent' }}
-                                >
-                                  <Tooltip title="Editar Rota">
-                                    <span style={{
-                                      alignItems: 'center',
-                                      color: '#000000',
-                                      cursor: 'pointer',
-                                      marginTop: '3px',
-                                    }}>
-                                      <FaIcon icon='Documentos' size={30} />
-                                    </span>
-                                  </Tooltip>
-                                </button>
+                                  {!disableEdit &&
+                                    <button onClick={(e) => onVeiculos(e, 'N')}
+                                      style={{ backgroundColor: 'transparent' }}
+                                    >
+                                      <Tooltip title="Adicionar um novo veículo">
+                                        <span style={{
+                                          alignItems: 'center',
+                                          color: '#31C417',
+                                          cursor: 'pointer',
+                                          marginTop: '3px',
+                                        }}>
+                                          <FaIcon icon='Add' size={30} />
+                                        </span>
+                                      </Tooltip>
+                                    </button>
+                                  }
+                                </div>
+                              </Col>
+                            </Row>
 
-                                {!disableEdit &&
-                                  <button onClick={(e) => onRotas(e, 'N')}
-                                    style={{ backgroundColor: 'transparent' }}
+                            <Row>
+                              <Col xs={12}>
+                                <div className="ag-theme-custom-react" style={{
+                                  height: '410px',
+                                  width: '100%',
+                                  // borderRadius: '10px',
+                                  backgroundColor: '#FFFFFF',
+                                  border: '5px solid #FFFFFF',
+                                }}>
+                                  <AgGridReact
+                                    id='agVeiculos'
+                                    name='agVeiculos'
+                                    rowSelection="single"
+                                    onGridReady={(params) => { setVgridVeiculos(params.api) }}
+                                    columnDefs={colDefsVeiculos}
+                                    rowData={veiculos}
+                                    singleClickEdit={true}
+                                    stopEditingWhenGridLosesFocus={true}
+                                    suppressNavigable={disableEdit}
+                                    // editType='fullRow'
+                                    components={{ numericCellEditor: getNumericCellEditor() }}
+                                    tooltipShowDelay={0}
+                                    pagination={true}
+                                    paginationPageSize={10}
+                                    localeText={agPtBr}
+                                    onRowDoubleClicked={onRowDoubleClickedVeiculo}
                                   >
-                                    <Tooltip title="Adicionar um novo veículo">
-                                      <span style={{
-                                        alignItems: 'center',
-                                        color: '#31C417',
-                                        cursor: 'pointer',
-                                        marginTop: '3px',
-                                      }}>
-                                        <FaIcon icon='Add' size={30} />
-                                      </span>
-                                    </Tooltip>
-                                  </button>
-                                }
-                              </div>
-                            </Col>
-                          </Row>
-
-                          <Row>
-                            <Col xs={6}>
-                              <div className="ag-theme-custom-react" style={{
-                                height: '390px',
-                                width: '100%',
-                                // borderRadius: '10px',
-                                backgroundColor: '#FFFFFF',
-                                border: '5px solid #FFFFFF',
-                              }}>
-                                <AgGridReact
-                                  id='agVeiculos'
-                                  name='agVeiculos'
-                                  rowSelection="single"
-                                  onGridReady={(params) => { setVgridVeiculos(params.api) }}
-                                  columnDefs={colDefsVeiculos}
-                                  rowData={veiculos}
-                                  singleClickEdit={true}
-                                  stopEditingWhenGridLosesFocus={true}
-                                  suppressNavigable={disableEdit}
-                                  // editType='fullRow'
-                                  components={{ numericCellEditor: getNumericCellEditor() }}
-                                  tooltipShowDelay={0}
-                                  pagination={true}
-                                  paginationPageSize={10}
-                                  localeText={agPtBr}
-                                  onRowDoubleClicked={onRowDoubleClickedVeiculo}
-                                >
-                                </AgGridReact>
-                              </div>
-                            </Col>
-                            <Col xs={6}>
-                              <div className="ag-theme-custom-react" style={{
-                                height: '390px',
-                                width: '100%',
-                                // borderRadius: '10px',
-                                backgroundColor: '#FFFFFF',
-                                border: '5px solid #FFFFFF',
-                              }}>
-                                <AgGridReact
-                                  id='agRotas'
-                                  name='agRotas'
-                                  rowSelection="single"
-                                  onGridReady={(params) => { setVgridRotas(params.api) }}
-                                  columnDefs={colDefsRotas}
-                                  rowData={rotas}
-                                  singleClickEdit={true}
-                                  stopEditingWhenGridLosesFocus={true}
-                                  suppressNavigable={disableEdit}
-                                  // editType='fullRow'
-                                  components={{ numericCellEditor: getNumericCellEditor() }}
-                                  tooltipShowDelay={0}
-                                  pagination={true}
-                                  paginationPageSize={10}
-                                  localeText={agPtBr}
-                                  onRowDoubleClicked={onRowDoubleClickedRota}
-                                >
-                                </AgGridReact>
-                              </div>
-                            </Col>
-                          </Row>
-                          <Row style={{ height: '10px' }}>
-                            <Col xs={12}></Col>
-                          </Row>
-                        </Grid>
+                                  </AgGridReact>
+                                </div>
+                              </Col>
+                            </Row>
+                          </Grid>
+                        </BoxTitulo>
                       </TabPanel>
 
                       <TabPanel value={value} index={2} style={{ width: '100%', height: '455px' }}>
@@ -2231,6 +2269,85 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                           border='1px solid #2699F8'
                           mb={10}
                         >
+                          <Grid>
+                            <Row style={{ height: '45px' }}>
+                              <Col xs={12}>
+                                <div
+                                  className={classes.botoesRotas}
+                                >
+                                  <button onClick={(e) => onRotas(e, 'E')}
+                                    style={{ backgroundColor: 'transparent' }}
+                                  >
+                                    <Tooltip title="Editar Rota">
+                                      <span style={{
+                                        alignItems: 'center',
+                                        color: '#000000',
+                                        cursor: 'pointer',
+                                        marginTop: '3px',
+                                      }}>
+                                        <FaIcon icon='Documentos' size={30} />
+                                      </span>
+                                    </Tooltip>
+                                  </button>
+
+                                  {!disableEdit &&
+                                    <button onClick={(e) => onRotas(e, 'N')}
+                                      style={{ backgroundColor: 'transparent' }}
+                                    >
+                                      <Tooltip title="Adicionar um novo veículo">
+                                        <span style={{
+                                          alignItems: 'center',
+                                          color: '#31C417',
+                                          cursor: 'pointer',
+                                          marginTop: '3px',
+                                        }}>
+                                          <FaIcon icon='Add' size={30} />
+                                        </span>
+                                      </Tooltip>
+                                    </button>
+                                  }
+                                </div>
+                              </Col>
+                            </Row>
+                            <Row>
+                              <Col xs={12}>
+                                <div className="ag-theme-custom-react" style={{
+                                  height: '410px',
+                                  width: '100%',
+                                  // borderRadius: '10px',
+                                  backgroundColor: '#FFFFFF',
+                                  border: '5px solid #FFFFFF',
+                                }}>
+                                  <AgGridReact
+                                    id='agRotas'
+                                    name='agRotas'
+                                    rowSelection="single"
+                                    onGridReady={(params) => { setVgridRotas(params.api) }}
+                                    columnDefs={colDefsRotas}
+                                    rowData={rotas}
+                                    singleClickEdit={true}
+                                    stopEditingWhenGridLosesFocus={true}
+                                    suppressNavigable={disableEdit}
+                                    // editType='fullRow'
+                                    components={{ numericCellEditor: getNumericCellEditor() }}
+                                    tooltipShowDelay={0}
+                                    // pagination={true}
+                                    // paginationPageSize={10}
+                                    rowDragManaged={true}
+                                    animateRows={true}
+                                    onRowDragEnter={onRowDragEnter}
+                                    onRowDragEnd={onRowDragEnd}
+                                    onRowDragMove={onRowDragMove}
+                                    onRowDragLeave={onRowDragLeave}                                    
+                                    localeText={agPtBr}
+                                    onRowDoubleClicked={onRowDoubleClickedRota}
+                                  >
+                                  </AgGridReact>
+                                </div>
+                              </Col>
+                            </Row>
+                          </Grid>
+
                         </BoxTitulo>
                       </TabPanel>
 

@@ -59,7 +59,7 @@ export const Container = styled.div`
   border: transparent;
   margin-bottom: 10px;
   padding: 5px;
-  width: 100%;
+  width: ${props => props.width ? `${props.width}px` : '100%'};
   height: 95%;
   /* box-shadow: 0 1px 4px 0 rgba(192, 208, 230, 0.8); */
   /* border-top: 20px solid rgba(230, 236, 245, 0.4); */
@@ -110,6 +110,7 @@ export const Grid = styled.div`
   border-radius: 4px;
   border: ${props => props.border};
   margin-bottom: ${props => props.mb}px;
+  width: 100%;
 `;
 
 export const RLeft = styled.div`
