@@ -50,7 +50,7 @@ module.exports = {
   | This interval is used by client to send ping frames to the server.
   |
   */
-  clientInterval: 25000,
+  clientInterval: 2000,
 
   /*
   |--------------------------------------------------------------------------
