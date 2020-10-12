@@ -11,14 +11,13 @@ const containerStyle = {
   Display: "flex",
   height: "90%",
   width: "100%",
-};
+}
 
 function Map({ markers, origem, destino, paradas, defaultCenter, defaultZoom }) {
   const mapRef = useRef()
 
   const [response, setResponse] = useState(null)
   const [waypoints, setWaypoints] = useState([])
-
   const [dadosInfo, setDadosInfo] = useState(null)
 
   // const onMapLoad = useCallback((map) => {
@@ -99,7 +98,8 @@ function Map({ markers, origem, destino, paradas, defaultCenter, defaultZoom }) 
             response !== null && (
               <DirectionsRenderer
                 options={{ // eslint-disable-line react-perf/jsx-no-new-object-as-prop
-                  directions: response
+                  directions: response,
+                  preserveViewport: true
                 }}
               />
             )
