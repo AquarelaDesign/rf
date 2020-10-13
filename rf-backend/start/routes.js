@@ -80,6 +80,6 @@ Route.group(() => {
   Route.get("/buscarotaspedidos/:id", "RotasPedidoController.busca")
 
   Route.resource('historicos', 'HistoricoController').apiOnly()
-  Route.get("/buscahistoricos", "HistoricoController.busca")
+  Route.post("/buscahistoricos", "HistoricoController.busca")
 
 }).middleware('auth')
