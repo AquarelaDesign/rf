@@ -276,7 +276,7 @@ const GridPedidosModal = ({ isShowing, hide }) => {
       headerName: "Pedido",
       field: "id",
       flex: 1,
-      width: 120,
+      width: 18,
       sortable: true,
       filter: 'agNumberColumnFilter',
       // menuTabs: ['filterMenuTab'],
@@ -300,7 +300,8 @@ const GridPedidosModal = ({ isShowing, hide }) => {
     {
       headerName: "Local",
       field: "local",
-      flex: 1,
+      // flex: 1,
+      width: 300,
       sortable: true,
       filter: 'partialMatchFilter',
       menuTabs: ['filterMenuTab'],
@@ -308,7 +309,7 @@ const GridPedidosModal = ({ isShowing, hide }) => {
     {
       headerName: "Cliente",
       field: "cliente_id",
-      flex: 1,
+      width: 200,
       sortable: true,
       cellRenderer: 'buscaNome',
       // filter: 'partialMatchFilter',
@@ -317,7 +318,7 @@ const GridPedidosModal = ({ isShowing, hide }) => {
     {
       headerName: "Motorista",
       field: "motorista_id",
-      flex: 1,
+      width: 200,
       sortable: true,
       cellRenderer: 'buscaNome',
       // filter: 'partialMatchFilter',

@@ -105,6 +105,8 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
   let submit
 
   useEffect(() => {
+    limpaCampos()
+
     // console.log('**** RotasModal.buscaRota')
     const buscaRota = async () => {
       await api
@@ -141,29 +143,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
       // setDisableEdit(false)
       buscaRota()
     } else if (tipoCad === 'N') {
-      var newData = {
-        pedido_id: pedidoID,
-        tipo: "",
-        nome: "",
-        cpfcnpj: "",
-        logradouro: "",
-        numero: "",
-        complemento: "",
-        bairro: "",
-        cidade: "",
-        uf: "",
-        pais: "",
-        cep: "",
-        contato: "",
-        celular: "",
-        telefone: "",
-        whats: "",
-        email: "",
-        motorista_id: null,
-        rota_relacionada: null,
-        status: "D",
-      }
-      setInitialValues(newData)
+      limpaCampos()
     } else if (tipoCad === 'D') {
       if (rotaID && rotaID > 0) {
         buscaRota()
@@ -173,6 +153,32 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
   }, [rotaID, pedidoID, tipoCad])
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+  const limpaCampos = () => {
+    var newData = {
+      pedido_id: pedidoID,
+      tipo: "",
+      nome: "",
+      cpfcnpj: "",
+      logradouro: "",
+      numero: "",
+      complemento: "",
+      bairro: "",
+      cidade: "",
+      uf: "",
+      pais: "",
+      cep: "",
+      contato: "",
+      celular: "",
+      telefone: "",
+      whats: "",
+      email: "",
+      motorista_id: null,
+      rota_relacionada: null,
+      status: "D",
+    }
+    setInitialValues(newData)
+  }
 
   const findCliente = () => {
     toggleGridUsuarios()
