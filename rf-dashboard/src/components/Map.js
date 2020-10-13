@@ -21,6 +21,8 @@ function Map({ markers, origem, destino, paradas, defaultCenter, defaultZoom }) 
 
   const [dadosInfo, setDadosInfo] = useState(null)
 
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
   // const onMapLoad = useCallback((map) => {
   const onMapLoad = (map) => {
     mapRef.current = map;
@@ -67,6 +69,9 @@ function Map({ markers, origem, destino, paradas, defaultCenter, defaultZoom }) 
             })
           }
         } else {
+          if (resp.status === 'OVER_QUERY_LIMIT') {
+            sleep(25000)
+          } 
           // console.log('resp: ', resp)
         }
       }
@@ -99,7 +104,8 @@ function Map({ markers, origem, destino, paradas, defaultCenter, defaultZoom }) 
             response !== null && (
               <DirectionsRenderer
                 options={{ // eslint-disable-line react-perf/jsx-no-new-object-as-prop
-                  directions: response
+                  directions: response,
+                  preserveViewport: true
                 }}
               />
             )
