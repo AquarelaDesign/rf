@@ -44,6 +44,7 @@ class RotaController {
       if (params.id !== null){
         query.andWhere('pedido_id','=', params.id)
       }
+      query.orderBy('rota_relacionada', 'asc')
       const rota = await query.fetch()
       return rota
 
