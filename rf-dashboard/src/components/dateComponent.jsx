@@ -3,7 +3,7 @@ import { flatpickr } from 'react-flatpickr'
 
 export default class CustomDateComponent extends Component {
   constructor(props) {
-    super(props);
+    super()
 
     this.state = {
       date: null,

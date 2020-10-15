@@ -40,7 +40,7 @@ import { makeStyles } from '@material-ui/core/styles'
 
 import { Form, Field } from 'react-final-form'
 import DatePicker from '../../datepicker'
-// import { values } from 'lodash'
+import { values } from 'lodash'
 import { AiOutlineSearch } from 'react-icons/ai'
 import { RiMoneyDollarBoxLine } from 'react-icons/ri'
 
@@ -49,12 +49,9 @@ import { RiMoneyDollarBoxLine } from 'react-icons/ri'
 import MaskedInput from 'react-text-mask'
 import createNumberMask from 'text-mask-addons/dist/createNumberMask'
 // import CurrencyTextField from '../../Forms/CurrencyTextField'
-<<<<<<< HEAD
-import NumberFormat from 'react-number-format'
-=======
 // import NumberFormat from 'react-number-format'
-import { IMaskInput } from 'react-imask'
->>>>>>> 500e1ce8bf6ea86f6b1aa1c63bd3236c78741be7
+// import NumberFormat from 'react-number-format'
+// import { IMaskInput } from 'react-imask'
 
 import { FaIcon } from '../../Icone'
 import "./modal.css"
@@ -85,21 +82,9 @@ import useModalHistorico from '../HistoricoModal/useModal'
 
 import moment from 'moment'
 import Map from '../../Map'
+// import GoogleMaps from '../../GoogleMaps'
 
 import cadStatus from '../../../services/json/statusPedido.json'
-
-import {
-  GoogleMap,
-  LoadScript,
-  DirectionsService,
-  DirectionsRenderer,
-} from "@react-google-maps/api";
-
-const containerStyle = {
-  Display: "flex",
-  height: "90%",
-  width: "100%",
-}
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -298,8 +283,7 @@ const numberMask = createNumberMask({
   decimalSymbol: ',',
   decimalScale: 2,
   fixedDecimalScale: true,
-  requireDecimal: true,
-  allowDecimal: true,
+  requireDecimal: true, 
 })
 
 const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => {
@@ -329,35 +313,20 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
   const [rotaData, setRotaData] = useState(null)
   const { isShowRotas, toggleRotas } = useModalRotas()
   
-<<<<<<< HEAD
   const [historicoID, setHistoricoID] = useState(null)
   const [motoristaID, setMotoristaID] = useState(null)
   const [clienteID, setClienteID] = useState(null)
   const [operadorID, setOperadorID] = useState(null)
-  
-  // const [response, setResponse] = useState(null)
-  // const [waypoints, setWaypoints] = useState([])
-  // const [dadosInfo, setDadosInfo] = useState(null)
-
-  // const [excluiId, setExcluiId] = useState(null)
-  // const [propsE, setPropsE] = useState(null)
-  // const [sData, setSData] = useState(null)
-=======
-  const { isShowRotasPedido, toggleRotasPedido } = useModalRotasPedido()
->>>>>>> 500e1ce8bf6ea86f6b1aa1c63bd3236c78741be7
 
   const [confTexto, setConfTexto] = useState('')
   const [confTexto1, setConfTexto1] = useState('')
   const [modulo, setModulo] = useState('')
 
-<<<<<<< HEAD
-  // const [rotasMap, setRotasMap] = useState([])
-=======
   const [responseMap, setResponseMap] = useState(null)
   const [waypoints, setWaypoints] = useState([])
   const [dadosInfo, setDadosInfo] = useState(null)
-  const [rotasMap, setRotasMap] = useState([])
->>>>>>> 500e1ce8bf6ea86f6b1aa1c63bd3236c78741be7
+  // const [rotasMap, setRotasMap] = useState([])
+
   const [origem, setOrigem] = useState({
     lat: 0,
     lng: 0,
@@ -405,7 +374,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     buscaTabRotas() // <-- Adicionar busca direta no banco
     buscaUsuarios()
     setOperadorID(localStorage.getItem('@rf/userID'))
-  }, [hide])
+  }, [tipoCad])
 
   useEffect(() => {
     try {
@@ -451,6 +420,20 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
             buscaVeiculos(true)
           } else {
             semCliente()
+          }
+
+          let temNull = false
+          data.rotas.forEach(r => {
+            if (r.rota_relacionada === null) {
+              temNull = true
+            }
+          })
+
+          if (temNull === true) {
+            data.rotas.forEach(function(row, index) {
+              atualizaOrdem(row.id, index)
+            })
+            buscaRotas(true)
           }
 
           window.setFormValue('valor', data.valor)
@@ -570,16 +553,15 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
   }
 
   const callBackCliente = (e) => {
-    setInitialValues({ ...initialValues, cliente_id: e })
+    // setInitialValues({ ...initialValues, cliente_id: e })
+    window.setFormValue('cliente_id', e)
     buscaCliente(e)
-    // alert(`Retorno Clientes: ${e}`)
   }
 
   const frameworkComponents = {
     formataData: FormataData,
     buscaNome: BuscaNome,
   }
-
 
   function FormataData(params) {
     let tmpDate = params.value ? params.value : undefined
@@ -606,28 +588,12 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     val = val.toString().replace('.', ',')
 
     return (
-      /*
-      <NumberFormat 
-        {...other}
-        // ref={(ref) => {
-        //   inputRef(ref ? ref.inputElement : null)
-        // }}
-        value={value}
-        displayType={'text'} 
-        thousandSeparator={true} 
-        prefix={''}
-        decimalScale={2}
-        fixedDecimalScale={true}
-        isNumericString={true}
-      />
-      */
-      
       <MaskedInput
         {...other}
         ref={(ref) => {
           inputRef(ref ? ref.inputElement : null)
         }}
-        value={value}
+        value={val}
         mask={numberMask}
         placeholderChar={'\u2000'}
         showMask
@@ -635,7 +601,6 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           textAlign:"right",
         }}
       />
-      
     )
   }
 
@@ -839,15 +804,15 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
   }
 
   const buscaHistorico = async (pedidoId) => {
-    console.log('**** PedidosModal.buscaHistorico.pedidoId', pedidoId)
+    // console.log('**** PedidosModal.buscaHistorico.pedidoId', pedidoId)
     await api
       .post(`/buscahistoricos`, {
         "motorista_id": null,
         "cliente_id": null,
         "operador_id": null,
         "pedido_id": pedidoId,
-        "titulo_pagar_id": 0,
-        "titulo_receber_id": 0,
+        "titulo_pagar_id": null,
+        "titulo_receber_id": null,
       })
       .then(response => {
         const { data } = response
@@ -865,6 +830,42 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           }
         } else if (error.request) {
           console.log('**** PedidosModal.buscaHistorico.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        } else {
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        }
+      })
+  }
+
+  const salvaHistorico = async (pedidoId, motoristaId, clienteId, operadorId, observacao) => {
+    // console.log('**** PedidosModal.salvaHistorico.pedidoId', pedidoId)
+    await api
+      .post(`/historicos`, {
+        "motorista_id": motoristaId,
+        "cliente_id": clienteId,
+        "operador_id": operadorId,
+        "pedido_id": pedidoId,
+        "titulo_pagar_id": null,
+        "titulo_receber_id": null,
+        "observacao": observacao, 
+        "valor": 0
+      })
+      .then(response => {
+        const { data } = response
+        buscaHistorico(data.pedido_id)
+      }).catch((error) => {
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('**** PedidosModal.salvaHistorico.error.data', data)
+          }
+        } else if (error.request) {
+          console.log('**** PedidosModal.salvaHistorico.error', error)
           // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
           // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
@@ -1128,7 +1129,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
       // initialValues.valor === 0
     ) {
 
-      console.log('**** PedidosModal.calculaValorPedido', veiculos, rotas)
+      // console.log('**** PedidosModal.calculaValorPedido', veiculos, rotas)
 
       if (veiculos.length === 0) {
         toast('Não foram encontrados veículos cadastrados no pedido!', { 
@@ -1172,6 +1173,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
 
           valor = vei.valor // Valor do Veiculo
 
+          // console.log('**** Busca valores agregados', valor)
           // Busca valores agregados
           valAgregados = 0
           valoresAgregados.forEach(valor => {
@@ -1180,6 +1182,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
             }
           })
 
+          // console.log('**** Busca os valores do seguro conforme a tabela', valAgregados)
           // Busca os valores do seguro conforme a tabela
           seguro = 0
           rotaval = 0
@@ -1191,13 +1194,19 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
             destino: ''
           }
 
+          let _tipo = 'O'
+          let _cidAnt = ''
+          let _ufAnt = ''
           rotas.forEach(r => {
-            if (r.tipo === 'C') {
+
+            if (_tipo === 'O') {
               reg['origem'] = {cidade: r.cidade, uf: r.uf}
+              _tipo = 'D'
             } else {
               reg['destino'] = {cidade: r.cidade, uf: r.uf}
             }
-      
+
+            // console.log('**** Rotas.reg', cont, reg, r.rota_relacionada +1, rotas.length, _tipo)
             if (cont > 0) {
               rtSeg.push(reg)
               cont = 0
@@ -1205,15 +1214,26 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                 origem: '',
                 destino: ''
               }
+              // console.log('**** Rotas.reg', reg, r.rota_relacionada +1, rotas.length, _tipo)
+              if (r.rota_relacionada +1 < rotas.length) {
+                reg['origem'] = {cidade: r.cidade, uf: r.uf}
+              } 
+              
             } else {
+              if (r.rota_relacionada +1 === rotas.length) {
+                rtSeg.push(reg)
+              }
+
               cont++
             }
           })
 
+          // console.log('**** Rotas', rtSeg)
           rtSeg.forEach(r => {
 
             RotaDesc = `${r.origem.cidade}/${r.origem.uf} X ${r.destino.cidade}/${r.destino.uf}`
 
+            // console.log('**** Busca os valores dos seguros para rotas', RotaDesc)
             // Busca os valores dos seguros para rotas
             seguros.forEach(seg => {
 
@@ -1226,6 +1246,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
               }
             })
 
+            // console.log('**** Busca o valor adicional para Rota', seguro)
             // Busca o valor adicional para Rota
             tabelaDeRotas.forEach(rot => {
               let cidade_origem = rot.cidade_origem.toLowerCase()
@@ -1278,7 +1299,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
         imposto = 1.12
 
         valorTotal = (rotaval + seguro + seguroRoubo + valAgregados) * imposto
-
+        let valor_imposto = (rotaval + seguro + seguroRoubo + valAgregados) * (imposto - 1)
+        
       // try {
         let val = valorTotal.toString().replace('.', ',')
 
@@ -1291,20 +1313,24 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
             closeOnClick: true,
             pauseOnHover: true,
           })
-        } else {
-          window.setFormValue('valor', val)
-        }
+          return
+        } 
 
-        // console.log(
-        //   '**** PedidosModal.calculaValorPedido', 
-        //   valor,
-        //   rotaval,
-        //   seguro,
-        //   seguroRoubo,
-        //   valAgregados,
-        //   imposto,
-        //   valorTotal
-        // )
+        window.setFormValue('valor', val)
+
+        console.log(
+          '**** PedidosModal.calculaValorPedido', 
+          {
+            valor_do_veiculo: valor.toFixed(2),
+            valor_transporte_rotas: rotaval.toFixed(2),
+            valor_do_seguro: seguro.toFixed(2),
+            valor_do_seguro_roubo: seguroRoubo.toFixed(2),
+            valor_custo_operacional: valAgregados.toFixed(2),
+            percentual_imposto: imposto.toFixed(2),
+            valor_imposto: valor_imposto.toFixed(2),
+            valor_total_cliente: valorTotal.toFixed(2)
+          }
+        )
       }
       catch(e) {}
 
@@ -1533,7 +1559,12 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
       }
       setRotaID(selectedData[0].id)
     }
-    setTipoCadVei(tipo !== 'E' && tipo !== 'N' ? 'D' : tipo)
+
+    if (tipo === 'N') {
+      setTipoCadVei(tipo)
+    } else {
+      setTipoCadVei(tipo !== 'E' && tipo !== 'N' ? 'D' : tipo)
+    }
 
     toggleRotas()
   }
@@ -1629,6 +1660,22 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           const { data } = response
           setRotas(data)
           updateMap(data)
+
+          let temNull = false
+          data.forEach(r => {
+            if (r.rota_relacionada === null) {
+              temNull = true
+            }
+          })
+
+          if (temNull === true) {
+            console.log('**** PedidosModal.buscaRotas.temNull', temNull)
+            data.forEach(function(row, index) {
+              console.log('**** PedidosModal.buscaRotas.row.index', row, index)
+              atualizaOrdem(row.id, index)
+            })
+          }
+
           // calculaValorPedido()
         }).catch((error) => {
           if (error.response) {
@@ -1667,6 +1714,13 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
       rt.push({
         lat: parseFloat(r.latitude),
         lng: parseFloat(r.longitude),
+        nome: r.nome,
+        logradouro: r.logradouro,
+        numero: r.numero,
+        complemento: r.complemento,
+        bairro: r.bairro,
+        cidade: r.cidade,
+        uf: r.uf,
       })
     })
 
@@ -1915,6 +1969,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     }
 
     // console.log('**** PedidoModal.onSubmit-newValues', newValues)
+    const userID = await localStorage.getItem('@rf/userID')
 
     await api(apiParams)
       .then(response => {
@@ -1922,9 +1977,19 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
 
         setInitialValues(data)
         buscaCliente(data.cliente_id)
-
         if (response.status === 200) {
           toast('Registro atualizado com sucesso!', { type: 'success' })
+          salvaHistorico(
+            data.id, 
+            data.motorista_id, 
+            data.cliente_id, 
+            userID,
+            `Pedido Atualizado com sucesso, ` +
+            `valor R$ ${parseFloat(data.valor).toFixed(2)}, ` +
+            `limite coleta em ${moment(data.limitecoleta).format('DD/MM/YYYY')}, ` +
+            `limite entrega em ${moment(data.limiteentrega).format('DD/MM/YYYY')}` 
+          )
+  
         } else if (response.status === 400) {
           response.data.map(mensagem => {
             toast(mensagem.message, { type: 'error' })
@@ -2644,64 +2709,24 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                           border='1px solid #2699F8'
                           mb={10}
                         >
-                          {/* <Map
+                          {/*
+                          <GoogleMaps 
+                            origem={origem}
+                            destino={destino}
+                            paradas={paradas}
+                            defaultCenter={center}
+                            defaultZoom={4}
+                          /> 
+                          */}
+
+                          <Map
                             markers={places}
                             origem={origem}
                             destino={destino}
                             paradas={paradas}
                             defaultCenter={center}
                             defaultZoom={4}
-                          /> */}
-
-                          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '95%', backgroundColor: '#fff8dc' }}>
-                            <LoadScript googleMapsApiKey="AIzaSyBoV-kvy8LfddqcUb6kcHvs5TmrRJ09KXY">
-                              <GoogleMap
-                                mapContainerStyle={containerStyle}
-                                center={center}
-                                onLoad={onMapLoad}
-                                zoom={4}
-                              >
-                                <DirectionsService
-                                  options={{ // eslint-disable-line react-perf/jsx-no-new-object-as-prop
-                                    destination: `${destino.lat},${destino.lng}`,
-                                    origin: `${origem.lat},${origem.lng}`,
-                                    waypoints: waypoints,
-                                    travelMode: 'DRIVING',
-                                    // timeout: 100000,
-                                  }}
-                                  callback={directionsCallback}
-                                />
-
-                                {
-                                  responseMap !== null && (
-                                    <DirectionsRenderer
-                                      options={{ // eslint-disable-line react-perf/jsx-no-new-object-as-prop
-                                        directions: responseMap,
-                                        preserveViewport: true
-                                      }}
-                                    />
-                                  )
-                                }
-                              </GoogleMap>
-                            </LoadScript>
-                            
-                            {dadosInfo &&
-                              <div style={{
-                                width: '100%', 
-                                height: '5%',
-                                fontSize: 16,
-                                color: '#000000',
-                                margin: 'auto',
-                                width: '50%',
-                                padding: '10px',
-                                textAlign: 'center',
-                              }}>
-                                Distância aproximada: <span style={{ fontWeight: 'bold', marginRight: '30px' }}>{dadosInfo.distancia}</span>
-                                Tempo estimado: <span style={{ fontWeight: 'bold' }}>{dadosInfo.tempo}</span>
-                              </div>
-                            }
-                          </div>
-
+                          />
 
                         </BoxTitulo>
                       </TabPanel>
@@ -2780,8 +2805,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
               hide={toggleRotas}
               pedidoID={pedidoID}
               rotaID={rotaID}
-              tipoCad={tipoCadVei !== 'E' && tipoCadVei !== 'N' ? 'D' : tipoCadVei}
-              disableEdit={(tipoCadVei !== 'E' && tipoCadVei !== 'N' ? true : false) || disableEdit}
+              tipoCad={tipoCadVei === 'N' ? tipoCadVei : tipoCadVei !== 'E' && tipoCadVei !== 'N' ? 'D' : tipoCadVei}
+              disableEdit={(tipoCadVei === 'N' ? false : tipoCadVei !== 'E' && tipoCadVei !== 'N' ? true : false) || disableEdit}
               callback={e => callBackRotas(e)}
             />
             <HistoricoModal

@@ -359,6 +359,9 @@ export default function CardUsuario({ tipo, usuarioId }) {
         .get(`/usuarios/${userID}`)
         .then(response => {
           const { data } = response
+
+          data.user_id = data.user_id === 1 ? true : false
+
           setInitialValues(data)
           setTipoCadastro(data.tipo)
           valTipoCadastro(data.tipo)
@@ -414,14 +417,17 @@ export default function CardUsuario({ tipo, usuarioId }) {
   function Estado(estado) {
     // [] Disponível, Aguardando A[P]rovacao, [A]guardando Coleta, Em [T]ransporte, 
     // [B]loqueado, [R]ecusado, [7]Suspensão de 7 dias
-    if (tipoCadastro === 'M') {
+
+    // console.log('**** values', values.user_id, initialValues.user_id)
+
+    if (tipoCadastro === 'M' || initialValues.user_id === true) {
       switch (estado) {
         case ' ': {
           if (status === 'A') {
             return (
               <span style={{ color: 'green' }}>
                 <FaIcon icon='FaRegThumbsUp' size={20} />
-                {tipoCadastro === 'M' ? ' DISPONÍVEL' : ' ATIVO'}
+                {tipoCadastro === 'M' || initialValues.user_id === true ? ' DISPONÍVEL' : ' ATIVO'}
               </span>
             )
           } else {
@@ -750,8 +756,13 @@ export default function CardUsuario({ tipo, usuarioId }) {
         }
       } else {
         newValues[key] = values[key]
+        if (key === 'user_id') {
+          newValues[key] = values[key] === true ? 1 : null
+        }
       }
     }
+
+    console.log('**** CardUsuario.onSubmit.newValues', newValues)
 
     let apiParams = {}
 
@@ -781,6 +792,8 @@ export default function CardUsuario({ tipo, usuarioId }) {
     await api(apiParams)
       .then(response => {
         const { data } = response
+
+        data.user_id = data.user_id === 1 ? true : false
 
         setTipoCad('E')
         setUserID(data.id)
@@ -829,7 +842,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
   const required = value => (value ? undefined : '* Obrigatório!')
 
   const valTipoCadastro = (value) => {
-    if (value === 'O' || value === 'C') {
+    if (value === 'O' || (value === 'C' && !initialValues.user_id)) {
       setDadosBancarios('hidden')
     } else {
       setDadosBancarios('visible')
@@ -973,17 +986,19 @@ export default function CardUsuario({ tipo, usuarioId }) {
         }) => {
           window.setFormValue = form.mutators.setValue
 
+          // console.log('**** CardUsuario.return.values.user_id', values.user_id, tipoCadastro, userID)
+
           return (
             <form onSubmit={handleSubmit} noValidate>
               <Tabs value={value} onChange={handleChange} aria-label="Dados do Usuário">
                 <Tab label="Usuário" {...a11yProps(0)} />
 
-                {tipoCadastro === 'M' && userID ?
+                {(tipoCadastro === 'M' || values.user_id === true) && userID ?
                   <Tab label="Veículos" {...a11yProps(2)} />
                   : null}
                 {/* <Tab label="Observações" {...a11yProps(1)} /> */}
 
-                {/* {tipoCadastro === 'M' ?
+                {/* {(tipoCadastro === 'M' || values.user_id === true) ?
                   <Tab label="Documentos" {...a11yProps(2)} />
                 : null} */}
 
@@ -1025,7 +1040,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                         </Tooltip>
                       </button>
 
-                      {tipoCadastro === 'M' && 
+                      {(tipoCadastro === 'M' || values.user_id === true) && 
                         <>
                           <button onClick={() => {
                             window.setFormValue('estado', values.estado === 'R' ? ' ' : 'R')
@@ -1114,7 +1129,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                     <Col xs={10}>
                       <Grid xs={12}>
                         <Row middle="xs">
-                          <Col xs={3}>
+                          <Col xs={2}>
                             <label>
                               <Field
                                 disabled={disableEdit}
@@ -1127,7 +1142,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                               {Tipo('O')}
                             </label>
                           </Col>
-                          <Col xs={3}>
+                          <Col xs={2}>
                             <label>
                               <Field
                                 disabled={disableEdit}
@@ -1140,7 +1155,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                               {Tipo('M')}
                             </label>
                           </Col>
-                          <Col xs={3}>
+                          <Col xs={2}>
                             <label>
                               <Field
                                 disabled={disableEdit}
@@ -1153,7 +1168,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                               {Tipo('C')}
                             </label>
                           </Col>
-                          <Col xs={3}>
+                          <Col xs={2}>
                             <label>
                               <Field
                                 disabled={disableEdit}
@@ -1165,6 +1180,22 @@ export default function CardUsuario({ tipo, usuarioId }) {
                               />{' '}
                               {Tipo('F')}
                             </label>
+                          </Col>
+                          <Col xs={2}></Col>
+                          <Col xs={2}>
+                            {(values.tipo === 'M' || values.tipo === 'C') &&
+                            <label>
+                              <Field
+                                disabled={disableEdit}
+                                name="user_id"
+                                component="input"
+                                type="checkbox"
+                                // value="F"
+                                // validate={valTipoCadastro}
+                              />{' '}
+                              {values.tipo === 'M' ? Tipo('C') : Tipo('M')}
+                            </label>
+                            }
                           </Col>
                         </Row>
                         <Row style={{ minHeight: '65px' }}>
@@ -1523,7 +1554,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                 </Grid>
               </TabPanel>
 
-              {tipoCadastro === 'M' && userID ?
+              {(tipoCadastro === 'M' || values.user_id === true) && userID ?
                 <TabPanel value={value} index={1}>
                   <Grid fluid style={{ marginTop: '40px' }}>
                     <Row>

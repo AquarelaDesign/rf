@@ -19,12 +19,9 @@ import {
   TextField,
 } from 'final-form-material-ui'
 
-import Autocomplete from '@material-ui/lab/Autocomplete'
 
 import MaskedInput from 'react-text-mask'
-// import NumberFormat from 'react-number-format'
-
-// import { makeStyles } from '@material-ui/core/styles'
+import createNumberMask from 'text-mask-addons/dist/createNumberMask'
 
 import { 
   Tooltip, 
@@ -38,8 +35,7 @@ import { FaIcon } from '../../Icone'
 import { Grid, Row, Col } from 'react-flexbox-grid'
 
 import { Form, Field } from 'react-final-form'
-// import DatePicker from '../../datepicker'
-// import { values } from 'lodash'
+import { values } from 'lodash'
 import { AiOutlineSearch } from 'react-icons/ai'
 
 import "./modal.css"
@@ -47,8 +43,6 @@ import api from '../../../services/rf'
 import Axios from 'axios'
 
 import moment from "moment"
-// import CurrencyTextField from '../../Forms/CurrencyTextField'
-import createNumberMask from 'text-mask-addons/dist/createNumberMask'
 
 const fipeapi = 'https://fipeapi.appspot.com/api/1/'
 
@@ -88,42 +82,6 @@ const CssTextField = withStyles({
 
 })(TextField)
 
-const CssAutocomplete = withStyles({
-  root: {
-    '& > *': {
-      fontFamily: ['Montserrat', 'sans Serif'],
-      fontSize: 14,
-    },
-    '& label.Mui-focused': {
-      color: '#0031FF',
-    }, 
-    '& .MuiOutlinedInput-root': {
-      '& fieldset': {
-        borderColor: '#2699F8',
-      },
-      '&:hover fieldset': {
-        borderColor: '#0031FF',
-      },
-      '&.Mui-focused fieldset': {
-        borderColor: '#225378',
-      },
-      '&.Mui-disabled': {
-        color: '#666666',
-        fontWeight: 500,
-      },
-    },
-    '& .MuiFormHelperText-root': {
-      margin: '1px',
-      justifyContent: 'left',
-      height: '7px',
-    },
-    '& .MuiFormHelperText-contained': {
-      justifyContent: 'left',
-    },
-  },
-
-})(Autocomplete)
-
 const numberMask = createNumberMask({
   prefix: '',
   suffix: '',
@@ -133,7 +91,6 @@ const numberMask = createNumberMask({
   fixedDecimalScale: true,
   requireDecimal: true, 
 })
-
 
 const fipeTipo = [
   { value: 'carros', label: 'Carros' },
@@ -245,13 +202,15 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
 
   const buscaMarcas = async (dados) => {
     
-    console.log('**** VeiculosModal.buscaMarcas', dados)
+    // console.log('**** VeiculosModal.buscaMarcas.values', values)
     
     if (!dados) {
       return
     }
     
-    setInitialValues({ ...initialValues, fipetipo: dados, tipoFipe: dados })
+    window.setFormValue('fipetipo', dados)
+    window.setFormValue('tipoFipe', dados)
+
     setTipoFipe(dados)
     
     await Axios
@@ -295,7 +254,9 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
       return
     }
     
-    setInitialValues({ ...initialValues, fipemarcaid: dados, marcaFipe: dados })
+    window.setFormValue('fipemarcaid', dados)
+    window.setFormValue('marcaFipe', dados)
+
     setMarcaFipe(dados)
     
     await Axios
@@ -340,7 +301,9 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
       return
     }
     
-    setInitialValues({ ...initialValues, fipemodeloid: dados, modeloFipe: dados })
+    window.setFormValue('fipemodeloid', dados)
+    window.setFormValue('modeloFipe', dados)
+
     setModeloFipe(dados)
 
     await Axios
@@ -395,7 +358,7 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
       if (ano.toLocaleLowerCase() === 'zero') {
         ano = moment().format('YYYY')
       }
-      // console.log('**** VeiculosModal.buscaFipe.ano', ano)
+
       await Axios
         .get(`${fipeapi}${tipoFipe}/veiculo/${marcaFipe}/${modeloFipe}/${dados.value}.json`)
         .then(response => {
@@ -406,18 +369,14 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
           console.log('**** VeiculosModal.buscaFipe.valor', valor)
 
           // let modelo = `${data.marca} ${data.name} ${data.ano_modelo} ${data.combustivel} (Tabela: ${data.referencia})`
-          let modelo = `${data.marca} ${data.name} ${anodes.label} (Tabela: ${data.referencia})`
+          let modelo = `${data.marca} ${data.name} ${anodes.label}` // (Tabela: ${data.referencia})`
 
-          setInitialValues({ 
-            ...initialValues,
-            ano: parseInt(ano),
-            fipeano: anodes.value,
-            fipe: data.fipe_codigo, 
-            valor: valor, 
-            modelo: modelo.toLocaleUpperCase(),
-            anoFipe: anofipe
-          })
-          window.setFormValue('valor', valor )
+          window.setFormValue('ano', parseInt(ano))
+          window.setFormValue('fipeano', anodes.value)
+          window.setFormValue('fipe', data.fipe_codigo)
+          window.setFormValue('modelo', modelo.toLocaleUpperCase())
+          window.setFormValue('anoFipe', anofipe)
+          window.setFormValue('valor', valor)
           setMostraFipe(false)
           // console.log('**** buscaFipe', data)
         })
@@ -547,7 +506,6 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
         }}
         value={val}
         mask={numberMask}
-        // displayType={'text'}
         placeholderChar={'\u2000'}
         showMask
         style={{

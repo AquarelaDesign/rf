@@ -3,9 +3,9 @@ import React, { useState, useRef, useCallback } from "react";
 import {
   GoogleMap,
   LoadScript,
-  DirectionsService,
-  DirectionsRenderer,
-} from "@react-google-maps/api";
+} from "@react-google-maps/api"
+
+import mapMarker from '../assets/map_maker_50.png'
 
 const containerStyle = {
   Display: "flex",
@@ -16,17 +16,28 @@ const containerStyle = {
 function Map({ markers, origem, destino, paradas, defaultCenter, defaultZoom }) {
   const mapRef = useRef()
 
-  const [response, setResponse] = useState(null)
-  const [waypoints, setWaypoints] = useState([])
+  // const [response, setResponse] = useState(null)
   const [dadosInfo, setDadosInfo] = useState(null)
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-  // const onMapLoad = useCallback((map) => {
-  const onMapLoad = (map) => {
-    mapRef.current = map;
+  const onMapLoad = useCallback((map) => {
+    mapRef.current = map
+    
+    const imageMarker = {
+      url: mapMarker,
+      // scaledSize: new window.google.maps.Size(50, 50),
+      origin: new window.google.maps.Point(0,0),
+      anchor: new window.google.maps.Point(0,0)
+    }
+        
+    var directionsRenderer = new window.google.maps.DirectionsRenderer({
+      suppressMarkers: true,
+    })
+    var directionsService = new window.google.maps.DirectionsService()
+    var infowindow = new window.google.maps.InfoWindow()
 
-    // console.log('**** Map.onMapLoad', origem, destino, paradas)
+    directionsRenderer.setMap(map)
 
     let w = []
     paradas.map(way => {
@@ -35,52 +46,98 @@ function Map({ markers, origem, destino, paradas, defaultCenter, defaultZoom }) 
       })
     })
 
-    const uniqueW = Array.from(new Set(w.map(a => a.lat)))
+    const waypoints = Array.from(new Set(w.map(a => a.lat)))
       .map(lat => {
         return w.find(a => a.lat === lat)
       })
 
-    setWaypoints(uniqueW)
+    var travelMode = 'DRIVING'
+    var start = new window.google.maps.LatLng(origem.lat, origem.lng)
+    var end = new window.google.maps.LatLng(destino.lat, destino.lng)
 
-    // console.log('**** Map.montaRotas', uniqueW, waypoints)
+    var request = {
+      origin: start,
+      destination: end,
+      // unitSystem: window.google.maps.UnitSystem.IMPERIAL,
+      travelMode: window.google.maps.DirectionsTravelMode[travelMode],
+      waypoints: waypoints,
+      optimizeWaypoints: true,
+      // transitOptions: { arrivalTime: new Date(1337675679473) }
+    }
 
-  }
-  // }, [origem, destino])
+    directionsService.route(request, function (response, status) {
+      if (status == window.google.maps.DirectionsStatus.OK) {
+        directionsRenderer.setDirections(response)
 
-  const directionsCallback = (resp) => {
-    // console.log('**** Maps.directionsCallback', resp)
+        // console.log('**** Maps.directionsService', response)
+        console.log('**** Maps.waypoints', markers)
+
+        var marker, i
+
+        for (i = 0; i < markers.length; i++) {  
+          marker = new window.google.maps.Marker({
+            position: new window.google.maps.LatLng(markers[i].lat, markers[i].lng),
+            animation: window.google.maps.Animation.DROP,
+            icon: mapMarker,
+            map: map
+          });
+
+          const info = `<strong>${markers[i].nome}</strong><br/>${markers[i].logradouro}, ${markers[i].numero}` 
+                     + `, ${markers[i].complemento}, ${markers[i].bairro} - ${markers[i].cidade}/${markers[i].uf}` 
     
-    if (resp !== null) {
-      try {
-        if (resp.status === 'OK') {
-          // console.log('**** Maps.directionsCallback', resp.routes[0].legs[0].distance)
-          if (dadosInfo === null) {
-            setResponse(resp)
-            const lgs = resp.routes[0].legs
-            let dist = 0
-            lgs.map(d => {
-              dist += d.distance.value
-            })
+          window.google.maps.event.addListener(marker, 'click', (function(marker, i) {
+            return function() {
+              console.log("in click listener")
+              console.log(info)
+              infowindow.setContent(info)
+              infowindow.open(map, marker)
+            }
+          })(marker, i))
+        }        
+        
+        if (dadosInfo === null) {
+          // setResponse(response)
+          const lgs = response.routes[0].legs
+          let dist = 0
+          lgs.map(d => {
+            dist += d.distance.value
+          })
 
-            setDadosInfo({
-              distancia: `${Math.round(dist / 1000)} km`,
-              tempo: `${Math.round((dist / 1000) / 500)} dias`,
-            })
-          }
+          setDadosInfo({
+            distancia: `${Math.round(dist / 1000)} km`,
+            tempo: `${Math.round((dist / 1000) / 500)} dias`,
+          })
+        }
+
+      } else {
+        // alertar uma mensagem de erro quando a rota não puder ser calculada.
+        if (status == 'ZERO_RESULTS') {
+          console.log('**** Maps.directionsCallback','Nenhuma rota foi encontrada entre a origem e o destino.')
+        } else if (status == 'UNKNOWN_ERROR') {
+          console.log('**** Maps.directionsCallback','Uma solicitação de rota não pôde ser processada devido a um erro do servidor. A solicitação pode ser bem-sucedida se você tentar novamente.')
+        } else if (status == 'REQUEST_DENIED') {
+          console.log('**** Maps.directionsCallback','Esta página da web não tem permissão para usar o serviço de rotas.')
+        } else if (status == 'OVER_QUERY_LIMIT') {
+          console.log('**** Maps.directionsCallback','A página da web ultrapassou o limite de solicitações em um período de tempo muito curto.')
+        } else if (status == 'NOT_FOUND') {
+          console.log('**** Maps.directionsCallback','Não foi possível geocodificar pelo menos um dos pontos de origem, destino ou waypoints.')
+        } else if (status == 'INVALID_REQUEST') {
+          console.log('**** Maps.directionsCallback','O DirectionsRequest fornecido era inválido.')
         } else {
-          if (resp.status === 'OVER_QUERY_LIMIT') {
-            sleep(25000)
-          } 
-          // console.log('resp: ', resp)
+          console.log('**** Maps.directionsCallback',"Ocorreu um erro desconhecido em sua solicitação. Requeststatus: \n\n" + status)
         }
       }
-      catch (e) {}
-    }
-    
-  }
+    })
+  }, [origem, destino])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '95%', backgroundColor: '#fff8dc' }}>
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      width: '100%', 
+      height: '100%', 
+      backgroundColor: '#fff8dc' 
+    }}>
       <LoadScript googleMapsApiKey="AIzaSyBoV-kvy8LfddqcUb6kcHvs5TmrRJ09KXY">
         <GoogleMap
           mapContainerStyle={containerStyle}
@@ -88,27 +145,6 @@ function Map({ markers, origem, destino, paradas, defaultCenter, defaultZoom }) 
           onLoad={onMapLoad}
           zoom={defaultZoom || 4}
         >
-          <DirectionsService
-            options={{ // eslint-disable-line react-perf/jsx-no-new-object-as-prop
-              destination: `${destino.lat},${destino.lng}`,
-              origin: `${origem.lat},${origem.lng}`,
-              waypoints: waypoints,
-              travelMode: 'DRIVING',
-              // timeout: 100000,
-            }}
-            callback={directionsCallback}
-          />
-
-          {
-            response !== null && (
-              <DirectionsRenderer
-                options={{ // eslint-disable-line react-perf/jsx-no-new-object-as-prop
-                  directions: response,
-                  preserveViewport: true
-                }}
-              />
-            )
-          }
         </GoogleMap>
       </LoadScript>
       

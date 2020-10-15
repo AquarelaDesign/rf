@@ -20,8 +20,7 @@ import {
 } from 'final-form-material-ui'
 
 import MaskedInput from 'react-text-mask'
-
-import { makeStyles } from '@material-ui/core/styles'
+// import { makeStyles } from '@material-ui/core/styles'
 
 import { 
   Tooltip, 
@@ -36,7 +35,6 @@ import { Grid, Row, Col } from 'react-flexbox-grid'
 
 import { Form, Field } from 'react-final-form'
 // import DatePicker from '../../datepicker'
-// import { values } from 'lodash'
 import { AiOutlineSearch } from 'react-icons/ai'
 
 import "./modal.css"
@@ -115,7 +113,6 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
           const { data } = response
           // console.log('**** RotasModal.buscaRota.data', data)
           setInitialValues(data)
-
         })
         .catch((error) => {
           if (error.response) {
@@ -150,9 +147,13 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
       }
     }
 
+    return () => {
+      limpaCampos()
+    }
+
   }, [rotaID, pedidoID, tipoCad])
 
-  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+  // const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   const limpaCampos = () => {
     var newData = {
@@ -195,7 +196,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
         .then(response => {
           const { data } = response
           // console.log('**** RotasModal.buscaCliente.data', data)
-
+          /*
           setInitialValues({ 
             ...initialValues, 
             cpfcnpj: data.cpfcnpj,
@@ -214,6 +215,23 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
             whats: data.whats,
             email: data.email,
           })
+          */
+
+          window.setFormValue('cpfcnpj', data.cpfcnpj)
+          window.setFormValue('nome', data.nome)
+          window.setFormValue('logradouro', data.logradouro)
+          window.setFormValue('numero', data.numero)
+          window.setFormValue('complemento', data.complemento)
+          window.setFormValue('bairro', data.bairro)
+          window.setFormValue('cidade', data.cidade)
+          window.setFormValue('uf', data.uf)
+          window.setFormValue('pais', data.pais)
+          window.setFormValue('cep', data.cep)
+          window.setFormValue('contato', data.contato)
+          window.setFormValue('celular', data.celular)
+          window.setFormValue('telefone', data.telefone)
+          window.setFormValue('whats', data.whats)
+          window.setFormValue('email', data.email)
 
         }).catch((error) => {
           if (error.response) {
@@ -337,7 +355,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
   const validaCEP = async (value) => {
     setAtualizaCEP(true)
 
-    console.log('**** RotasModal.validaCEP.values', value, values.logradouro)
+    // console.log('**** RotasModal.validaCEP.values', value, values.logradouro)
 
     if (!value) {
       setAtualizaCEP(false)
@@ -360,7 +378,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
     const port = window.location.protocol === 'http:' ? 3003 : 3004
     const service = `${prot}//www.retornofacil.com.br:${port}/api/cep/${cep}`
 
-    console.log('**** RotasModal.validaCEP.Axios.service', service)
+    // console.log('**** RotasModal.validaCEP.Axios.service', service)
 
     Axios.get(service, {})
       .then(response => {
@@ -372,7 +390,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
           return
         }
 
-        console.log('**** RotasModal.validaCEP.Axios.data', data)
+        // console.log('**** RotasModal.validaCEP.Axios.data', data)
 
         const Logradouro = `${data[0].data[0].Tipo_Logradouro} ${data[0].data[0].Logradouro}`
         const Bairro = data[0].data[0].Bairro
@@ -415,6 +433,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
     if (callback) {
       // await sleep(1000)
       callback(typeof e === 'object' ? false : e)
+      limpaCampos()
       hide()
     }
   }
@@ -424,7 +443,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
       return
     }
 
-    console.log('**** RotasModal.onSubmit-values', values)
+    // console.log('**** RotasModal.onSubmit-values', values)
 
     values.cpfcnpj = clearNumber(values.cpfcnpj)
     values.celular = clearNumber(values.celular)
@@ -562,27 +581,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
                       <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10}>
                         <Grid>
                           <Row style={{ height: '54px', marginTop: '15px' }}>
-                            <Col xs={4}>
-                              <Field
-                                disabled={disableEdit}
-                                name="tipo"
-                                component={CssTextField}
-                                type="select"
-                                label="Tipo"
-                                variant="outlined"
-                                fullWidth
-                                select
-                                size="small"
-                                margin="dense"
-                              >
-                                {tipos.map((option) => (
-                                  <MenuItem key={option.value} value={option.value}>
-                                    {option.label}
-                                  </MenuItem>
-                                ))}
-                              </Field>
-                            </Col>
-                            <Col xs={4}>
+                            <Col xs={3}>
                               <Field
                                 disabled={disableEdit}
                                 name="cpfcnpj"
@@ -610,7 +609,35 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
                                 }}
                               />
                             </Col>
-                            <Col xs={4}>
+                            <Col xs={3}>
+                              <Field
+                                disabled={disableEdit}
+                                name="cep"
+                                component={CssTextField}
+                                type="text"
+                                label="CEP"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                                InputProps={{
+                                  inputComponent: formatCep,
+                                  endAdornment: (
+                                    <InputAdornment position="end">
+                                      <button 
+                                        type="button" 
+                                        disabled={disableEdit}
+                                        onClick={() => validaCEP(values.cep)}
+                                        style={{ backgroundColor: 'transparent', cursor: 'pointer' }}
+                                      >
+                                        <AiOutlineSearch />
+                                      </button>
+                                    </InputAdornment>
+                                  ),
+                                }}
+                              />
+                            </Col>
+                            <Col xs={6}>
                               <Field
                                 disabled={disableEdit}
                                 name="status"
@@ -632,8 +659,9 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
                               </Field>
                             </Col>
                           </Row>
+
                           <Row style={{ height: '54px', marginTop: '15px' }}>
-                            <Col xs={8}>
+                            <Col xs={6}>
                               <Field
                                 disabled={disableEdit}
                                 name="nome"
@@ -647,7 +675,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
                                 margin="dense"
                               />
                             </Col>
-                            <Col xs={4}>
+                            <Col xs={6}>
                               <Field
                                 disabled={disableEdit}
                                 name="contato"
@@ -756,7 +784,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
                             </Col>
                           </Row>
                           <Row style={{ height: '54px', marginTop: '15px' }}>
-                            <Col xs={4}>
+                            <Col xs={5}>
                               <Field
                                 disabled={disableEdit}
                                 name="bairro"
@@ -770,7 +798,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
                                 margin="dense"
                               />
                             </Col>
-                            <Col xs={4}>
+                            <Col xs={5}>
                               <Field
                                 disabled={disableEdit}
                                 name="cidade"
@@ -784,7 +812,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
                                 margin="dense"
                               />
                             </Col>
-                            <Col xs={1}>
+                            <Col xs={2}>
                               <Field
                                 disabled={disableEdit}
                                 name="uf"
@@ -798,35 +826,8 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
                                 margin="dense"
                               />
                             </Col>
-                            <Col xs={3}>
-                              <Field
-                                disabled={disableEdit}
-                                name="cep"
-                                component={CssTextField}
-                                type="text"
-                                label="CEP"
-                                variant="outlined"
-                                fullWidth
-                                size="small"
-                                margin="dense"
-                                InputProps={{
-                                  inputComponent: formatCep,
-                                  endAdornment: (
-                                    <InputAdornment position="end">
-                                      <button 
-                                        type="button" 
-                                        disabled={disableEdit}
-                                        onClick={() => validaCEP(values.cep)}
-                                        style={{ backgroundColor: 'transparent', cursor: 'pointer' }}
-                                      >
-                                        <AiOutlineSearch />
-                                      </button>
-                                    </InputAdornment>
-                                  ),
-                                }}
-                              />
-                            </Col>
                           </Row>
+                          
                           <Row style={{ height: '54px', marginTop: '15px' }}>
                           <Col xs={3}>
                               <Field

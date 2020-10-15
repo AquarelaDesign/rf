@@ -81,6 +81,10 @@ class UsuarioController {
       }
       if (condicoes.tipo !== null){
         query.andWhere('tipo','=',condicoes.tipo)
+        
+        if (condicoes.tipo === 'M' || condicoes.tipo === 'C') {
+          query.orWhere('user_id','=',1)
+        }
       }
       if (condicoes.status !== null){
         query.andWhere('status','=',condicoes.status)

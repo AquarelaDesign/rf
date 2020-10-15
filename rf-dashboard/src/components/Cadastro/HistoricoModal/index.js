@@ -110,12 +110,6 @@ const HistoricoModal = ({
 
     if (historicoID && historicoID > 0 && tipoCad === 'E') {
       buscaHistorico()
-      if (motoristaID && motoristaID > 0) { buscaUsuario(motoristaID, 'M') }
-      if (clienteID && clienteID > 0) { buscaUsuario(clienteID, 'C') }
-      if (operadorID && operadorID > 0) { buscaUsuario(operadorID, 'O') }
-      if (pedidoID && pedidoID > 0) { buscaUsuario(pedidoID, 'P') }
-      // if (tituloPagID && tituloPagID > 0) { buscaUsuario(tituloPagID, 'G') }
-      // if (tituloRecID && tituloRecID > 0) { buscaUsuario(tituloRecID, 'R') }
     } else if (tipoCad === 'N') {
       limpaCampos()
     } else if (tipoCad === 'D') {
@@ -147,15 +141,10 @@ const HistoricoModal = ({
       .then(response => {
         const { data } = response
 
-        // console.log('**** HistoricoModal.buscaUsuario.data', tipo,  data)
-
         switch (tipo) {
           case 'M': window.setFormValue('motorista', data.nome); break;
           case 'C': window.setFormValue('cliente', data.nome); break;
           case 'O': window.setFormValue('operador', data.nome); break;
-          case 'P': window.setFormValue('pedido', data.nome); break;
-          // case 'G': window.setFormValue('tituloPag', data); break;
-          // case 'R': window.setFormValue('tituloRec', data); break;
         }
       }).catch((error) => {
         if (error.response) {
@@ -183,6 +172,13 @@ const HistoricoModal = ({
       .then(response => {
         const { data } = response
         setInitialValues(data)
+        if (data.motorista_id && data.motorista_id > 0) { buscaUsuario(data.motorista_id, 'M') }
+        if (data.cliente_id && data.cliente_id > 0) { buscaUsuario(data.cliente_id, 'C') }
+        if (data.operador_id && data.operador_id > 0) { buscaUsuario(data.operador_id, 'O') }
+        // if (pedidoID && pedidoID > 0) { buscaUsuario(pedidoID, 'P') }
+        // if (tituloPagID && tituloPagID > 0) { buscaUsuario(tituloPagID, 'G') }
+        // if (tituloRecID && tituloRecID > 0) { buscaUsuario(tituloRecID, 'R') }
+  
       }).catch((error) => {
         if (error.response) {
           const { data } = error.response
@@ -318,6 +314,11 @@ const HistoricoModal = ({
     onChange: PropTypes.func.isRequired,
   }
   
+  function formataData(props) {
+    let tmpDate = props.value ? props.value : undefined
+    let data = tmpDate ? moment(tmpDate).format('DD/MM/YYYY hh:mm:ss') : ""
+    return (<span style={{ paddingLeft: '15px', marginTop: '15px', paddingBottom: '10px',  height: '25px' }}>{data}</span>)
+  }
 
   const required = value => (value ? undefined : '* Obrigatório!')
 
@@ -338,7 +339,7 @@ const HistoricoModal = ({
                       Dados do Histórico
                     </Texto>
                   </RLeft>
-                  <RRight>
+                  <RRight>  
                     <Blank><FaIcon icon='blank' size={10} height={10} width={10} /> </Blank>
                     { disableEdit ?
                       <Blank><FaIcon icon='blank' size={10} height={10} width={10} /> </Blank>
@@ -387,7 +388,41 @@ const HistoricoModal = ({
 
                       <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10}>
                         <Grid>
-                          {motoristaID && motoristaID > 0 &&
+                          <Row style={{ height: '54px', marginTop: '15px' }}>
+                            {values.pedido_id && values.pedido_id > 0 ?
+                              <Col xs={2}>
+                                <Field
+                                  disabled={true}
+                                  name="pedido_id"
+                                  component={CssTextField}
+                                  type="text"
+                                  label="Pedido"
+                                  variant="outlined"
+                                  fullWidth
+                                  size="small"
+                                  margin="dense"
+                                />
+                              </Col>
+                            : null }
+
+                            {values.operador_id && values.operador_id > 0 ?
+                              <Col xs={10}>
+                                <Field
+                                  disabled={true}
+                                  name="operador"
+                                  component={CssTextField}
+                                  type="text"
+                                  label="Operador"
+                                  variant="outlined"
+                                  fullWidth
+                                  size="small"
+                                  margin="dense"
+                                />
+                              </Col>
+                            : null }
+                          </Row>
+
+                          {values.motorista_id && values.motorista_id > 0 ?
                             <Row style={{ height: '54px', marginTop: '15px' }}>
                               <Col xs={12}>
                                 <Field
@@ -403,9 +438,9 @@ const HistoricoModal = ({
                                 />
                               </Col>
                             </Row>
-                          }
+                          : null }
 
-                          {clienteID && clienteID > 0 &&
+                          {values.cliente_id && values.cliente_id > 0 ?
                             <Row style={{ height: '54px', marginTop: '15px' }}>
                               <Col xs={12}>
                                 <Field
@@ -421,59 +456,42 @@ const HistoricoModal = ({
                                 />
                               </Col>
                             </Row>
-                          }
+                          : null }
 
-                          {operadorID && operadorID > 0 &&
+                          {(values.titulo_pagar_id && values.titulo_pagar_id) > 0 || (values.titulo_receber_id && values.titulo_receber_id > 0) ?
                             <Row style={{ height: '54px', marginTop: '15px' }}>
-                              <Col xs={12}>
-                                <Field
-                                  disabled={true}
-                                  name="operador"
-                                  component={CssTextField}
-                                  type="text"
-                                  label="Operador"
-                                  variant="outlined"
-                                  fullWidth
-                                  size="small"
-                                  margin="dense"
-                                />
-                              </Col>
-                            </Row>
-                          }
+                              {values.titulo_pagar_id && values.titulo_pagar_id > 0 ?
+                                <Col xs={6}>
+                                  <Field
+                                    disabled={true}
+                                    name="titulopag"
+                                    component={CssTextField}
+                                    type="text"
+                                    label="Título à Pagar"
+                                    variant="outlined"
+                                    fullWidth
+                                    size="small"
+                                    margin="dense"
+                                  />
+                                </Col>
+                              : null }
 
-                          {pedidoID && pedidoID > 0 &&
-                            <Row style={{ height: '54px', marginTop: '15px' }}>
-                              <Col xs={12}>
-                                <Field
-                                  disabled={true}
-                                  name="pedido_id"
-                                  component={CssTextField}
-                                  type="text"
-                                  label="Pedido"
-                                  variant="outlined"
-                                  fullWidth
-                                  size="small"
-                                  margin="dense"
-                                />
-                              </Col>
-                            </Row>
-                          }
+                              {values.titulo_receber_id && values.titulo_receber_id > 0 ?
+                                <Col xs={6}>
+                                  <Field
+                                    disabled={true}
+                                    name="titulorec"
+                                    component={CssTextField}
+                                    type="text"
+                                    label="Título à Receber"
+                                    variant="outlined"
+                                    fullWidth
+                                    size="small"
+                                    margin="dense"
+                                  />
+                                </Col>
+                              : null }
 
-                          {tituloPagID && tituloPagID > 0 &&
-                            <Row style={{ height: '54px', marginTop: '15px' }}>
-                              <Col xs={6}>
-                                <Field
-                                  disabled={true}
-                                  name="titulopag"
-                                  component={CssTextField}
-                                  type="text"
-                                  label="Título à Pagar"
-                                  variant="outlined"
-                                  fullWidth
-                                  size="small"
-                                  margin="dense"
-                                />
-                              </Col>
                               <Col xs={6}>
                                 <Field
                                   disabled={true}
@@ -491,43 +509,9 @@ const HistoricoModal = ({
                                 />
                               </Col>
                             </Row>
-                          }
+                          : null }
 
-                          {tituloRecID && tituloRecID > 0 &&
-                            <Row style={{ height: '54px', marginTop: '15px' }}>
-                              <Col xs={6}>
-                                <Field
-                                  disabled={true}
-                                  name="titulorec"
-                                  component={CssTextField}
-                                  type="text"
-                                  label="Título à Receber"
-                                  variant="outlined"
-                                  fullWidth
-                                  size="small"
-                                  margin="dense"
-                                />
-                              </Col>
-                              <Col xs={6}>
-                                <Field
-                                  disabled={true}
-                                  name="valor"
-                                  component={CssTextField}
-                                  type="text"
-                                  label="Valor"
-                                  variant="outlined"
-                                  fullWidth
-                                  size="small"
-                                  margin="dense"
-                                  InputProps={{
-                                    inputComponent: formatCurrency,
-                                  }}
-                                />
-                              </Col>
-                            </Row>
-                          }
-
-                          <Row style={{ height: '54px', marginTop: '15px' }}>
+                          <Row style={{ height: '130px', marginTop: '15px' }}>
                             <Col xs={12}>
                               <Field
                                 disabled={true}
@@ -543,6 +527,42 @@ const HistoricoModal = ({
                                 rows={5}
                               />
                             </Col>
+                          </Row>
+
+                          <Row style={{ height: '64px' }}>
+                            <Col xs={6}>
+                              <Field
+                                disabled={true}
+                                name="created_at"
+                                component={CssTextField}
+                                type="text"
+                                label="Data da Criação"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                                InputProps={{
+                                  inputComponent: formataData,
+                                }}
+                              />
+                            </Col>
+                            <Col xs={6}>
+                              <Field
+                                disabled={true}
+                                name="updated_at"
+                                component={CssTextField}
+                                type="text"
+                                label="Última Atualização"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                margin="dense"
+                                InputProps={{
+                                  inputComponent: formataData,
+                                }}
+                              />
+                            </Col>
+
                           </Row>
 
                         </Grid>
