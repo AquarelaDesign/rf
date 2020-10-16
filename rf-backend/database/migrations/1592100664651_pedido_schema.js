@@ -20,6 +20,8 @@ class PedidoSchema extends Schema {
         .defaultTo('')
         .comment('[]Em Manutenção, [D]isponivel,[A]guardando, Em [C]oleta, Em [T]ransporte, Em c[O]nferencia, [E]ntregue, [X]Cancelado')
       table.decimal('valor', 9, 2).defaultTo(0)
+      table.decimal('percentual_desconto', 9, 2).defaultTo(0)
+      table.decimal('valor_desconto', 9, 2).defaultTo(0)
       table.timestamps()
     })
   }

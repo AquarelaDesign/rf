@@ -148,6 +148,8 @@ class PedidoController {
       "localentrega",
       "status",
       "valor",
+      "percentual_desconto",
+      "valor_desconto",
     ])
     
     try {
@@ -215,7 +217,9 @@ class PedidoController {
         "localentrega",
         "status",
         "valor",
-      ])
+        "percentual_desconto",
+        "valor_desconto",
+        ])
         
       pedidos.merge(data)
       await pedidos.save()
