@@ -39,6 +39,8 @@ function Map({ markers, origem, destino, paradas, defaultCenter, defaultZoom }) 
 
     directionsRenderer.setMap(map)
 
+    console.log('**** Maps.onMapLoad', origem, destino ,paradas)
+    
     let w = []
     paradas.map(way => {
       w.push({
@@ -69,7 +71,7 @@ function Map({ markers, origem, destino, paradas, defaultCenter, defaultZoom }) 
       if (status == window.google.maps.DirectionsStatus.OK) {
         directionsRenderer.setDirections(response)
 
-        // console.log('**** Maps.directionsService', response)
+        console.log('**** Maps.directionsService', response)
         console.log('**** Maps.waypoints', markers)
 
         var marker, i

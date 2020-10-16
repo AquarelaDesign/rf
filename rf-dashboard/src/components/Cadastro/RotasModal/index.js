@@ -111,6 +111,8 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
         .get(`/rotas/${rotaID}`)
         .then(response => {
           const { data } = response
+
+          data.tipo = data.tipo === "V" ? true : false
           // console.log('**** RotasModal.buscaRota.data', data)
           setInitialValues(data)
         })
@@ -450,6 +452,8 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
     values.whats = clearNumber(values.whats)
     values.cep = clearNumber(values.cep)
 
+    values.tipo = values.tipo === true ? "V" : null
+
     let apiParams = {}
     if (rotaID !== null && tipoCad === 'E') {
       apiParams = {
@@ -637,7 +641,20 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
                                 }}
                               />
                             </Col>
-                            <Col xs={6}>
+                            <Col xs={2}>
+                            <label>
+                              <Field
+                                disabled={disableEdit}
+                                name="tipo"
+                                component="input"
+                                type="checkbox"
+                                // value="F"
+                                // validate={valTipoCadastro}
+                              />{' '}
+                              Exclusivo?
+                            </label>
+                            </Col>
+                            <Col xs={4}>
                               <Field
                                 disabled={disableEdit}
                                 name="status"

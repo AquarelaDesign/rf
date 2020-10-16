@@ -409,6 +409,7 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
     if (callback) {
       // await sleep(1000)
       callback(typeof e === 'object' ? false : e)
+      limpaCampos()
       hide()
     }
   }

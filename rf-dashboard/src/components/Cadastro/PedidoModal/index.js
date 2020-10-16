@@ -40,7 +40,7 @@ import { makeStyles } from '@material-ui/core/styles'
 
 import { Form, Field } from 'react-final-form'
 import DatePicker from '../../datepicker'
-import { values } from 'lodash'
+// import { values } from 'lodash'
 import { AiOutlineSearch } from 'react-icons/ai'
 import { RiMoneyDollarBoxLine } from 'react-icons/ri'
 
@@ -374,7 +374,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     buscaTabRotas() // <-- Adicionar busca direta no banco
     buscaUsuarios()
     setOperadorID(localStorage.getItem('@rf/userID'))
-  }, [tipoCad])
+  }, [isShowPedido])
 
   useEffect(() => {
     try {
@@ -392,7 +392,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
         // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
     }
-  }, [pedidoID, tipoCad, disableEdit])
+  }, [pedidoID, tipoCad, disableEdit, isShowPedido])
 
   const buscaPedido = async (pedidoId) => {
     if (pedidoId) {
@@ -1121,7 +1121,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     }
   }
 
-  async function calculaValorPedido() {
+  async function calculaValorPedido(values) {
     if (veiculos !== undefined && 
       rotas !== undefined && 
       seguros !== undefined && 
@@ -1153,15 +1153,30 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
 
       try {
 
-        let valorTotal = 0
-        let valor = 0
-        let rotaval = 0
-        let seguro = 0
-        let seguroRoubo = 0
-        let valAgregados = 0
-        let imposto = 0
-        let RotaDesc = ""
+        // console.table('**** PedidosModal.calculaValorPedido', values.percentual_desconto, values.valor_desconto)
+
+        let str_val = values.valor_desconto.toString()
+             str_val.replace('.', '')
+             str_val = str_val.replace(',', '.')
+  
+        let str_per = values.percentual_desconto.toString()
+             str_per.replace('.', '')
+             str_per = str_per.replace(',', '.')
+        
+        let percentual_imposto = 1.12
+        let valor_total_pedido = 0
+        let valor_total_veiculos_pedido = 0
+        let valor_rotas_pedido = 0
+        let valor_seguro_pedido = 0
+        let valor_seguro_roubo_pedido = 0
+        let valor_agregados_pedido = 0
+        let valor_imposto_pedido = 0
+        let valor_desconto_pedido = parseFloat(str_val)
+        let percentual_desconto_pedido = parseFloat(str_per)
+
+        let RotaDesc = ''
         let rotaOk = false
+        let valores = []
     
         veiculos.forEach(vei => {
           let tipoVei = 1
@@ -1171,21 +1186,19 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
             tipoVei = 1
           }
 
-          valor = vei.valor // Valor do Veiculo
+          let valor_veiculo = vei.valor // Valor do Veiculo
 
-          // console.log('**** Busca valores agregados', valor)
           // Busca valores agregados
-          valAgregados = 0
+          let valor_agregados_veiculo = 0
           valoresAgregados.forEach(valor => {
             if (valor.tipo_de_veiculo_id === tipoVei && valor.imposto === 0 && valor.exclusivo === 0) {
-              valAgregados += valor.valor
+              valor_agregados_veiculo += valor.valor
             }
           })
 
-          // console.log('**** Busca os valores do seguro conforme a tabela', valAgregados)
           // Busca os valores do seguro conforme a tabela
-          seguro = 0
-          rotaval = 0
+          let valor_seguro_veiculo = 0
+          let valor_rotas_veiculo = 0
 
           let rtSeg = []
           let cont = 0
@@ -1195,8 +1208,6 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           }
 
           let _tipo = 'O'
-          let _cidAnt = ''
-          let _ufAnt = ''
           rotas.forEach(r => {
 
             if (_tipo === 'O') {
@@ -1206,7 +1217,6 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
               reg['destino'] = {cidade: r.cidade, uf: r.uf}
             }
 
-            // console.log('**** Rotas.reg', cont, reg, r.rota_relacionada +1, rotas.length, _tipo)
             if (cont > 0) {
               rtSeg.push(reg)
               cont = 0
@@ -1214,7 +1224,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                 origem: '',
                 destino: ''
               }
-              // console.log('**** Rotas.reg', reg, r.rota_relacionada +1, rotas.length, _tipo)
+
               if (r.rota_relacionada +1 < rotas.length) {
                 reg['origem'] = {cidade: r.cidade, uf: r.uf}
               } 
@@ -1228,12 +1238,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
             }
           })
 
-          // console.log('**** Rotas', rtSeg)
           rtSeg.forEach(r => {
 
-            RotaDesc = `${r.origem.cidade}/${r.origem.uf} X ${r.destino.cidade}/${r.destino.uf}`
-
-            // console.log('**** Busca os valores dos seguros para rotas', RotaDesc)
             // Busca os valores dos seguros para rotas
             seguros.forEach(seg => {
 
@@ -1241,12 +1247,10 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
               let uf2 = r.origem.uf
                   
               if (uf1.toLowerCase() === uf2.toLowerCase()) {
-                seguro += (valor * seg[r.destino.uf.toLowerCase()]) / 100
-                // console.log('**** PedidosModal.calculaValorPedido.seguro', seguro)
+                valor_seguro_veiculo += (valor_veiculo * seg[r.destino.uf.toLowerCase()]) / 100
               }
             })
 
-            // console.log('**** Busca o valor adicional para Rota', seguro)
             // Busca o valor adicional para Rota
             tabelaDeRotas.forEach(rot => {
               let cidade_origem = rot.cidade_origem.toLowerCase()
@@ -1259,14 +1263,6 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
               cid_origem = cid_origem.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
               cid_destino = cid_destino.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
 
-              // console.log('**** PedidosModal.calculaValorPedido.tabelaDeRotas', {
-              //   cidade_origem, cid_origem,
-              //   rot_uf_origem: rot.uf_origem.toLowerCase(), r_uf_origem: r.origem.uf.toLowerCase(),
-              //   cidade_destino, cid_destino,
-              //   rot_uf_destino: rot.uf_destino.toLowerCase(), r_uf_destino: r.destino.uf.toLowerCase(),
-              //   rot_tipo: rot.tipo_de_veiculo_id, tipoVei
-              // })
-
               if (
                 cidade_origem === cid_origem &&
                 rot.uf_origem.toLowerCase() === r.origem.uf.toLowerCase() &&
@@ -1274,35 +1270,70 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                 rot.uf_destino.toLowerCase() === r.destino.uf.toLowerCase() &&
                 rot.tipo_de_veiculo_id === tipoVei
               ) {
-                rotaval += rot.valor
+                valor_rotas_veiculo += rot.valor
                 rotaOk = true
+              } else {
+                RotaDesc = `${r.origem.cidade}/${r.origem.uf} X ${r.destino.cidade}/${r.destino.uf}`
               }
             })
 
           })
 
-          seguroRoubo = (valor * 0.03) / 100
+          let valor_seguro_roubo_veiculo = (valor_veiculo * 0.03) / 100
+          
+          let valor_bruto = valor_rotas_veiculo + valor_seguro_veiculo + valor_seguro_roubo_veiculo + valor_agregados_veiculo
+          let valor_desconto_veiculo = 0
+          
+          if (percentual_desconto_pedido > 0) {
+            valor_desconto_veiculo = (valor_bruto * percentual_desconto_pedido) / 100
+          } if (valor_desconto_pedido > 0) {
+            valor_desconto_veiculo = valor_bruto - (valor_desconto_pedido / veiculos.length)
+          }
 
-          // console.log(
-          //   '**** PedidosModal.calculaValorPedido', 
-          //   {valor,
-          //   rotaval,
-          //   seguro,
-          //   seguroRoubo,
-          //   valAgregados,
-          //   imposto,
-          //   valorTotal}
-          // )
+          let valor_imposto_veiculo = (valor_bruto - valor_desconto_veiculo) * (percentual_imposto - 1)
+          let valor_total_veiculo = (valor_bruto - valor_desconto_veiculo) + valor_imposto_veiculo
+          // Salvar na tabela 'valores_do_pedido'
+          valores.push({
+            placa: vei.placachassi,
+            percentual_imposto,
+            percentual_desconto: percentual_desconto_pedido,
+            valor_veiculo,
+            valor_rotas_veiculo,
+            valor_seguro_veiculo,
+            valor_seguro_roubo_veiculo,
+            valor_agregados_veiculo,
+            valor_desconto_veiculo,
+            valor_imposto_veiculo,
+            valor_total_veiculo,
+          })
 
+          // valor_total_pedido += valor_veiculo
+          valor_total_veiculos_pedido += valor_veiculo
+          valor_rotas_pedido += valor_rotas_veiculo
+          valor_seguro_pedido += valor_seguro_veiculo
+          valor_seguro_roubo_pedido += valor_seguro_roubo_veiculo
+          valor_agregados_pedido += valor_agregados_veiculo
+          // valor_imposto_pedido += valor_imposto_veiculo
         })
 
-        imposto = 1.12
+        // console.table('**** PedidosModal.calculaValorPedido', valores)
 
-        valorTotal = (rotaval + seguro + seguroRoubo + valAgregados) * imposto
-        let valor_imposto = (rotaval + seguro + seguroRoubo + valAgregados) * (imposto - 1)
+        // valor_total_pedido = (valor_rotas_pedido + valor_seguro_pedido + valor_seguro_roubo_pedido + valor_agregados_pedido + valor_imposto_pedido)
+
+        let valor_bruto_pedido = valor_rotas_pedido + valor_seguro_pedido + valor_seguro_roubo_pedido + valor_agregados_pedido
         
-      // try {
-        let val = valorTotal.toString().replace('.', ',')
+        // Calculo do valor sem desconto
+        let valor_total_pedido_sem_desconto = valor_bruto_pedido * percentual_imposto
+        
+        // Calculo do valor com desconto aplicado
+        let valor_total_desconto_pedido = 0
+        if (percentual_desconto_pedido > 0) {
+          valor_total_desconto_pedido = (valor_bruto_pedido * percentual_desconto_pedido) / 100
+        } else if (valor_desconto_pedido > 0) {
+          valor_total_desconto_pedido = parseFloat(valor_desconto_pedido)
+        }
+        valor_imposto_pedido = (valor_bruto_pedido - valor_total_desconto_pedido) * (percentual_imposto - 1)
+        valor_total_pedido = (valor_bruto_pedido - valor_total_desconto_pedido) + valor_imposto_pedido
 
         if (!rotaOk) {
           let msg = `A rota [${RotaDesc}] não foi localizada na tabela de rotas patio a patio, ` +
@@ -1316,25 +1347,38 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           return
         } 
 
-        window.setFormValue('valor', val)
+        window.setFormValue('valor', valor_total_pedido.toFixed(2))
 
-        console.log(
-          '**** PedidosModal.calculaValorPedido', 
-          {
-            valor_do_veiculo: valor.toFixed(2),
-            valor_transporte_rotas: rotaval.toFixed(2),
-            valor_do_seguro: seguro.toFixed(2),
-            valor_do_seguro_roubo: seguroRoubo.toFixed(2),
-            valor_custo_operacional: valAgregados.toFixed(2),
-            percentual_imposto: imposto.toFixed(2),
-            valor_imposto: valor_imposto.toFixed(2),
-            valor_total_cliente: valorTotal.toFixed(2)
-          }
-        )
+        // console.table('**** PedidosModal.calculaValorPedido.percentual_desconto_pedido', percentual_desconto_pedido > 0, valor_total_desconto_pedido.toFixed(2))
+        if (percentual_desconto_pedido > 0) {
+          window.setFormValue('valor_desconto', 0)
+          // window.setFormValue('valor_desconto', valor_total_desconto_pedido.toFixed(2))
+        }
+
+        if (percentual_desconto_pedido === 0 && valor_desconto_pedido > 0) {
+          let percentual_aplicado = ((valor_total_pedido_sem_desconto - valor_total_pedido) / valor_total_pedido_sem_desconto) * 100
+          percentual_desconto_pedido = percentual_aplicado.toFixed(0)
+          window.setFormValue('percentual_desconto', 0)
+          // window.setFormValue('percentual_desconto', percentual_desconto_pedido)
+        }
+
+        console.log('**** PedidosModal.calculaValorPedido', {
+          valor_veiculos: valor_total_veiculos_pedido.toFixed(2),
+          valor_transporte_rotas: valor_rotas_pedido.toFixed(2),
+          valor_do_seguro: valor_seguro_pedido.toFixed(2),
+          valor_do_seguro_roubo: valor_seguro_roubo_pedido.toFixed(2),
+          valor_custo_operacional: valor_agregados_pedido.toFixed(2),
+          valor_impostos: valor_imposto_pedido.toFixed(2),
+          percentual_desconto_pedido: percentual_desconto_pedido,
+          valor_desconto_pedido: valor_total_desconto_pedido.toFixed(2),
+          valor_total_pedido: valor_total_pedido.toFixed(2),
+          valor_total_pedido_sem_desconto: valor_total_pedido_sem_desconto.toFixed(2),
+        })
       }
       catch(e) {}
 
     }
+
   }
 
   const buscaValoresAgregados = async () => {
@@ -1411,63 +1455,6 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
         // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
       } else {
         // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
-      }
-    })
-  }
-
-  function buscaDistancia(orig, dest) {
-    let w = []
-    paradas.map(way => {
-      w.push({
-        location: way
-      })
-    })
-
-    /*
-    const uniqueW = Array.from(new Set(w.map(a => a.lat)))
-      .map(lat => {
-        return w.find(a => a.lat === lat)
-      })
-
-    setWaypoints(uniqueW)
-    */
-
-    // const consulta = `https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${origem.lat},${origem.lng}&destinations=${destino.lat},${destino.lng}&key=${apiKey}`
-    // https://retornofacil.com.br/scripts/directions.php?origins=-25.486878,-49.319317&destinations=-5.889387,-35.175128&key=AIzaSyBoV-kvy8LfddqcUb6kcHvs5TmrRJ09KXY
-
-    // const consulta = `https://retornofacil.com.br/scripts/directions.php?origins=-25.486878,-49.319317|-23.769382,-46.598601&destinations=-23.769382,-46.598601|-5.889387,-35.175128&key=AIzaSyBoV-kvy8LfddqcUb6kcHvs5TmrRJ09KXY`
-    const consulta = `https://retornofacil.com.br/scripts/directions.php?origins=${orig}&destinations=${dest}&key=${apiKey}`
-
-    // console.log('**** PedidosModal.buscaDistancia.consulta', consulta)
-
-    Axios.get(consulta, {
-    }).then(response => {
-      const { data } = response
-      let dist = 0
-      data.rows[0].elements.map(d => {
-        dist += d.distance.value
-      })
-
-      setDistancia({
-        distancia: `${Math.round(dist / 1000)} km`,
-        tempo: `${Math.round((dist / 1000) / 500)} dias`,
-      })
-
-    }).catch((error) => {
-      if (error.response) {
-        const { data } = error.response
-        try {
-          data.map(mensagem => {
-            toast(mensagem.message, { type: 'error' })
-          })
-        }
-        catch (e) {
-          console.log('**** PedidosModal.buscaDistancia.error.data', data)
-        }
-      } else if (error.request) {
-        console.log('**** PedidosModal.buscaDistancia.error.data', error)
-      } else {
-      // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
     })
   }
@@ -1698,104 +1685,225 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     }
   }
 
-  const updateMap = (rotas) => {
+  const updateMap = async (rotas) => {
 
-    if (rotas.length === 0) {
-      confGeo()
-      setOrigem({ lat: 0, lng: 0 })
-      setDestino({ lat: 0, lng: 0 })
+    if (rotas !== undefined) {
+      if (rotas.length === 0) {
+        confGeo()
+        setOrigem({ lat: 0, lng: 0 })
+        setDestino({ lat: 0, lng: 0 })
+        setParadas([])
+        setPlaces([{ latitude: 0, longitude: 0 }])
+        return
+      }
+
+      let rt = []
+      rotas.map(r => {
+        rt.push({
+          lat: parseFloat(r.latitude),
+          lng: parseFloat(r.longitude),
+          nome: r.nome,
+          logradouro: r.logradouro,
+          numero: r.numero,
+          complemento: r.complemento,
+          bairro: r.bairro,
+          cidade: r.cidade,
+          uf: r.uf,
+          exclusivo: r.tipo,
+        })
+      })
+
+      setCenter({
+        lat: parseFloat(rt[0].lat),
+        lng: parseFloat(rt[0].lng),
+      })
+
+      setPlaces(rt)
       setParadas([])
-      setPlaces([{ latitude: 0, longitude: 0 }])
-      return
+
+      console.log('**** PedidoModal.updateMap.rt', rt)
+
+      if (rt.length > 0) {
+        setOrigem(rt[0])
+        setDestino(rt[rt.length - 1])
+
+        if (rt.length > 2) {
+          let waypoints = []
+          for (let x = 1; x < rt.length - 1; x++) {
+
+            // console.log('**** PedidoModal.buscaPedido.waypoints', rt[x])
+
+            waypoints.push({
+              lat: rt[x].lat,
+              lng: rt[x].lng,
+            })
+          }
+          setParadas(waypoints)
+          // console.log('**** PedidoModal.buscaPedido.waypoints', waypoints)
+        }
+
+        console.log('**** PedidoModal.buscaPedido.map', rt[0], rt[rt.length - 1], paradas)
+      }
+
+      let rm = []
+      // let orig = []
+      // let dest = []
+
+      let o = ''
+      let d = ''
+
+      let cont = 0
+      let reg = {
+        origem: '',
+        destino: ''
+      }
+
+      let _tipo = 'O'
+      rotas.forEach(r => {
+
+        if (_tipo === 'O') {
+          reg['origem'] = `${r.latitude},${r.longitude}`
+          o = o + `${r.latitude},${r.longitude}` + '|'
+          // orig.push(reg)
+          _tipo = 'D'
+        } else {
+          reg['destino'] = `${r.latitude},${r.longitude}`
+          d = d + `${r.latitude},${r.longitude}` + '|'
+          // dest.push(reg)
+          // _tipo = 'O'
+        }
+
+        if (cont > 0) {
+          rm.push(reg)
+          cont = 0
+          reg = {
+            origem: '',
+            destino: ''
+          }
+
+          if (r.rota_relacionada +1 <= rotas.length) {
+            reg['origem'] = `${r.latitude},${r.longitude}`
+            o = o + `${r.latitude},${r.longitude}` + '|'
+            // orig.push(reg)
+            cont++
+          } 
+          
+        } else {
+          // if (r.rota_relacionada +1 <= rotas.length) {
+          //   rm.push(reg)
+          // }
+
+          cont++
+        }
+      })
+
+      console.log('**** PedidoModal.buscaPedido.rm', rm, 'orig', o, 'dest', d)
+      /*
+      rotas.map(r => {
+
+        if (r.tipo === 'C') {
+          reg['origem'] = `${r.latitude},${r.longitude}`
+          orig.push(reg)
+        } else {
+          reg['destino'] = `${r.latitude},${r.longitude}`
+          dest.push(reg)
+        }
+
+        if (cont > 0) {
+          rm.push(reg)
+          cont = 0
+          reg = {
+            origem: '',
+            destino: ''
+          }
+        } else {
+          cont++
+        }
+
+      })
+      */
+
+      /*
+      let o = ''
+      orig.map(r => {
+        o = o + r.origem + '|'
+      })
+      
+      let d = ''
+      dest.map(r => {
+        d = d + r.destino + '|'
+      })
+      */
+      // setRotasMap(rm)
+      // await sleep(1000)
+      buscaDistancia(o, d)
+    }
+  }
+
+  async function buscaDistancia(orig, dest) {
+    /*
+    if (paradas.length === 0) {
+      await sleep(5000)
     }
 
-    let rt = []
-    rotas.map(r => {
-      rt.push({
-        lat: parseFloat(r.latitude),
-        lng: parseFloat(r.longitude),
-        nome: r.nome,
-        logradouro: r.logradouro,
-        numero: r.numero,
-        complemento: r.complemento,
-        bairro: r.bairro,
-        cidade: r.cidade,
-        uf: r.uf,
+    let w = []
+    paradas.map(way => {
+      w.push({
+        location: way
       })
     })
+    */
+   
+    /*
+    const uniqueW = Array.from(new Set(w.map(a => a.lat)))
+      .map(lat => {
+        return w.find(a => a.lat === lat)
+      })
 
-    setCenter({
-      lat: parseFloat(rt[0].lat),
-      lng: parseFloat(rt[0].lng),
-    })
+    setWaypoints(uniqueW)
+    */
 
-    setPlaces(rt)
-    setParadas([])
+    // const consulta = `https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${origem.lat},${origem.lng}&destinations=${destino.lat},${destino.lng}&key=${apiKey}`
+    // https://retornofacil.com.br/scripts/directions.php?origins=-25.486878,-49.319317&destinations=-5.889387,-35.175128&key=AIzaSyBoV-kvy8LfddqcUb6kcHvs5TmrRJ09KXY
 
-    if (rt.length > 0) {
-      setOrigem(rt[0])
-      setDestino(rt[rt.length - 1])
+    // const consulta = `https://retornofacil.com.br/scripts/directions.php?origins=-25.486878,-49.319317|-23.769382,-46.598601&destinations=-23.769382,-46.598601|-5.889387,-35.175128&key=AIzaSyBoV-kvy8LfddqcUb6kcHvs5TmrRJ09KXY`
+    const consulta = `https://retornofacil.com.br/scripts/directions.php?origins=${orig}&destinations=${dest}&key=${apiKey}`
 
-      if (rt.length > 2) {
-        let waypoints = []
-        for (let x = 1; x < rt.length - 1; x++) {
+    // console.log('**** PedidosModal.buscaDistancia.consulta', consulta)
 
-          // console.log('**** PedidoModal.buscaPedido.waypoints', rt[x])
+    Axios.get(consulta, {
+    }).then(response => {
+      const { data } = response
+      let dist = 0
 
-          waypoints.push({
-            lat: rt[x].lat,
-            lng: rt[x].lng,
+      console.log('**** PedidosModal.buscaDistancia.directions', data.rows[0].elements)
+
+      data.rows[0].elements.map(d => {
+        dist += d.distance.value
+      })
+
+      setDistancia({
+        distancia: `${Math.round(dist / 1000)} km`,
+        tempo: `${Math.round((dist / 1000) / 500)} dias`,
+      })
+
+    }).catch((error) => {
+      if (error.response) {
+        const { data } = error.response
+        try {
+          data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
           })
         }
-        setParadas(waypoints)
-        // console.log('**** PedidoModal.buscaPedido.waypoints', waypoints)
-      }
-    }
-    // console.log('**** PedidoModal.buscaPedido.rt', rt)
-
-    let rm = []
-    let orig = []
-    let dest = []
-    let cont = 0
-    let reg = {
-      origem: '',
-      destino: ''
-    }
-    rotas.map(r => {
-
-      if (r.tipo === 'C') {
-        reg['origem'] = `${r.latitude},${r.longitude}`
-        orig.push(reg)
-      } else {
-        reg['destino'] = `${r.latitude},${r.longitude}`
-        dest.push(reg)
-      }
-
-      if (cont > 0) {
-        rm.push(reg)
-        cont = 0
-        reg = {
-          origem: '',
-          destino: ''
+        catch (e) {
+          console.log('**** PedidosModal.buscaDistancia.error.data', data)
         }
+      } else if (error.request) {
+        console.log('**** PedidosModal.buscaDistancia.error.data', error)
       } else {
-        cont++
+      // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
-
     })
-    
-    let o = ''
-    orig.map(r => {
-      o = o + r.origem + '|'
-    })
-    
-    let d = ''
-    dest.map(r => {
-      d = d + r.destino + '|'
-    })
-
-    // setRotasMap(rm)
-    buscaDistancia(o, d)
   }
 
   const confGeo = () => {
@@ -1931,14 +2039,17 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     newValues['localcoleta'] = values['localcoleta']
     newValues['localentrega'] = values['localentrega']
     newValues['status'] = values['status']
+    newValues['valor'] = values['valor'].toFixed(2)
 
+    /*
     if (values['valor']) {
       let val = values['valor'].replace('.', '')
       val = val.replace(',', '.')
-      newValues['valor'] = Math.round(val)
+      newValues['valor'] = Math.round(val).toFixed(2)
     } else {
-      newValues['valor'] = Math.round(values['valor'])
+      newValues['valor'] = Math.round(values['valor']).toFixed(2)
     }
+    */
 
     // console.log('**** PedidoModal.onSubmit-newValues', newValues)
     // return
@@ -2020,7 +2131,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
       })
   }
 
-
+  /*
   const onMapLoad = (map) => {
     // mapRef.current = map;
 
@@ -2072,7 +2183,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     }
     
   }
-
+  */
 
   const required = value => (value ? undefined : '* Obrigatório!')
 
@@ -2179,7 +2290,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                               <BoxTitulo bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10}>
                                 <Grid>
                                   <Row style={{ height: '65px', marginTop: '5px', alignItems: 'center' }}>
-                                    <Col xs={2}>
+                                    <Col xs={1}>
                                       <Field
                                         disabled={true}
                                         name="id"
@@ -2190,6 +2301,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                                         fullWidth
                                         size="small"
                                         margin="dense"
+                                        style={{ textAlign:"right" }}
                                       />
                                     </Col>
                                     <Col xs={2}>
@@ -2226,7 +2338,42 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                                         )}
                                       </Field>
                                     </Col>
-                                    <Col xs={3}>
+                                    <Col xs={1}>
+                                      <Field
+                                        disabled={disableEdit || parseFloat(values.valor_desconto) > 0}
+                                        name="percentual_desconto"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="% Desc."
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                        style={{ textAlign:"right" }}
+                                        // onChange={e => window.setFormValue('valor', e.target.value)}
+                                        // InputProps={{
+                                        //   inputComponent: formatCurrency,
+                                        // }}
+                                      />
+                                    </Col>
+                                    <Col xs={2}>
+                                      <Field
+                                        disabled={disableEdit || parseFloat(values.percentual_desconto) > 0}
+                                        name="valor_desconto"
+                                        component={CssTextField}
+                                        type="text"
+                                        label="Valor do Desconto"
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        margin="dense"
+                                        // onChange={e => window.setFormValue('valor', e.target.value)}
+                                        InputProps={{
+                                          inputComponent: formatCurrency,
+                                        }}
+                                      />
+                                    </Col>
+                                    <Col xs={2}>
                                       <Field
                                         disabled={disableEdit}
                                         name="valor"
@@ -2242,7 +2389,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                                           inputComponent: formatCurrency,
                                           endAdornment: (
                                             <InputAdornment position="end">
-                                              <button type="button" onClick={calculaValorPedido}
+                                              <button type="button" onClick={() => calculaValorPedido(values)}
                                                 style={{ backgroundColor: 'transparent', cursor: 'pointer' }}
                                               >
                                                 <RiMoneyDollarBoxLine />
@@ -2252,7 +2399,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                                         }}
                                       />
                                     </Col>
-                                    <Col xs={3}>
+                                    <Col xs={2}>
                                       <Field
                                         disabled={disableEdit}
                                         name="status"
