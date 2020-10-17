@@ -1180,6 +1180,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
     
         veiculos.forEach(vei => {
           let tipoVei = 1
+          let val_km = 0
+
           if (vei.tipo === "motos") {
             tipoVei = 3
           } else {
@@ -1191,8 +1193,12 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           // Busca valores agregados
           let valor_agregados_veiculo = 0
           valoresAgregados.forEach(valor => {
-            if (valor.tipo_de_veiculo_id === tipoVei && valor.imposto === 0 && valor.exclusivo === 0) {
-              valor_agregados_veiculo += valor.valor
+            if (valor.tipo_de_veiculo_id === tipoVei && valor.imposto === 0) {
+              if (valor.exclusivo === 0) {
+                valor_agregados_veiculo += valor.valor
+              } else {
+                val_km = valor.valor
+              }
             }
           })
 
@@ -1206,9 +1212,16 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
             origem: '',
             destino: ''
           }
-
+          
           let _tipo = 'O'
           rotas.forEach(r => {
+            console.table('**** PedidosModal.calculaValorPedido.r', r)
+            reg['rota'] = r.rota_relacionada - 1 < 0 ? 0 : r.rota_relacionada - 1
+            if (r.tipo === 'V') {
+              reg['exclusivo'] = true
+            } else {
+              reg['exclusivo'] = false
+            }
 
             if (_tipo === 'O') {
               reg['origem'] = {cidade: r.cidade, uf: r.uf}
@@ -1252,31 +1265,35 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
             })
 
             // Busca o valor adicional para Rota
-            tabelaDeRotas.forEach(rot => {
-              let cidade_origem = rot.cidade_origem.toLowerCase()
-              let cidade_destino = rot.cidade_destino.toLowerCase()
-              let cid_origem = r.origem.cidade.toLowerCase()
-              let cid_destino = r.destino.cidade.toLowerCase()
+            if (r.exclusivo === true) { // Rota exclusiva - valor por km
+              console.table('**** PedidosModal.calculaValorPedido.distancia', r.rota, distancia[r.rota].value * val_km, distancia)
+              valor_rotas_veiculo += distancia[r.rota].value * val_km
+            } else {
+              tabelaDeRotas.forEach(rot => {
+                let cidade_origem = rot.cidade_origem.toLowerCase()
+                let cidade_destino = rot.cidade_destino.toLowerCase()
+                let cid_origem = r.origem.cidade.toLowerCase()
+                let cid_destino = r.destino.cidade.toLowerCase()
 
-              cidade_origem = cidade_origem.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
-              cidade_destino = cidade_destino.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
-              cid_origem = cid_origem.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
-              cid_destino = cid_destino.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
+                cidade_origem = cidade_origem.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
+                cidade_destino = cidade_destino.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
+                cid_origem = cid_origem.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
+                cid_destino = cid_destino.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
 
-              if (
-                cidade_origem === cid_origem &&
-                rot.uf_origem.toLowerCase() === r.origem.uf.toLowerCase() &&
-                cidade_destino === cid_destino &&
-                rot.uf_destino.toLowerCase() === r.destino.uf.toLowerCase() &&
-                rot.tipo_de_veiculo_id === tipoVei
-              ) {
-                valor_rotas_veiculo += rot.valor
-                rotaOk = true
-              } else {
-                RotaDesc = `${r.origem.cidade}/${r.origem.uf} X ${r.destino.cidade}/${r.destino.uf}`
-              }
-            })
-
+                if (
+                  cidade_origem === cid_origem &&
+                  rot.uf_origem.toLowerCase() === r.origem.uf.toLowerCase() &&
+                  cidade_destino === cid_destino &&
+                  rot.uf_destino.toLowerCase() === r.destino.uf.toLowerCase() &&
+                  rot.tipo_de_veiculo_id === tipoVei
+                ) {
+                  valor_rotas_veiculo += rot.valor
+                  rotaOk = true
+                } else {
+                  RotaDesc = `${r.origem.cidade}/${r.origem.uf} X ${r.destino.cidade}/${r.destino.uf}`
+                }
+              })
+            }
           })
 
           let valor_seguro_roubo_veiculo = (valor_veiculo * 0.03) / 100
@@ -1316,7 +1333,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           // valor_imposto_pedido += valor_imposto_veiculo
         })
 
-        // console.table('**** PedidosModal.calculaValorPedido', valores)
+        console.table('**** PedidosModal.calculaValorPedido', valores)
 
         // valor_total_pedido = (valor_rotas_pedido + valor_seguro_pedido + valor_seguro_roubo_pedido + valor_agregados_pedido + valor_imposto_pedido)
 
@@ -1686,7 +1703,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
   }
 
   const updateMap = async (rotas) => {
-
+    // console.clear()
     if (rotas !== undefined) {
       if (rotas.length === 0) {
         confGeo()
@@ -1721,7 +1738,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
       setPlaces(rt)
       setParadas([])
 
-      console.log('**** PedidoModal.updateMap.rt', rt)
+      // console.log('**** PedidoModal.updateMap.rt', rt)
 
       if (rt.length > 0) {
         setOrigem(rt[0])
@@ -1742,15 +1759,12 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           // console.log('**** PedidoModal.buscaPedido.waypoints', waypoints)
         }
 
-        console.log('**** PedidoModal.buscaPedido.map', rt[0], rt[rt.length - 1], paradas)
+        // console.log('**** PedidoModal.buscaPedido.map', rt[0], rt[rt.length - 1], paradas)
       }
 
       let rm = []
       // let orig = []
       // let dest = []
-
-      let o = ''
-      let d = ''
 
       let cont = 0
       let reg = {
@@ -1763,14 +1777,9 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
 
         if (_tipo === 'O') {
           reg['origem'] = `${r.latitude},${r.longitude}`
-          o = o + `${r.latitude},${r.longitude}` + '|'
-          // orig.push(reg)
           _tipo = 'D'
         } else {
           reg['destino'] = `${r.latitude},${r.longitude}`
-          d = d + `${r.latitude},${r.longitude}` + '|'
-          // dest.push(reg)
-          // _tipo = 'O'
         }
 
         if (cont > 0) {
@@ -1783,110 +1792,54 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
 
           if (r.rota_relacionada +1 <= rotas.length) {
             reg['origem'] = `${r.latitude},${r.longitude}`
-            o = o + `${r.latitude},${r.longitude}` + '|'
-            // orig.push(reg)
             cont++
           } 
           
         } else {
-          // if (r.rota_relacionada +1 <= rotas.length) {
-          //   rm.push(reg)
-          // }
-
           cont++
         }
       })
 
-      console.log('**** PedidoModal.buscaPedido.rm', rm, 'orig', o, 'dest', d)
-      /*
-      rotas.map(r => {
-
-        if (r.tipo === 'C') {
-          reg['origem'] = `${r.latitude},${r.longitude}`
-          orig.push(reg)
-        } else {
-          reg['destino'] = `${r.latitude},${r.longitude}`
-          dest.push(reg)
-        }
-
-        if (cont > 0) {
-          rm.push(reg)
-          cont = 0
-          reg = {
-            origem: '',
-            destino: ''
-          }
-        } else {
-          cont++
-        }
-
-      })
-      */
-
-      /*
       let o = ''
-      orig.map(r => {
-        o = o + r.origem + '|'
-      })
-      
       let d = ''
-      dest.map(r => {
+      rm.forEach(r => {
+        o = o + r.origem + '|'
         d = d + r.destino + '|'
       })
-      */
-      // setRotasMap(rm)
-      // await sleep(1000)
+
+      // console.log('**** PedidoModal.buscaPedido.rm', rm, 'orig', o, 'dest', d)
       buscaDistancia(o, d)
     }
   }
 
   async function buscaDistancia(orig, dest) {
-    /*
-    if (paradas.length === 0) {
-      await sleep(5000)
-    }
-
-    let w = []
-    paradas.map(way => {
-      w.push({
-        location: way
-      })
-    })
-    */
-   
-    /*
-    const uniqueW = Array.from(new Set(w.map(a => a.lat)))
-      .map(lat => {
-        return w.find(a => a.lat === lat)
-      })
-
-    setWaypoints(uniqueW)
-    */
-
-    // const consulta = `https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${origem.lat},${origem.lng}&destinations=${destino.lat},${destino.lng}&key=${apiKey}`
-    // https://retornofacil.com.br/scripts/directions.php?origins=-25.486878,-49.319317&destinations=-5.889387,-35.175128&key=AIzaSyBoV-kvy8LfddqcUb6kcHvs5TmrRJ09KXY
-
-    // const consulta = `https://retornofacil.com.br/scripts/directions.php?origins=-25.486878,-49.319317|-23.769382,-46.598601&destinations=-23.769382,-46.598601|-5.889387,-35.175128&key=AIzaSyBoV-kvy8LfddqcUb6kcHvs5TmrRJ09KXY`
     const consulta = `https://retornofacil.com.br/scripts/directions.php?origins=${orig}&destinations=${dest}&key=${apiKey}`
-
     // console.log('**** PedidosModal.buscaDistancia.consulta', consulta)
 
     Axios.get(consulta, {
     }).then(response => {
       const { data } = response
-      let dist = 0
 
-      console.log('**** PedidosModal.buscaDistancia.directions', data.rows[0].elements)
+      // console.log('**** PedidosModal.buscaDistancia.directions', data)
 
-      data.rows[0].elements.map(d => {
-        dist += d.distance.value
-      })
+      let dists = []
+      // console.log('**** data', data.origin_addresses)
+      
+      for (let x=0; x < data.origin_addresses.length; x++) {
+        let dist = {
+          origem: data.origin_addresses[x],
+          destino: data.destination_addresses[x],
+          value: parseFloat(data.rows[x].elements[x].distance.value / 1000) ,
+          distancia: `${Math.round(data.rows[x].elements[x].distance.value / 1000)} km`,
+          tempo: `${Math.round((data.rows[x].elements[x].distance.value / 1000) / 500)} dias`,
+        }
+        // console.log('**** distancia', dist)
+        dists.push(dist)
+      }
+      console.log('**** distancia', dists)
 
-      setDistancia({
-        distancia: `${Math.round(dist / 1000)} km`,
-        tempo: `${Math.round((dist / 1000) / 500)} dias`,
-      })
-
+      setDistancia(dists)
+      
     }).catch((error) => {
       if (error.response) {
         const { data } = error.response
