@@ -84,8 +84,13 @@ function Map({ markers, origem, destino, paradas, defaultCenter, defaultZoom }) 
             map: map
           });
 
-          const info = `<strong>${markers[i].nome}</strong><br/>${markers[i].logradouro}, ${markers[i].numero}` 
-                     + `, ${markers[i].complemento}, ${markers[i].bairro} - ${markers[i].cidade}/${markers[i].uf}` 
+          let info = `<strong>${markers[i].nome}</strong><br/>${markers[i].logradouro}, ${markers[i].numero}`
+          if (markers[i].complemento !== null) {
+            info += `, ${markers[i].complemento}<br/>`
+          } else {
+            info += `<br/>`
+          }
+          info += `${markers[i].bairro} - ${markers[i].cidade}/${markers[i].uf}` 
     
           window.google.maps.event.addListener(marker, 'click', (function(marker, i) {
             return function() {
