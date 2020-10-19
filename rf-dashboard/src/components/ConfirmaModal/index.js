@@ -11,9 +11,9 @@ import {
   RRight,
   Blank,
   Botao,
-} from '../Cadastro/CardUsuario/styles'
+} from '../../views/Cards/CardUsuario/styles'
 
-import { FaIcon } from '../Icone'
+import { FaIcon } from '../../components/Icone'
 
 import { Grid, Row, Col } from 'react-flexbox-grid'
 
