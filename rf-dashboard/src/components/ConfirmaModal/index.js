@@ -11,7 +11,7 @@ import {
   RRight,
   Blank,
   Botao,
-} from '../../views/Cards/CardUsuario/styles'
+} from '../../views/Cadastro/CardUsuario/styles'
 
 import { FaIcon } from '../../components/Icone'
 

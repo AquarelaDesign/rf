@@ -13,7 +13,7 @@ import {
   RLeft,
   RRight,
   Blank,
-} from '../../Cards/CardUsuario/styles'
+} from '../../Cadastro/CardUsuario/styles'
 
 import {
   TextField,

@@ -10,7 +10,7 @@ import {
   RLeft,
   RRight,
   Blank,
-} from '../../Cards/CardUsuario/styles'
+} from '../CardUsuario/styles'
 
 import { makeStyles } from '@material-ui/core/styles'
 
@@ -24,7 +24,7 @@ import {
   TextField,
 } from 'final-form-material-ui'
 
-import Upload from '../../Cards/CardUsuario/uploadNew'
+import Upload from '../CardUsuario/uploadNew'
 import DatePicker from '../../../components/datepicker'
 
 import "./modal.css"

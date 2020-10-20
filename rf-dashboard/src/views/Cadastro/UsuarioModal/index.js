@@ -10,14 +10,14 @@ import {
   Botao,
   Grid,
   Blank,
-} from '../../Cards/CardUsuario/styles'
+} from '../CardUsuario/styles'
 
 import { Tooltip,} from '@material-ui/core'
 import { FaIcon } from '../../../components/Icone'
 
 import "./modal.css"
 
-import CardUsuario from '../../Cards/CardUsuario'
+import CardUsuario from '../CardUsuario'
 
 const UsuarioModal = ({ isShowUsuario, hide, tipo, usuarioId }) => {
 

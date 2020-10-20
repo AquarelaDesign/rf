@@ -14,7 +14,7 @@ import {
   Botao,
   Grid as GridModal,
   Blank,
-} from '../../Cards/CardUsuario/styles'
+} from '../../Cadastro/CardUsuario/styles'
 
 import {
   Grid,
@@ -322,9 +322,9 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
   const [confTexto1, setConfTexto1] = useState('')
   const [modulo, setModulo] = useState('')
 
-  const [responseMap, setResponseMap] = useState(null)
-  const [waypoints, setWaypoints] = useState([])
-  const [dadosInfo, setDadosInfo] = useState(null)
+  // const [responseMap, setResponseMap] = useState(null)
+  // const [waypoints, setWaypoints] = useState([])
+  // const [dadosInfo, setDadosInfo] = useState(null)
   // const [rotasMap, setRotasMap] = useState([])
 
   const [origem, setOrigem] = useState({
@@ -892,9 +892,16 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
       cellRenderer: 'formataData',
     },
     {
+      headerName: "Operador",
+      field: "operador_id",
+      width: 120,
+      sortable: true,
+      cellRenderer: 'buscaNome',
+    },
+    {
       headerName: "Motorista",
       field: "motorista_id",
-      width: 150,
+      width: 120,
       sortable: true,
       cellRenderer: 'buscaNome',
     },
@@ -1557,10 +1564,12 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
             }
           })
 
-          console.table('**** PedidosModal.calculaValorPedido.rtSeg', rtSeg)
-
+          // console.table('**** PedidosModal.calculaValorPedido.rtSeg', rtSeg)
+          let ValoresRotas = []
+          
           rtSeg.forEach(r => {
-            console.table('**** PedidosModal.calculaValorPedido.forRotas',`${r.origem.cidade}/${r.origem.uf} X ${r.destino.cidade}/${r.destino.uf}`)
+            // console.table('**** PedidosModal.calculaValorPedido.forRotas',`${r.origem.cidade}/${r.origem.uf} X ${r.destino.cidade}/${r.destino.uf}`)
+            RotaDesc = `${r.origem.cidade}/${r.origem.uf} X ${r.destino.cidade}/${r.destino.uf}`
             // Busca os valores dos seguros para rotas
             seguros.forEach(seg => {
 
@@ -1574,7 +1583,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
 
             // Busca o valor adicional para Rota
             if (r.exclusivo === true) { // Rota exclusiva - valor por km
-              console.table('**** PedidosModal.calculaValorPedido.exclusivo', r.rota, distancia[r.rota].value * val_km, distancia)
+              // console.table('**** PedidosModal.calculaValorPedido.exclusivo', r.rota, distancia[r.rota].value * val_km, distancia)
               valor_rotas_veiculo += distancia[r.rota].value * val_km
             } else {
               
@@ -1591,21 +1600,6 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                 cid_origem = cid_origem.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
                 cid_destino = cid_destino.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
 
-                if ((cidade_origem === 'curitiba' || cidade_origem === 'saobernardodocampo') && tipoVei === 1) {
-                  console.table('**** PedidosModal.calculaValorPedido.rota', {
-                    cidade_origem,
-                    cidade_uf_origem: rot.uf_origem.toLowerCase(),
-                    cid_origem,
-                    cid_uf_origem: r.origem.uf.toLowerCase(),
-                    cidade_destino,
-                    cidade_uf_destino: rot.uf_destino.toLowerCase(),
-                    cid_destino,
-                    cid_uf_destino: r.destino.uf.toLowerCase(),
-                    rot_tipoVei: rot.tipo_de_veiculo_id,
-                    tipoVei
-                  })
-                }
-                
                 if (
                   cidade_origem === cid_origem &&
                   rot.uf_origem.toLowerCase() === r.origem.uf.toLowerCase() &&
@@ -1613,64 +1607,21 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                   rot.uf_destino.toLowerCase() === r.destino.uf.toLowerCase() &&
                   rot.tipo_de_veiculo_id === tipoVei
                 ) {
-                  console.table('**** PedidosModal.calculaValorPedido.rota.ok', rot.valor)
+                  ValoresRotas.push({
+                    rota: RotaDesc,
+                    valor_rota: rot.valor,
+                  })
+      
                   valor_rotas_veiculo += rot.valor
                   rotaOk = true
                   break
-                } else {
-                  RotaDesc = `${r.origem.cidade}/${r.origem.uf} X ${r.destino.cidade}/${r.destino.uf}`
-                  // console.table('**** PedidosModal.calculaValorPedido.rota.fail', RotaDesc)
-                  // rotaOk = false
-                }
-
+                } 
               }
-              
-              /*
-              tabelaDeRotas.forEach(rot => {
-                let cidade_origem = rot.cidade_origem.toLowerCase()
-                let cidade_destino = rot.cidade_destino.toLowerCase()
-                let cid_origem = r.origem.cidade.toLowerCase()
-                let cid_destino = r.destino.cidade.toLowerCase()
-
-                cidade_origem = cidade_origem.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
-                cidade_destino = cidade_destino.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
-                cid_origem = cid_origem.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
-                cid_destino = cid_destino.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
-
-                if ((cidade_origem === 'curitiba' || cidade_origem === 'saobernardodocampo') && tipoVei === 1) {
-                  console.table('**** PedidosModal.calculaValorPedido.rota', {
-                    cidade_origem,
-                    cidade_uf_origem: rot.uf_origem.toLowerCase(),
-                    cid_origem,
-                    cid_uf_origem: r.origem.uf.toLowerCase(),
-                    cidade_destino,
-                    cidade_uf_destino: rot.uf_destino.toLowerCase(),
-                    cid_destino,
-                    cid_uf_destino: r.destino.uf.toLowerCase(),
-                    rot_tipoVei: rot.tipo_de_veiculo_id,
-                    tipoVei
-                  })
-                }
-                
-                if (
-                  cidade_origem === cid_origem &&
-                  rot.uf_origem.toLowerCase() === r.origem.uf.toLowerCase() &&
-                  cidade_destino === cid_destino &&
-                  rot.uf_destino.toLowerCase() === r.destino.uf.toLowerCase() &&
-                  rot.tipo_de_veiculo_id === tipoVei
-                ) {
-                  console.table('**** PedidosModal.calculaValorPedido.rota.ok', rot.valor)
-                  valor_rotas_veiculo += rot.valor
-                  rotaOk = true
-                } else {
-                  RotaDesc = `${r.origem.cidade}/${r.origem.uf} X ${r.destino.cidade}/${r.destino.uf}`
-                  console.table('**** PedidosModal.calculaValorPedido.rota.fail', RotaDesc)
-                  // rotaOk = false
-                }
-              })
-              */
             }
-          })
+
+          }) // rtSeg.forEach
+
+          console.table('**** PedidosModal.calculaValorPedido.ValoresRotas', ValoresRotas)
 
           let valor_seguro_roubo_veiculo = (valor_veiculo * 0.03) / 100
           
@@ -1679,13 +1630,16 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           
           if (percentual_desconto_pedido > 0) {
             valor_desconto_veiculo = (valor_bruto * percentual_desconto_pedido) / 100
-          } if (valor_desconto_pedido > 0) {
+          } 
+          
+          if (valor_desconto_pedido > 0) {
             valor_desconto_veiculo = valor_bruto - (valor_desconto_pedido / veiculos.length)
           }
 
           let valor_imposto_veiculo = (valor_bruto - valor_desconto_veiculo) * (percentual_imposto - 1)
           let valor_total_veiculo = (valor_bruto - valor_desconto_veiculo) + valor_imposto_veiculo
-          // Salvar na tabela 'valores_do_pedido'
+          
+          // Salvar na tabela 'valores_do_pedido' (por veiculo)
           valores.push({
             placa: vei.placachassi,
             percentual_imposto,
@@ -1709,6 +1663,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
           // valor_imposto_pedido += valor_imposto_veiculo
         })
 
+        
         console.table('**** PedidosModal.calculaValorPedido.valores', valores)
 
         // valor_total_pedido = (valor_rotas_pedido + valor_seguro_pedido + valor_seguro_roubo_pedido + valor_agregados_pedido + valor_imposto_pedido)
@@ -1979,7 +1934,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
 
   const onRowDragEnd = async (e) => {
     // console.log('**** PedidoModal.onRowDragEnd', e)
-    console.log('**** PedidoModal.onRowDragEnd.setVgridRotas.data', vgridRotas)
+    // console.log('**** PedidoModal.onRowDragEnd.setVgridRotas.data', vgridRotas)
 
     vgridRotas.forEachNode(function(rowNode, index) {
       // console.log(index +' node ' + rowNode.data.id + ' is in the grid')
@@ -2983,6 +2938,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
               tipoCad={tipoCadVei === 'N' ? tipoCadVei : tipoCadVei !== 'E' && tipoCadVei !== 'N' ? 'D' : tipoCadVei}
               disableEdit={(tipoCadVei === 'N' ? false : tipoCadVei !== 'E' && tipoCadVei !== 'N' ? true : false) || disableEdit}
               callback={e => callBackRotas(e)}
+              rotas={rotas}
             />
             <HistoricoModal
               isShowHistorico={isShowHistorico}

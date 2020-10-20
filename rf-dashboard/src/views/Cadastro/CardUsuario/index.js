@@ -35,7 +35,7 @@ import {
   TextField,
 } from 'final-form-material-ui'
 
-import { Texto } from './styles'
+import { Texto, BoxTitulo } from './styles'
 
 import DocsModal from '../../Cadastro/DocsModal'
 import useModalDocs from '../../Cadastro/DocsModal/useModal'
@@ -45,6 +45,9 @@ import useModalUser from '../../Cadastro/UserModal/useModal'
 
 import ConfirmaModal from '../../../components/ConfirmaModal'
 import useModalConfirma from '../../../components/ConfirmaModal/useModal'
+
+import HistoricoModal from '../../../components/HistoricoModal'
+import useModalHistorico from '../../../components/HistoricoModal/useModal'
 
 // import { msgerror } from '../../../globais'
 import api from '../../../services/rf'
@@ -294,6 +297,16 @@ export default function CardUsuario({ tipo, usuarioId }) {
   const [propsE, setPropsE] = useState(null)
   const [sData, setSData] = useState(null)
   
+  const [vgridHistorico, setVgridHistorico] = useState(gridApi)
+  const [historico, setHistorico] = useState([])
+  const [motoristaID, setMotoristaID] = useState(null)
+  const [clienteID, setClienteID] = useState(null)
+  const [operadorID, setOperadorID] = useState(null)
+  const [operador_ID, setOperador_ID] = useState(null)
+  const [usuarios, setUsuarios] = useState([])
+  const [historicoID, setHistoricoID] = useState(null)
+  const { isShowHistorico, toggleHistorico } = useModalHistorico()
+
   const { isShowDocs, toggleDocs } = useModalDocs()
   const { isShowUser, toggleUser } = useModalUser()
   const { isShowConfirma, toggleConfirma } = useModalConfirma()
@@ -318,6 +331,10 @@ export default function CardUsuario({ tipo, usuarioId }) {
         window.setFormValue('status', 'I')
         window.setFormValue('estado', ' ')
       }
+
+      setOperador_ID(localStorage.getItem('@rf/userID'))
+      buscaUsuarios()
+
     } catch (error) {
       if (error.response) {
         const { data } = error.response
@@ -362,6 +379,26 @@ export default function CardUsuario({ tipo, usuarioId }) {
 
           data.user_id = data.user_id === 1 ? true : false
 
+          if (data.tipo === 'M') {
+            setOperadorID(null)
+            setMotoristaID(data.id)
+            setClienteID(null)
+            buscaHistorico(null, data.id, null)
+          } else if (data.tipo === 'C') {
+            setOperadorID(null)
+            setMotoristaID(null)
+            setClienteID(data.id)
+            buscaHistorico(null, null, data.id)
+          } else if (data.tipo === 'O') {
+            setOperadorID(data.id)
+            setMotoristaID(null)
+            setClienteID(null)
+            buscaHistorico(data.id, null, null)
+          } else {
+            setMotoristaID(null)
+            setClienteID(null)
+          }
+          
           setInitialValues(data)
           setTipoCadastro(data.tipo)
           valTipoCadastro(data.tipo)
@@ -413,6 +450,153 @@ export default function CardUsuario({ tipo, usuarioId }) {
         })
     }
   }
+
+  const frameworkComponents = {
+    buscaNome: BuscaNome,
+  }
+
+  function BuscaNome(params) {
+    return usuarios.filter(user => user.id === params.value).map(
+      fusu => {
+        return fusu['nome']
+      }
+    )
+  }
+
+  const buscaUsuarios = async () => {
+    await api
+      .get(`/usuarios`)
+      .then(response => {
+        const { data } = response
+        setUsuarios(data)
+      }).catch((error) => {
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('**** CardUsuario.buscaUsuarios.error.data', data)
+          }
+        } else if (error.request) {
+          console.log('**** CardUsuario.buscaUsuarios.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        } else {
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        }
+      })
+  }
+
+  const buscaHistorico = async (operadorID, motoristaID, clienteID) => {
+    // console.log('**** CardUsuario.buscaHistorico.pedidoId', pedidoId)
+    await api
+      .post(`/buscahistoricos`, {
+        "motorista_id": motoristaID,
+        "cliente_id": clienteID,
+        "operador_id": operadorID,
+        "pedido_id": null,
+        "titulo_pagar_id": null,
+        "titulo_receber_id": null,
+      })
+      .then(response => {
+        const { data } = response
+        setHistorico(data)
+      }).catch((error) => {
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('**** CardUsuario.buscaHistorico.error.data', data)
+          }
+        } else if (error.request) {
+          console.log('**** CardUsuario.buscaHistorico.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        } else {
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        }
+      })
+  }
+
+  const salvaHistorico = async (observacao) => {
+    // console.log('**** CardUsuario.salvaHistorico.pedidoId', pedidoId)
+    await api
+      .post(`/historicos`, {
+        "motorista_id": motoristaID,
+        "cliente_id": clienteID,
+        "operador_id": operador_ID,
+        "pedido_id": null,
+        "titulo_pagar_id": null,
+        "titulo_receber_id": null,
+        "observacao": observacao, 
+        "valor": 0
+      })
+      .then(response => {
+        const { data } = response
+        buscaHistorico(operadorID, motoristaID, clienteID)
+      }).catch((error) => {
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('**** CardUsuario.salvaHistorico.error.data', data)
+          }
+        } else if (error.request) {
+          console.log('**** CardUsuario.salvaHistorico.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        } else {
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        }
+      })
+  }
+
+  const onRowDoubleClickedHistorico = (params) => {
+    setTipoCadVei('V')
+    setHistoricoID(params.data.id)
+    toggleHistorico()
+  }
+
+  const onRowDoubleClickedVeiculos = (params) => {
+    setVeiculoId(params.data.id)
+    setTipoCadVei(disableEdit ? 'D' : tipo)
+    toggleDocs()
+  }
+
+  const callBackHistorico = (e) => {
+    buscaHistorico(operadorID, motoristaID, clienteID)
+  }
+
+  const colDefsHistorico = [
+    {
+      headerName: "Data",
+      field: "updated_at",
+      width: 200,
+      sortable: true,
+      cellRenderer: 'formataData',
+    },
+    {
+      headerName: "Operador",
+      field: "operador_id",
+      width: 150,
+      sortable: true,
+      cellRenderer: 'buscaNome',
+    },
+    {
+      headerName: "Observação",
+      field: "observacao",
+      flex: 1,
+      sortable: false,
+    },
+  ]
 
   function Estado(estado) {
     // [] Disponível, Aguardando A[P]rovacao, [A]guardando Coleta, Em [T]ransporte, 
@@ -804,6 +988,10 @@ export default function CardUsuario({ tipo, usuarioId }) {
 
         if (response.status === 200) {
           toast('Registro atualizado com sucesso!', { type: 'success' })
+          salvaHistorico(
+            `Cadastro ${userID !== null && tipoCad === 'E' ? 'Atualizado' : 'Criado'} com sucesso, `
+          )
+
         } else if (response.status === 400) {
           response.data.map(mensagem => {
             toast(mensagem.message, { type: 'error' })
@@ -992,16 +1180,10 @@ export default function CardUsuario({ tipo, usuarioId }) {
             <form onSubmit={handleSubmit} noValidate>
               <Tabs value={value} onChange={handleChange} aria-label="Dados do Usuário">
                 <Tab label="Usuário" {...a11yProps(0)} />
-
                 {(tipoCadastro === 'M' || values.user_id === true) && userID ?
-                  <Tab label="Veículos" {...a11yProps(2)} />
+                  <Tab label="Veículos" {...a11yProps(1)} />
                   : null}
-                {/* <Tab label="Observações" {...a11yProps(1)} /> */}
-
-                {/* {(tipoCadastro === 'M' || values.user_id === true) ?
-                  <Tab label="Documentos" {...a11yProps(2)} />
-                : null} */}
-
+                <Tab label="Histórico" {...a11yProps(2)} />
               </Tabs>
 
               {!disableEdit &&
@@ -1098,11 +1280,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                 </div>
               }
 
-              <TabPanel
-                value={value}
-                index={0}
-                id='cadUsu'
-              >
+              <TabPanel value={value} index={0} id='cadUsu'>
                 <Grid fluid>
                   <Row>
                     <Col xs={2}>
@@ -1722,6 +1900,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                             pagination={true}
                             paginationPageSize={50}
                             localeText={agPtBr}
+                            onRowDoubleClicked={onRowDoubleClickedVeiculos}
                           >
                           </AgGridReact>
                         </div>
@@ -1740,6 +1919,63 @@ export default function CardUsuario({ tipo, usuarioId }) {
                 </TabPanel>
                 : null}
 
+              <TabPanel value={value} index={2} style={{ width: '100%', height: '455px' }}>
+                <BoxTitulo
+                  size={425}
+                  width='99%'
+                  bgcolor='#FFFFFF'
+                  border='1px solid #2699F8'
+                  mb={10}
+                >
+                  <Grid>
+                    <Row>
+                      <Col xs={12}>
+                        <div className="ag-theme-custom-react" style={{
+                          height: '415px',
+                          width: '100%',
+                          // borderRadius: '10px',
+                          backgroundColor: '#FFFFFF',
+                          border: '5px solid #FFFFFF',
+                        }}>
+                          <AgGridReact
+                            id='agHistorico'
+                            name='agHistorico'
+                            rowSelection="single"
+                            onGridReady={(params) => { setVgridHistorico(params.api) }}
+                            columnDefs={colDefsHistorico}
+                            rowData={historico}
+                            frameworkComponents={frameworkComponents}
+                            suppressNavigable={disableEdit}
+                            tooltipShowDelay={0}
+                            pagination={true}
+                            paginationPageSize={10}
+                            rowDragManaged={true}
+                            animateRows={true}
+                            localeText={agPtBr}
+                            onRowDoubleClicked={onRowDoubleClickedHistorico}
+                          >
+                          </AgGridReact>
+                        </div>
+                      </Col>
+                    </Row>
+                  </Grid>
+                </BoxTitulo>
+              </TabPanel>
+
+              <HistoricoModal
+                isShowHistorico={isShowHistorico}
+                hide={toggleHistorico}
+
+                historicoID={historicoID}
+                motoristaID={motoristaID}
+                clienteID={clienteID}
+                operadorID={operadorID}
+                pedidoID={null}
+
+                tipoCad={tipoCadVei !== 'E' && tipoCadVei !== 'N' ? 'D' : tipoCadVei}
+                disableEdit={(tipoCadVei !== 'E' && tipoCadVei !== 'N' ? true : false) || disableEdit}
+                callback={e => callBackHistorico(e)}
+              />
               <DocsModal
                 isShowDocs={isShowDocs}
                 hide={toggleDocs}

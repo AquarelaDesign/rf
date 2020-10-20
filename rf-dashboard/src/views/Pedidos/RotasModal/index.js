@@ -13,7 +13,7 @@ import {
   RLeft,
   RRight,
   Blank,
-} from '../../Cards/CardUsuario/styles'
+} from '../../Cadastro/CardUsuario/styles'
 
 import {
   TextField,
@@ -21,6 +21,7 @@ import {
 } from 'final-form-material-ui'
 
 import MaskedInput from 'react-text-mask'
+import createNumberMask from 'text-mask-addons/dist/createNumberMask'
 // import { makeStyles } from '@material-ui/core/styles'
 
 import { 
@@ -48,6 +49,15 @@ import useModalUsuarios from '../../Cadastro/GridUsuariosModal/useModal'
 
 // import exclusive from '../../../assets/logo-exclusive.png'
 // import exclusive_pb from '../../../assets/logo-exclusive-pb.png'
+const numberMask = createNumberMask({
+  prefix: '',
+  suffix: '',
+  thousandsSeparatorSymbol: '.',
+  decimalSymbol: ',',
+  decimalScale: 2,
+  fixedDecimalScale: true,
+  requireDecimal: true, 
+})
 
 const CssCheckbox = withStyles({
   root: {
@@ -150,12 +160,13 @@ const cadStatus = [
   { Id: 4, Code: 'E', Description: 'Entregue' },
 ]
 
-const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit, callback }) => {
+const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit, callback, rotas }) => {
   const [initialValues, setInitialValues] = useState([])
   const { isShowing, toggleGridUsuarios } = useModalUsuarios()
   
   const [atualizaCEP, setAtualizaCEP] = useState(false)
   const [ultimoCep, setUltimoCep] = useState('')
+  const [disableValor, setDisableValor] = useState(false)
   
   let submit
 
@@ -170,6 +181,10 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
           const { data } = response
 
           data.tipo = data.tipo === "V" ? true : false
+
+          if (rotas.length > 0 && rotas.length % 2 === 0) {
+            setDisableValor(true)
+          }
           // console.log('**** RotasModal.buscaRota.data', data)
           setInitialValues(data)
         })
@@ -233,6 +248,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
       telefone: "",
       whats: "",
       email: "",
+      valor_pago: 0,
       motorista_id: null,
       rota_relacionada: null,
       status: "D",
@@ -317,6 +333,34 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
     return value.replace(/\D+/g, '')
   }
   
+  function formatCurrency(props) {
+    const { inputRef, value, ...other } = props
+
+    let val = value
+    val = val.toString().replace('.', ',')
+
+    return (
+      <MaskedInput
+        {...other}
+        ref={(ref) => {
+          inputRef(ref ? ref.inputElement : null)
+        }}
+        value={val}
+        mask={numberMask}
+        placeholderChar={'\u2000'}
+        showMask
+        style={{
+          textAlign:"right",
+        }}
+      />
+    )
+  }
+
+  formatCurrency.propTypes = {
+    inputRef: PropTypes.func.isRequired,
+    onChange: PropTypes.func.isRequired,
+  }
+
   function formatCpfCnpj(props) {
     const { inputRef, value, ...other } = props
   
@@ -502,7 +546,11 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
       return
     }
 
-    // console.log('**** RotasModal.onSubmit-values', values)
+    console.log('**** RotasModal.onSubmit-values-0', values)
+    
+    if (tipoCad === 'N') {
+      values.rota_relacionada = rotas.length
+    }
 
     values.cpfcnpj = clearNumber(values.cpfcnpj)
     values.celular = clearNumber(values.celular)
@@ -511,6 +559,13 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
 
     values.tipo = values.tipo === true ? "V" : null
 
+    if (values['valor_pago']) {
+      let val = values['valor_pago'].replace('.', '')
+      val = val.replace(',', '.')
+      values.valor_pago = val
+    }
+
+    console.log('**** RotasModal.onSubmit-values-1', values)
     let apiParams = {}
     if (rotaID !== null && tipoCad === 'E') {
       apiParams = {
@@ -702,38 +757,33 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
                                 }}
                               />
                             </Col>
-                            <Col xs={2}>
-                            <label>
+                            <Col xs={3}>
                               <Field
-                                disabled={disableEdit}
-                                name="tipo"
-                                component={CssCheckbox}
-                                type="checkbox"
-                                color="primary"
-                              />{' '}
-                              Exclusivo?
-                            </label>
-                            </Col>
-                            <Col xs={4}>
-                              <Field
-                                disabled={disableEdit}
-                                name="status"
+                                disabled={disableEdit || disableValor}
+                                name="valor_pago"
                                 component={CssTextField}
-                                type="select"
-                                label="Status"
+                                type="text"
+                                label="Valor Pago"
                                 variant="outlined"
                                 fullWidth
-                                select
                                 size="small"
                                 margin="dense"
-                                >
-                                {/* { Id: 1, Code: '', Description: 'Aguardando' } */}
-                                {cadStatus.map((option) => (
-                                  <MenuItem key={option.Code} value={option.Code}>
-                                    {option.Description}
-                                  </MenuItem>
-                                ))}
-                              </Field>
+                                InputProps={{
+                                  inputComponent: formatCurrency,
+                                }}
+                              />
+                            </Col>
+                            <Col xs={3}>
+                              <label>
+                                <Field
+                                  disabled={disableEdit}
+                                  name="tipo"
+                                  component={CssCheckbox}
+                                  type="checkbox"
+                                  color="primary"
+                                />{' '}
+                                Exclusivo?
+                              </label>
                             </Col>
                           </Row>
 
@@ -906,7 +956,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
                           </Row>
                           
                           <Row style={{ height: '54px', marginTop: '15px' }}>
-                          <Col xs={3}>
+                            <Col xs={3}>
                               <Field
                                 disabled={disableEdit}
                                 name="latitude"
@@ -933,6 +983,27 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
                                 size="small"
                                 margin="dense"
                               />
+                            </Col>
+                            <Col xs={6}>
+                              <Field
+                                disabled={disableEdit}
+                                name="status"
+                                component={CssTextField}
+                                type="select"
+                                label="Status"
+                                variant="outlined"
+                                fullWidth
+                                select
+                                size="small"
+                                margin="dense"
+                                >
+                                {/* { Id: 1, Code: '', Description: 'Aguardando' } */}
+                                {cadStatus.map((option) => (
+                                  <MenuItem key={option.Code} value={option.Code}>
+                                    {option.Description}
+                                  </MenuItem>
+                                ))}
+                              </Field>
                             </Col>
                           </Row>
                         </Grid>
