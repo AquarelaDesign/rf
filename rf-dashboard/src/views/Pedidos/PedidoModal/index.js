@@ -2374,6 +2374,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
                                             <InputAdornment position="end">
                                               <button type="button" onClick={() => calculaValorPedido(values)}
                                                 style={{ backgroundColor: 'transparent', cursor: 'pointer' }}
+                                                disabled={disableEdit}
                                               >
                                                 <RiMoneyDollarBoxLine />
                                               </button>
