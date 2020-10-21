@@ -11,6 +11,8 @@ import { Container, BoxTitulo, Item, Grid, Texto, Box } from './styles'
 import moment from "moment"
 import api from '../../../services/rf'
 
+import PedidoModal from '../../Pedidos/PedidoModal'
+import useModalPedido from '../../Pedidos/PedidoModal/useModal'
 
 // const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -29,6 +31,8 @@ export default function CardTransportes({ data, index }) {
   const [rotas, setRotas] = useState([])
   const [localColeta, setLocalColeta] = useState([])
   const [localEntrega, setLocalEntrega] = useState([])
+
+  const { isShowPedido, togglePedido } = useModalPedido()
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -197,6 +201,18 @@ export default function CardTransportes({ data, index }) {
       const userID = item.data.id
       const pedidoID = data.id
 
+      if (data.rotas.length === 0) {
+        toast(`O Pedido [${data.id}] se encontra sem Rotas cadastradas e passará para em manutenção!`, { type: 'error' })
+        atualizaPedido(pedidoID, null, ' ')
+        return
+      }
+
+      if (data.veiculos.length === 0) {
+        toast(`O Pedido [${data.id}] se encontra sem veículos cadastradas e passará para manutenção!`, { type: 'error' })
+        atualizaPedido(pedidoID, null, ' ')
+        return
+      }
+
       const transporte = {
         transporte: {
           Motorista_id: userID,
@@ -207,27 +223,30 @@ export default function CardTransportes({ data, index }) {
       }
       // console.log('transporte', transporte)
 
-      buscaMotorista(userID)
-      atualizaPedido(pedidoID, userID)
+      buscaMotorista(userID, pedidoID)
     }
   })
 
-  const buscaMotorista = async (motoristaID) => {
+  const buscaMotorista = async (motoristaID, pedidoID) => {
     if (motoristaID) {
       // await sleep(500)
       await api
         .get(`/usuarios/${motoristaID}`)
         .then(response => {
           const { data } = response
-
           // console.log('**** CardCargas.buscaMotorista', data.veiculos)
-          setMotorista(data)
+          if (data.tipo === 'M') {
+            setMotorista(data)
+            atualizaPedido(pedidoID, data.id, 'A')
           
-          const atualiza = async (Id) => {
-            await sleep(500)
-            atualizaMotorista(Id)
+            const atualiza = async (Id) => {
+              await sleep(500)
+              atualizaMotorista(Id)
+            }
+            atualiza(data.id)
+          } else {
+            console.log('**** CardCargas.buscaMotorista', data.tipo, data.id, data.nome)
           }
-          atualiza(data.id)
         }).catch((error) => {
           if (error.response) {
             const { data } = error.response
@@ -279,12 +298,26 @@ export default function CardTransportes({ data, index }) {
     })
   }
 
-  const atualizaPedido = async (pedidoID, motoristaID) => {
+  const atualizaPedido = async (pedidoID, motoristaID, status) => {
+    /*
+    Status Pedidos
+      [ ]Em Manutenção, 
+      [D]isponivel,
+      [A]guardando, 
+      Em [C]oleta, 
+      Em [T]ransporte, 
+      Em c[O]nferencia, 
+      [E]ntregue, 
+      [X]Cancelado
+    */
 
     await api.put(`/pedidos/${pedidoID}`, {
-      motorista_id: motoristaID,
-      status: 'A', // Aguardando
-      tipo: "T", // Transportes
+      motorista_id: status === 'A' ? motoristaID : null,
+      status: status, // Aguardando
+      tipo: status === 'A' ? "T" : 'C', // Cargas
+      // motorista_id: motoristaID,
+      // status: 'A', // Aguardando
+      // tipo: "T", // Transportes
     })
     .then(response => {
       const { data } = response
@@ -345,61 +378,78 @@ export default function CardTransportes({ data, index }) {
 
   }
 
+  const abrePedido = (e) => {
+    togglePedido()
+  }
+
   dragRef(dropRef(ref))
 
   return (
-    <Container ref={ref} isDragging={isDragging}>
-      <BoxTitulo size={20}>
-        <Texto>PEDIDO {pedido.id}</Texto>
-        {local &&
-          <Texto bgcolor='#90D284' size={12} height={20}>{local}</Texto>
-        }
-      </BoxTitulo>
-      <Texto bgcolor='#E7E6E6' color='#2699FB' size={12}>Limite de Coleta: {FormataData(pedido.limitecoleta)}</Texto>
-      <Texto bgcolor='#E7E6E6' color='#90D284' size={12}>Limite de Entrega: {FormataData(pedido.limiteentrega)}</Texto>
+    <>
+      <div onDoubleClick={abrePedido}>
+        <Container ref={ref}>  
+        {/* isDragging={isDragging}> */}
+          <BoxTitulo size={20}>
+            <Texto>PEDIDO {pedido.id}</Texto>
+            {local &&
+              <Texto bgcolor='#90D284' size={12} height={20}>{local}</Texto>
+            }
+          </BoxTitulo>
+          <Texto bgcolor='#E7E6E6' color='#2699FB' size={12}>Limite de Coleta: {FormataData(pedido.limitecoleta)}</Texto>
+          <Texto bgcolor='#E7E6E6' color='#90D284' size={12}>Limite de Entrega: {FormataData(pedido.limiteentrega)}</Texto>
 
-      {localColeta && rota !== '' &&
-        <Texto bgcolor='#E7E6E6' size={12}>{rota}</Texto>
-      }
-      <Texto bgcolor='#E7E6E6' size={12} mb={5}>Veículos: {veiculos.length} unidades</Texto>
-
-      {veiculos && 
-        <Grid bgcolor='#E7E6E6' border='1px solid #B5B5B5' mb={5}>
-          {
-            veiculos.map((veiculo, index) => (
-              <Item key={index}>
-                <Texto bgcolor='#E7E6E6' size={12} width={70} border='1px solid'>{veiculo.placachassi}</Texto>
-                <Texto bgcolor='#E7E6E6' size={12} width={150} border='1px solid'>{veiculo.modelo}</Texto>
-                <Texto bgcolor='#E7E6E6' size={12} width={70} border='1px solid' italic={true} estado={veiculo.estado}>{veiculo.estado}</Texto>
-              </Item>
-            ))
+          {localColeta && rota !== '' &&
+            <Texto bgcolor='#E7E6E6' size={12}>{rota}</Texto>
           }
-        </Grid>
-      }
+          <Texto bgcolor='#E7E6E6' size={12} mb={5}>Veículos: {veiculos.length} unidades</Texto>
 
-      {localColeta && (enderecoc || contatoc) &&
-        <Box border='1px solid #B5B5B5' mb={5}>
-          <Texto bgcolor='#E7E6E6' size={14} bold={400} mb={5}>LOCAL DE COLETA</Texto>
-          <Texto bgcolor='#E7E6E6' size={12} mb={2}>{localColeta.descricao}</Texto>
-          <Texto bgcolor='#E7E6E6' size={12} mb={2}>{enderecoc}</Texto>
-          <Texto bgcolor='#E7E6E6' size={12} mb={2}>{contatoc}</Texto>
-        </Box>
-      }
+          {veiculos && 
+            <Grid bgcolor='#E7E6E6' border='1px solid #B5B5B5' mb={5}>
+              {
+                veiculos.map((veiculo, index) => (
+                  <Item key={index}>
+                    <Texto bgcolor='#E7E6E6' size={12} width={70} border='1px solid'>{veiculo.placachassi}</Texto>
+                    <Texto bgcolor='#E7E6E6' size={12} width={150} border='1px solid'>{veiculo.modelo}</Texto>
+                    <Texto bgcolor='#E7E6E6' size={12} width={70} border='1px solid' italic={true} estado={veiculo.estado}>{veiculo.estado}</Texto>
+                  </Item>
+                ))
+              }
+            </Grid>
+          }
 
-      {localEntrega && (enderecoe || contatoe) &&
-        <Box border='1px solid #B5B5B5' mb={5}>
-          <Texto bgcolor='#E7E6E6' size={14} bold={400} mb={5}>LOCAL DE ENTREGA</Texto>
-          <Texto bgcolor='#E7E6E6' size={12} mb={2}>{localEntrega.descricao}</Texto>
-          <Texto bgcolor='#E7E6E6' size={12} mb={2}>{enderecoe}</Texto>
-          <Texto bgcolor='#E7E6E6' size={12} mb={2}>{contatoe}</Texto>
-        </Box>
-      }
+          {localColeta && (enderecoc || contatoc) &&
+            <Box border='1px solid #B5B5B5' mb={5}>
+              <Texto bgcolor='#E7E6E6' size={14} bold={400} mb={5}>LOCAL DE COLETA</Texto>
+              <Texto bgcolor='#E7E6E6' size={12} mb={2}>{localColeta.descricao}</Texto>
+              <Texto bgcolor='#E7E6E6' size={12} mb={2}>{enderecoc}</Texto>
+              <Texto bgcolor='#E7E6E6' size={12} mb={2}>{contatoc}</Texto>
+            </Box>
+          }
 
-      {/* <header>
-        {data.labels.map(label => <Label key={label} color={label} />)}
-      </header> 
-      <p>{data.nome}</p>
-      */}
-    </Container>
+          {localEntrega && (enderecoe || contatoe) &&
+            <Box border='1px solid #B5B5B5' mb={5}>
+              <Texto bgcolor='#E7E6E6' size={14} bold={400} mb={5}>LOCAL DE ENTREGA</Texto>
+              <Texto bgcolor='#E7E6E6' size={12} mb={2}>{localEntrega.descricao}</Texto>
+              <Texto bgcolor='#E7E6E6' size={12} mb={2}>{enderecoe}</Texto>
+              <Texto bgcolor='#E7E6E6' size={12} mb={2}>{contatoe}</Texto>
+            </Box>
+          }
+
+          {/* <header>
+            {data.labels.map(label => <Label key={label} color={label} />)}
+          </header> 
+          <p>{data.nome}</p>
+          */}
+        </Container>
+      </div>
+
+      <PedidoModal
+        isShowPedido={isShowPedido}
+        hide={togglePedido}
+        tipoCad={'V'}
+        pedidoID={data.id}
+        disableEdit={true}
+      />
+    </>
   )
 }

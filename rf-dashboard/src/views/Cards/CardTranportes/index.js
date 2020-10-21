@@ -23,7 +23,6 @@ import api from '../../../services/rf'
 import PedidoModal from '../../Pedidos/PedidoModal'
 import useModalPedido from '../../Pedidos/PedidoModal/useModal'
 
-
 const useStyles = makeStyles((theme) => ({
   botoes: {
     display: 'flex',
@@ -49,7 +48,8 @@ export default function CardTransportes({ data, index }) {
   const [localEntrega, setLocalEntrega] = useState([])
   const [rota, setRota] = useState('')
   const [statusMotorista, setStatusMotorista] = useState('')
-  const [statusCor, setStatusCor] = useState('')
+  const [statusPedido, setStatusPedido] = useState(false)
+  const [confirmado, setConfirmado] = useState(false)
   // const [rotas, setRotas] = useState([])
   const [counter, setCounter] = useState(3 * 60) // <-- Tempo de espera para aceite
   const [tempo, setTempo] = useState({
@@ -61,11 +61,14 @@ export default function CardTransportes({ data, index }) {
   const { isShowEmail, toggleEmail } = useModal()
   const { isShowPedido, togglePedido } = useModalPedido()
 
+  const userID = localStorage.getItem('@rf/userID')
 
   useEffect(() => {
     // console.log('**** CardTransportes.data', data)
     // setRotas(data.rotas)
-    setLocal(`${data.rotas[0].cidade}/${data.rotas[0].uf}`)
+    if (data.rotas.length > 0) {
+      setLocal(`${data.rotas[0].cidade}/${data.rotas[0].uf}`)
+    }
     buscaMotorista(data.motorista_id)
     // buscaCliente(data.cliente_id)
 
@@ -133,21 +136,52 @@ export default function CardTransportes({ data, index }) {
     }
     carrega()
 
+    return () => {
+      setStatusMotorista('')
+    }
+
   }, [])
 
   useEffect(() => {
     secondsToTime(counter)
     const timer =
       counter > 0 && setInterval(() => setCounter(counter - 1), 1000)
+    /*
+    Status Pedidos
+      [ ]Em Manutenção, 
+      [D]isponivel,
+      [A]guardando, 
+      Em [C]oleta, 
+      Em [T]ransporte, 
+      Em c[O]nferencia, 
+      [E]ntregue, 
+      [X]Cancelado
+    */
 
-    if (counter <= 0 || data.status === 'D') {
-      // console.log('**** CardTransportes.atualizaPedido.data.motorista_id', data.motorista_id)
-      atualizaPedido(data.id, data.motorista_id)
+    if (data.status === 'C') {
+      setCounter(0)
+    }
+
+    console.log('**** CardTransportes.atualizaPedido.data.status', counter, data.status, statusMotorista)
+    if (counter <= 0 && statusPedido) {
+      atualizaPedido(data.id, data.motorista_id, 'D')
+      setStatusPedido(false)
+    }
+
+    if (counter <= 0 && statusMotorista === 'P' && !statusPedido) {
+      atualizaPedido(data.id, data.motorista_id, 'C')
+      setStatusPedido(false)
+    }
+
+    if (counter <= 0 && statusMotorista === 'P' && data.status === 'A' && !confirmado) {
+      atualizaPedido(data.id, data.motorista_id, 'D')
+      setStatusPedido(false)
     }
 
     return () => {
+      console.log('**** CardTransportes.atualizaPedido.data.return')
       clearInterval(timer)
-      // setCounter(0)
+      setStatusPedido(false)
     }
   }, [counter])
 
@@ -246,18 +280,73 @@ export default function CardTransportes({ data, index }) {
     }
   }
 
-  const atualizaPedido = async (pedidoID, motoristaID) => {
-    // console.log('**** CardTransportes.atualizaPedido.pedidoID, motoristaID', pedidoID, motoristaID)
-    atualizaRotas()
-    atualizaMotorista(motoristaID)
+  const salvaHistorico = async (pedidoId, motoristaId, clienteId, operadorId, observacao) => {
+    // console.log('**** PedidosModal.salvaHistorico.pedidoId', pedidoId)
+    await api
+      .post(`/historicos`, {
+        "motorista_id": motoristaId,
+        "cliente_id": clienteId,
+        "operador_id": operadorId,
+        "pedido_id": pedidoId,
+        "titulo_pagar_id": null,
+        "titulo_receber_id": null,
+        "observacao": observacao, 
+        "valor": 0
+      })
+      .then(response => {
+        const { data } = response
+      }).catch((error) => {
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('**** PedidosModal.salvaHistorico.error.data', data)
+          }
+        } else if (error.request) {
+          console.log('**** PedidosModal.salvaHistorico.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        } else {
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        }
+      })
+  }
+
+  const atualizaPedido = async (pedidoID, motoristaID, status) => {
+    // console.log('**** CardTransportes.atualizaPedido', pedidoID, motoristaID, status)
+    if (status === 'D') {
+      atualizaRotas()
+      atualizaMotorista(motoristaID, ' ')
+      salvaHistorico(
+        pedidoID, 
+        motoristaID, 
+        null, 
+        userID,
+        `O Motorista não aceitou o transporte`
+      )
+    } else {
+      atualizaMotorista(motoristaID, 'A')
+    }
 
     await api.put(`/pedidos/${pedidoID}`, {
-      motorista_id: null,
-      status: 'D', // Disponivel
-      tipo: "C", // Cargas
+      motorista_id: status === 'D' ? null : motoristaID,
+      status: status, // Disponivel/Em coleta
+      tipo: status === 'D' ? "C" : 'T', // Cargas
     })
     .then(response => {
       const { data } = response
+      if (status !== 'D') {
+        salvaHistorico(
+          data.id, 
+          data.motorista_id, 
+          null, 
+          userID,
+          `O Pedido está aguardando a coleta`
+        )
+      }
     })
     .catch((error) => {
       if (error.response) {
@@ -314,11 +403,11 @@ export default function CardTransportes({ data, index }) {
 
   }
 
-  const atualizaMotorista = async (motoristaID) => {
+  const atualizaMotorista = async (motoristaID, estado) => {
     const vagas = motorista.vagas - data.veiculos.length
 
     await api.put(`/usuarios/${motoristaID}`, {
-      estado: ' ', // Aguardando Aprovacao
+      estado: estado, // Aguardando Aprovacao
       // vagas: vagas,
     })
     .then(response => {
@@ -344,6 +433,32 @@ export default function CardTransportes({ data, index }) {
     })
   }
 
+  const abrePedido = (e) => {
+    togglePedido()
+  }
+
+  const aprovaMotorista = (e) => {
+    // alert('Motorista Aprovado !!!')
+    /*
+      Status Motorista
+      [] Disponível, 
+      Aguardando A[P]rovacao, 
+      [A]guardando Coleta, 
+      Em [T]ransporte    
+    */
+    
+    console.log('**** CardTransportes.aprovaMotorista.statusMotorista', statusMotorista)
+    if (statusMotorista === 'P') {
+      setCounter(0)
+      atualizaPedido(data.id, data.motorista_id, 'C')
+      setStatusPedido(false)
+      setConfirmado(true)
+    } else {
+      atualizaPedido(data.id, data.motorista_id, 'D')
+      setStatusPedido(true)
+    }
+  }
+
   const [{ isDragging }, dragRef] = useDrag({
     item: { type: 'CARD', index, data },
     collect: monitor => ({
@@ -360,13 +475,9 @@ export default function CardTransportes({ data, index }) {
     },
 
     drop(item, monitor) {
-      
       // removeM(index)
       const userID = item.data.id
       const pedidoID = data.id
-
-      // console.log('transporte', transporte)
-
     }
   })
   
@@ -428,51 +539,53 @@ export default function CardTransportes({ data, index }) {
 
         </div>
 
-        <RLeft>
-          <img src={motorista.foto !== null ? `${dev}images/${motorista.foto}` : semImagem} alt="" />
-        </RLeft>
-        <RRight>
-          <Texto bgcolor='#E7E6E6' size={16} bold={true}>
-            {motorista.nome}
-          </Texto>
+        <div onDoubleClick={abrePedido} >
+          <RLeft>
+            <img src={motorista.foto !== null ? `${dev}images/${motorista.foto}` : semImagem} alt="" />
+          </RLeft>
+          <RRight>
+            <Texto bgcolor='#E7E6E6' size={16} bold={true}>
+              {motorista.nome}
+            </Texto>
 
-          <StarRatings
-            rating={motorista.rate}
-            starRatedColor="#F9D36B"
-            starDimension="14px"
-            starSpacing="1px"
-            // changeRating={this.changeRating}
-            numberOfStars={5}
-            name='rating'
-          />
-          {motorista.veiculos && (
-          <>
-            <Texto color='#2699FB' size={12}>
-              Tipo de veículo: {motorista.veiculos.length > 0 ? motorista.veiculos[0].tipo : ''}
+            <StarRatings
+              rating={motorista.rate}
+              starRatedColor="#F9D36B"
+              starDimension="14px"
+              starSpacing="1px"
+              // changeRating={this.changeRating}
+              numberOfStars={5}
+              name='rating'
+            />
+            {motorista.veiculos && (
+            <>
+              <Texto color='#2699FB' size={12}>
+                Tipo de veículo: {motorista.veiculos.length > 0 ? motorista.veiculos[0].tipo : ''}
+              </Texto>
+              <Texto bgcolor='#E7E6E6' size={10}>
+                RT: {`${motorista.origem} x ${motorista.destino}`}
+              </Texto>
+              <Texto bgcolor='#E7E6E6' size={12}>
+                Vagas disponíveis: {motorista.veiculos.length > 0 ? motorista.veiculos[0].vagas : 0} vagas
+              </Texto>
+            </>
+            )}
+            <Texto bgcolor='#90D284' size={12}>
+              {motorista.localizacao}
             </Texto>
-            <Texto bgcolor='#E7E6E6' size={10}>
-              RT: {`${motorista.origem} x ${motorista.destino}`}
-            </Texto>
-            <Texto bgcolor='#E7E6E6' size={12}>
-              Vagas disponíveis: {motorista.veiculos.length > 0 ? motorista.veiculos[0].vagas : 0} vagas
-            </Texto>
-          </>
-          )}
-          <Texto bgcolor='#90D284' size={12}>
-            {motorista.localizacao}
-          </Texto>
-        </RRight>
-        <BoxTitulo size={20} mt={10}>
-          <Texto>PEDIDO {data.id}</Texto>
-          {local &&
-            <Texto bgcolor='#90D284' size={12} height={20}>{local}</Texto>
+          </RRight>
+          <BoxTitulo size={20} mt={10}>
+            <Texto>PEDIDO {data.id}</Texto>
+            {local &&
+              <Texto bgcolor='#90D284' size={12} height={20}>{local}</Texto>
+            }
+          </BoxTitulo>
+          {localColeta && rota !== '' &&
+            <Texto bgcolor='#E7E6E6' size={12}>{rota}</Texto>
           }
-        </BoxTitulo>
-        {localColeta && rota !== '' &&
-          <Texto bgcolor='#E7E6E6' size={12}>{rota}</Texto>
-        }
-        <Texto bgcolor='#E7E6E6' size={12} mb={5}>Veículos: {data.veiculos.length} unidades</Texto>
-
+          <Texto bgcolor='#E7E6E6' size={12} mb={5}>Veículos: {data.veiculos.length} unidades</Texto>
+        </div>
+        
         <div style={{ 
           padding: 5, 
           fontSize: '14px', 
@@ -494,15 +607,50 @@ export default function CardTransportes({ data, index }) {
               '7': 'SUSPENÇÃO 7 DIAS',
             }[statusMotorista]
           }
+
           { statusMotorista === 'P' ? 
             <>
               <br />
-              <MdTimer size={14}/><span style={{ marginLeft: '5px' }}>{` ${tempo.m}:${tempo.s}`}</span>
+              <span style={{ 
+                display: 'flex',
+                float: 'left',
+                left: 10,
+                bottom: 10,
+                fontSize: 20,
+              }}>
+                <MdTimer size={20} style={{ marginTop: 1 }} />
+                <div style={{ width: 6 }} ></div>
+                {` ${tempo.m}:${tempo.s}`}
+              </span>
             </>
           : <></>}
+
+          <div style={{
+            display: 'flex',
+            float: 'right',
+            right: 10,
+            bottom: 10,
+          }}>
+            <button onClick={aprovaMotorista}
+              style={{ backgroundColor: 'transparent' }}
+            >
+              <Tooltip title={`${statusMotorista === 'P' ? 'Aprovar' : 'Cancelar'} transporte`}>
+                <span style={{
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  marginTop: '3px',
+                }}>
+                  { statusMotorista === 'P' ? 
+                    <FaIcon icon='Aprovado' size={20} />
+                  : 
+                    <FaIcon icon='Cancelado' size={20} />
+                  }
+                </span>
+              </Tooltip>
+            </button>
+          </div>
+
         </div>
-
-
       </Container>
       <Email 
         isShowEmail={isShowEmail}

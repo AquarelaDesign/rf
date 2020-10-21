@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 // import { makeStyles } from '@material-ui/core/styles'
 
@@ -106,10 +106,12 @@ const List = ({ data }) => {
           </ul>
         </PerfectScrollbar>
       </Container>
+
       <GridUsuariosModal 
         isShowing={isShowing}
         hide={toggleGridUsuarios}
       />
+
       <GridPedidosModal
         isShowing={isShowPedido}
         hide={toggleGridPedidos}

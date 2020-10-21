@@ -77,8 +77,8 @@ const Board = () => {
   useEffect(() => {
     const storeToken = localStorage.getItem('@rf/token')
 
-    verificaStatus()
-    verificaStatus()
+    // verificaStatus()
+    // verificaStatus()
 
     if (storeToken === '') {
       localStorage.removeItem('@rf/token')
@@ -179,16 +179,20 @@ const Board = () => {
   const onCountdownEnd = () => {
     // console.log('**** Contador Resetado', moment().format('HH:mm:ss'))
     setDateInFuture(moment(moment().add(2, 'seconds'), 'YYYY-MM-DD'))
-    verificaStatus()
+    // verificaStatus()
   }
 
   const onTick = (delta) => {
     // console.log(delta)
     // console.log('****', moment(delta).format('HH:mm:ss'))
+    verificaStatus()
   }
 
   const tick = () => {
     const [delta, lastCountdown] = formatDate(dateInFuture, 'HH:mm:ss', 'YYYY-MM-DD')
+
+    // console.log('**** Board.tick')
+    // verificaStatus()
 
     if (delta <= 0) {
       clearInterval(timer.current)
@@ -203,15 +207,17 @@ const Board = () => {
 
   // componentDidMount, componentWillUmnount
   useEffect(() => {
+    // verificaStatus()
+
     tick()
-    timer.current = setInterval(tick, 10000)
+    timer.current = setInterval(tick, 5000)
 
     return () => clearInterval(timer.current)
   }, [dateInFuture])
 
 
   const verificaStatus = async () => {
-    let delay = 5000
+    let delay = 1000
 
     const token = await localStorage.getItem('@rf/token')
 
@@ -233,12 +239,16 @@ const Board = () => {
           setMotorista(loadMotorista)
         })
         .catch(error => {
+          console.log('**** Board.verificaStatus.Motoristas.error')
+
+          /*
           let timerId = setTimeout(function request() {
             if (request) {
               delay *= 2
             }
             timerId = setTimeout(request, delay)
           }, delay)
+          */
         })
 
       // console.log('**** Pedidos')
@@ -254,12 +264,16 @@ const Board = () => {
           setCarga(loadPedidos)
         })
         .catch(error => {
+          console.log('**** Board.verificaStatus.Pedidos.error')
+          
+          /*
           let timerId = setTimeout(function request() {
             if (request) {
               delay *= 2
             }
             timerId = setTimeout(request, delay)
           }, delay)
+          */
         })
 
       // console.log('**** Transportes')
@@ -278,15 +292,20 @@ const Board = () => {
             creatable: false,
             cards: res.data
           }
+
+          // console.log('**** Board.verificaStatus.Transportes.data', loadTransportes)
           setTransporte(loadTransportes)
         })
         .catch(error => {
+          console.log('**** Board.verificaStatus.Transportes.error')
+          /*
           let timerId = setTimeout(function request() {
             if (request) {
               delay *= 2
             }
             timerId = setTimeout(request, delay)
           }, delay)
+          */
         })
     } catch (error) {
       const { response } = error
