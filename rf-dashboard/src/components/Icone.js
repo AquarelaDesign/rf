@@ -21,7 +21,7 @@ import {
 } from 'react-icons/fa'
 
 import { BsBackspaceFill } from 'react-icons/bs'
-import { AiOutlineCloseCircle } from 'react-icons/ai'
+import { AiOutlineCloseCircle, AiTwotoneLike } from 'react-icons/ai'
 import { GoChecklist } from 'react-icons/go'
 import { GrDeliver, GrUpdate, GrHostMaintenance, GrSecure } from 'react-icons/gr'
 import { GiExitDoor, GiStopwatch, GiReturnArrow } from 'react-icons/gi'
@@ -85,6 +85,7 @@ export const FaIcon = ({ icon, size, height, width }) => {
     case 'Cancelado': return <MdCancel size={size} />
     case 'Manutencao': return <GrHostMaintenance size={size} />
     case 'Entregue': return <Image src={entregue} alt="" style={{ height: {size}, width: {size} }} />
+    case 'Aprovado': return <AiTwotoneLike size={size} style={{ marginBottom: 2, color: '#90D284' }} />
     case 'Whats': return <Image src={whats} alt="" style={{ height: 16, width: 16 }} />
     case 'pbWhats': return <Image src={pb_whats} alt="" style={{ height: 16, width: 16 }} />
     case 'pbEmail': return <Image src={pb_email} alt="" style={{ height: 16, width: 16 }} />
