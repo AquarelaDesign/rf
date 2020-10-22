@@ -162,7 +162,7 @@ export default function CardTransportes({ data, index }) {
       setCounter(0)
     }
 
-    console.log('**** CardTransportes.atualizaPedido.data.status', counter, data.status, statusMotorista)
+    // console.log('**** CardTransportes.atualizaPedido.data.status', counter, data.status, statusMotorista)
     if (counter <= 0 && statusPedido) {
       atualizaPedido(data.id, data.motorista_id, 'D')
       setStatusPedido(false)
@@ -179,7 +179,7 @@ export default function CardTransportes({ data, index }) {
     }
 
     return () => {
-      console.log('**** CardTransportes.atualizaPedido.data.return')
+      console.log('**** CardTransportes.atualizaPedido.data.return', data.status, statusMotorista)
       clearInterval(timer)
       setStatusPedido(false)
     }
@@ -329,6 +329,7 @@ export default function CardTransportes({ data, index }) {
       )
     } else {
       atualizaMotorista(motoristaID, 'A')
+      buscaMotorista(motoristaID)
     }
 
     await api.put(`/pedidos/${pedidoID}`, {
@@ -447,7 +448,7 @@ export default function CardTransportes({ data, index }) {
       Em [T]ransporte    
     */
     
-    console.log('**** CardTransportes.aprovaMotorista.statusMotorista', statusMotorista)
+    // console.log('**** CardTransportes.aprovaMotorista.statusMotorista', statusMotorista)
     if (statusMotorista === 'P') {
       setCounter(0)
       atualizaPedido(data.id, data.motorista_id, 'C')

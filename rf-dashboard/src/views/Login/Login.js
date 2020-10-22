@@ -10,8 +10,7 @@ import { AccountCircle, Lock } from '@material-ui/icons'
 import api from '../../services/rf'
 import logo from '../../assets/logo.png'
 import logo1 from '../../assets/LogiLog.png'
-import Empresa1 from '../../services/json/empresa.json'
-import Empresa2 from '../../services/json/empresa2.json'
+import dadosEmpresa from '../../services/json/empresa.json'
 
 import { 
   Loginsc, 
@@ -35,7 +34,7 @@ const Login = ({ history }) => {
 
   useEffect(() => {
     if (Empresa === null) {
-      setEmpresa(window.location.hostname === "localhost1" ? Empresa2 : Empresa1)
+      setEmpresa(dadosEmpresa)
     }
   },[Empresa])
   

@@ -368,18 +368,10 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   useEffect(() => {
-    // novoPedido()
-    buscaValoresAgregados() // <-- Adicionar busca direta no banco
-    buscaSeguros() // <-- Adicionar busca direta no banco
-    buscaTabRotas() // <-- Adicionar busca direta no banco
-    buscaUsuarios()
-    setOperadorID(localStorage.getItem('@rf/userID'))
-  }, [isShowPedido])
-
-  useEffect(() => {
     try {
       setValue(0)
       buscaPedido(pedidoID)
+      carregaDados()
     } catch (error) {
       if (error.response) {
         const { data } = error.response
@@ -392,7 +384,15 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
         // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
     }
-  }, [pedidoID, tipoCad, disableEdit, isShowPedido])
+  }, [pedidoID, tipoCad]) // , disableEdit, isShowPedido
+
+  const carregaDados = () => {
+    buscaValoresAgregados() // <-- Adicionar busca direta no banco
+    buscaSeguros() // <-- Adicionar busca direta no banco
+    buscaTabRotas() // <-- Adicionar busca direta no banco
+    buscaUsuarios()
+    setOperadorID(localStorage.getItem('@rf/userID'))
+  }
 
   const buscaPedido = async (pedidoId) => {
     if (pedidoId) {

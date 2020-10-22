@@ -86,13 +86,17 @@ export default function Menu() {
     history.push('/rf')
   }
 
+  const mudaPainel = (e, opcao) => {
+    localStorage.setItem('@rf/painel', opcao)
+  }
+
   return (
     <Container>
       <RLeft>
-        <Botao>LOGÍSTICA</Botao>
-        <Botao>FISCAL</Botao>
-        <Botao>FINANCEIRO</Botao>
-        <Botao>HISTÓRICO</Botao>
+        <Botao onClick={e => mudaPainel(e, 'LOG')}>LOGÍSTICA</Botao>
+        <Botao onClick={e => mudaPainel(e, 'FIS')}>FISCAL</Botao>
+        <Botao onClick={e => mudaPainel(e, 'FIN')}>FINANCEIRO</Botao>
+        <Botao onClick={e => mudaPainel(e, 'HIS')}>HISTÓRICO</Botao>
       </RLeft>
       <RRight>
         <BotaoExit onClick={handleExit}>

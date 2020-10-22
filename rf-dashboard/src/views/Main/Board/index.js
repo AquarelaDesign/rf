@@ -40,7 +40,9 @@ const Board = () => {
 
   const [isConnected, setIsConnected] = useState(false)
   const [lastConnected, setLastConnected] = useState('')
+  const [painel, setPainel] = useState('')
 
+  // Logistica ------------------------------->
   const [motorista, setMotorista] = useState({
     title: "MOTORISTAS ONLINE",
     icon: "FaTruck",
@@ -65,9 +67,71 @@ const Board = () => {
     cards: []
   })
 
-  // const [carga, setCarga] = useState(dataC)
-  // const [transporte, setTransporte] = useState(dataT)
   const [entrega, setEntrega] = useState(dataE)
+  // Logistica <-------------------------------
+
+  // Fiscal ---------------------------------->
+  const [emitirCTe, setEmitirCTe] = useState({
+    title: "EMITIR CT-E", 
+    icon: "FaArrowAltCircleRight",
+    tipo: "E",
+    creatable: false,
+    cards: []
+  })
+
+  const [encerrarManifesto, setEncerrarManifesto] = useState({
+    title: "ENCERRAR MANIFESTO", 
+    icon: "FaArrowAltCircleRight",
+    tipo: "X",
+    creatable: false,
+    cards: []
+  })
+
+  const [tarefasRealizadas, setTarefasRealizadas] = useState({
+    title: "TAREFAS REALIZADAS", 
+    icon: "FaArrowAltCircleRight",
+    tipo: "T",
+    creatable: false,
+    cards: []
+  })
+  // Fiscal <----------------------------------
+
+  // Financeiro ------------------------------>
+  const [contasPagar, setContasPagar] = useState({
+    title: "CONTAS A PAGAR", 
+    icon: "FaArrowAltCircleRight",
+    tipo: "P",
+    creatable: false,
+    cards: []
+  })
+  
+  const [avarias, setAvarias] = useState({
+    title: "AVARIAS", 
+    icon: "FaArrowAltCircleRight",
+    tipo: "A",
+    creatable: true,
+    cards: []
+  })
+  
+  const [HistoricoPagar, setHistoricoPagar] = useState({
+    title: "HISTÓRICO DE PAGAMENTOS", 
+    icon: "FaArrowAltCircleRight",
+    tipo: "H",
+    creatable: false,
+    cards: []
+  })
+  // Financeiro <------------------------------
+
+  // Historico ------------------------------->
+  const [HistoricoPedidos, setHistoricoPedidos] = useState({
+    title: "HISTÓRICO DE PEDIDOS", 
+    icon: "FaArrowAltCircleRight",
+    tipo: "H",
+    creatable: false,
+    cards: []
+  })
+  // Historico <-------------------------------
+
   const [countdown, setCountdown] = useState(null)
   const [dateInFuture, setDateInFuture] = useState(moment(moment().add(1, 'minute'), 'YYYY-MM-DD'))
   const timer = useRef()
@@ -217,6 +281,8 @@ const Board = () => {
 
 
   const verificaStatus = async () => {
+    // await setPainel(localStorage.getItem('@rf/painel'))
+    
     let delay = 1000
 
     const token = await localStorage.getItem('@rf/token')
@@ -432,6 +498,37 @@ const Board = () => {
       //     entrega.cards.splice(from, 1);
       //   }))
       // break
+    }
+  }
+
+  const ContainerPaineis = () => {
+    switch (painel) {
+      case 'FIS':
+        return (<Container>
+                  <List key={emitirCTe.title} data={emitirCTe} />
+                  <List key={encerrarManifesto.title} data={encerrarManifesto} />
+                  <List key={tarefasRealizadas.title} data={tarefasRealizadas} />
+                </Container>)
+
+      case 'FIN':
+        return (<Container>
+                  <List key={contasPagar.title} data={contasPagar} />
+                  <List key={avarias.title} data={avarias} />
+                  <List key={HistoricoPagar.title} data={HistoricoPagar} />
+                </Container>)
+
+      case 'HIS':
+        return (<Container>
+                  <List key={HistoricoPedidos.title} data={HistoricoPedidos} />
+                </Container>)
+
+      default:
+        return (<Container>
+                  <List key={motorista.title} data={motorista} />
+                  <List key={carga.title} data={carga} />
+                  <List key={transporte.title} data={transporte} />
+                  <List key={entrega.title} data={entrega} />
+                </Container>)
     }
   }
 

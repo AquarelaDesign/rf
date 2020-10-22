@@ -15,10 +15,7 @@ import {
   Blank,
 } from '../../Cadastro/CardUsuario/styles'
 
-import {
-  TextField,
-} from 'final-form-material-ui'
-
+import { TextField } from 'final-form-material-ui'
 
 import MaskedInput from 'react-text-mask'
 import createNumberMask from 'text-mask-addons/dist/createNumberMask'
@@ -29,6 +26,8 @@ import {
   MenuItem,
   InputAdornment,
 } from '@material-ui/core'
+
+import { Autocomplete, TextField as MuiTextField } from 'mui-rff'
 
 import { FaIcon } from '../../../components/Icone'
 
@@ -43,6 +42,8 @@ import api from '../../../services/rf'
 import Axios from 'axios'
 
 import moment from "moment"
+
+import estadoVeiculo from '../../../services/json/estadoVeiculo.json'
 
 const fipeapi = 'https://fipeapi.appspot.com/api/1/'
 
@@ -82,6 +83,42 @@ const CssTextField = withStyles({
 
 })(TextField)
 
+const CssMuiTextField = withStyles({
+  root: {
+    '& > *': {
+      fontFamily: ['Montserrat', 'sans Serif'],
+      fontSize: 14,
+    },
+    '& label.Mui-focused': {
+      color: '#0031FF',
+    }, 
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        borderColor: '#2699F8',
+      },
+      '&:hover fieldset': {
+        borderColor: '#0031FF',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: '#225378',
+      },
+      '&.Mui-disabled': {
+        color: '#666666',
+        fontWeight: 500,
+      },
+    },
+    '& .MuiFormHelperText-root': {
+      margin: '1px',
+      justifyContent: 'left',
+      height: '7px',
+    },
+    '& .MuiFormHelperText-contained': {
+      justifyContent: 'left',
+    },
+  },
+
+})(MuiTextField)
+
 const numberMask = createNumberMask({
   prefix: '',
   suffix: '',
@@ -115,7 +152,7 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
   const [disableModelo, setDisableModelo] = useState(true)
   const [disableAno, setDisableAno] = useState(true)
   
-  const [mostraFipe, setMostraFipe] = useState(false)
+  const [mostraFipe, setMostraFipe] = useState(true)
   const [tipoFipe, setTipoFipe] = useState(null)
   const [marcaFipe, setMarcaFipe] = useState(null)
   const [modeloFipe, setModeloFipe] = useState(null)
@@ -200,10 +237,17 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
 
   // const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-  const buscaMarcas = async (dados) => {
+  const buscaMarcas = async (e, item) => {
+    // console.log('**** VeiculosModal.buscaMarcas.dados', item)
+    if (item === undefined) {
+      return
+    }
+    if (item.value === undefined) {
+      return
+    }
     
-    // console.log('**** VeiculosModal.buscaMarcas.values', values)
-    
+    let dados = item.value
+
     if (!dados) {
       return
     }
@@ -248,8 +292,16 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
       })
   }
 
-  const buscaModelos = async (dados) => {
-    // console.log('**** VeiculosModal.buscaModelos', dados)
+  const buscaModelos = async (e, item) => {
+    // console.log('**** VeiculosModal.buscaModelos', item)
+    if (item === undefined) {
+      return
+    }
+    if (item.value === undefined) {
+      return
+    }
+
+    let dados = item.value
     if (!dados) {
       return
     }
@@ -295,8 +347,16 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
     
   }
   
-  const buscaAnos = async (dados) => {
-    // console.log('**** VeiculosModal.buscaAnos', dados)
+  const buscaAnos = async (e, item) => {
+    // console.log('**** VeiculosModal.buscaAnos', item)
+    if (item === undefined) {
+      return
+    }
+    if (item.value === undefined) {
+      return
+    }
+    
+    let dados = item.value
     if (!dados) {
       return
     }
@@ -342,8 +402,16 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
       })
   }
   
-  const buscaFipe = async (dados) => {
-    // console.log('**** VeiculosModal.buscaFipe', dados)
+  const buscaFipe = async (e, item) => {
+    // console.log('**** VeiculosModal.buscaFipe', item)
+    if (item === undefined) {
+      return
+    }
+    if (item.value === undefined) {
+      return
+    }
+    
+    let dados = item.value
     if (!dados) {
       return
     }
@@ -352,7 +420,8 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
 
     try {
       let anofipe = dados
-      let anodes = anos.find(opt => opt.value === dados.value)
+      // let anodes = anos.find(opt => opt.value === dados.value)
+      let anodes = item
       let ano = anodes.label.substring(0, 4)
 
       if (ano.toLocaleLowerCase() === 'zero') {
@@ -360,13 +429,13 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
       }
 
       await Axios
-        .get(`${fipeapi}${tipoFipe}/veiculo/${marcaFipe}/${modeloFipe}/${dados.value}.json`)
+        .get(`${fipeapi}${tipoFipe}/veiculo/${marcaFipe}/${modeloFipe}/${item.value}.json`)
         .then(response => {
           const { data } = response
 
           let valor = data.preco.replace('R$ ','').replace('.','').replace(',','.')
 
-          console.log('**** VeiculosModal.buscaFipe.valor', valor)
+          // console.log('**** VeiculosModal.buscaFipe.valor', valor)
 
           // let modelo = `${data.marca} ${data.name} ${data.ano_modelo} ${data.combustivel} (Tabela: ${data.referencia})`
           let modelo = `${data.marca} ${data.name} ${anodes.label}` // (Tabela: ${data.referencia})`
@@ -377,7 +446,7 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
           window.setFormValue('modelo', modelo.toLocaleUpperCase())
           window.setFormValue('anoFipe', anofipe)
           window.setFormValue('valor', valor)
-          setMostraFipe(false)
+          setMostraFipe(true)
           // console.log('**** buscaFipe', data)
         })
         .catch((error) => {
@@ -521,7 +590,6 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
     onChange: PropTypes.func.isRequired,
   }
   
-
   const required = value => (value ? undefined : '* Obrigatório!')
 
   if (isShowVeiculos) {
@@ -604,24 +672,25 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
                               />
                             </Col>
                             <Col xs={6}>
-                              <Field
+                              <Autocomplete
                                 disabled={disableEdit}
                                 name="estado"
-                                component={CssTextField}
-                                type="select"
                                 label="Estado"
-                                variant="outlined"
                                 fullWidth
-                                select
-                                size="small"
-                                margin="dense"
-                              >
-                                {estado.map((option) => (
-                                  <MenuItem key={option.value} value={option.value}>
-                                    {option.label}
-                                  </MenuItem>
-                                ))}
-                              </Field>
+                                options={estadoVeiculo}
+                                getOptionValue={option => option.value}
+                                getOptionLabel={option => option.label}
+                                renderInput={(params) => 
+                                  <CssMuiTextField 
+                                    {...params}
+                                    name="estado1"
+                                    label="Estado" 
+                                    variant="outlined" 
+                                    size="small"
+                                    margin="dense"
+                                  />
+                                }
+                              />
                             </Col>
                           </Row>
 
@@ -629,90 +698,94 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
                             <div>
                               <Row style={{ height: '54px', marginTop: '15px' }}>
                                 <Col xs={6}>
-                                  <Field
+                                  <Autocomplete
                                     disabled={disableEdit}
                                     name="tipoFipe"
-                                    component={CssTextField}
-                                    type="select"
                                     label="Tipo"
-                                    variant="outlined"
                                     fullWidth
-                                    select
-                                    size="small"
-                                    margin="dense"
-                                    onClick={e => buscaMarcas(e.target.value)}
-                                  >
-                                    {fipeTipo.map((option) => (
-                                      <MenuItem key={option.value} value={option.value}>
-                                        {option.label}
-                                      </MenuItem>
-                                    ))}
-                                  </Field>
+                                    options={fipeTipo}
+                                    getOptionValue={option => option.value}
+                                    getOptionLabel={option => option.label}
+                                    onChange={buscaMarcas}
+                                    renderInput={(params) => 
+                                      <CssMuiTextField 
+                                        {...params}
+                                        name="tipoFipe1"
+                                        label="Tipo" 
+                                        variant="outlined" 
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    }
+                                  />
                                 </Col>
                                 <Col xs={6}>
-                                  <Field
+                                  <Autocomplete
                                     disabled={disableMarca}
                                     name="marcaFipe"
-                                    component={CssTextField}
-                                    type="select"
                                     label="Marca"
-                                    variant="outlined"
                                     fullWidth
-                                    select
-                                    size="small"
-                                    margin="dense"
-                                    onClick={e => buscaModelos(e.target.value)}
-                                  >
-                                    {marcas.map((option) => (
-                                      <MenuItem key={option.value} value={option.value}>
-                                        {option.label}
-                                      </MenuItem>
-                                    ))}
-                                  </Field>
+                                    options={marcas}
+                                    getOptionValue={option => option.value}
+                                    getOptionLabel={option => option.label}
+                                    onChange={buscaModelos}
+                                    renderInput={(params) => 
+                                      <CssMuiTextField 
+                                        {...params}
+                                        name="marcaFipe1"
+                                        label="Marca" 
+                                        variant="outlined" 
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    }
+                                  />
                                 </Col>
                               </Row>
                               <Row style={{ height: '54px', marginTop: '15px' }}>
                                 <Col xs={6}>
-                                  <Field
+                                  <Autocomplete
                                     disabled={disableModelo}
                                     name="modeloFipe"
-                                    component={CssTextField}
-                                    type="select"
                                     label="Modelo"
-                                    variant="outlined"
                                     fullWidth
-                                    select
-                                    size="small"
-                                    margin="dense"
-                                    onClick={e => buscaAnos(e.target.value)}
-                                  >
-                                    {modelos.map((option) => (
-                                      <MenuItem key={option.value} value={option.value}>
-                                        {option.label}
-                                      </MenuItem>
-                                    ))}
-                                  </Field>
+                                    options={modelos}
+                                    getOptionValue={option => option.value}
+                                    getOptionLabel={option => option.label}
+                                    onChange={buscaAnos}
+                                    renderInput={(params) => 
+                                      <CssMuiTextField 
+                                        {...params}
+                                        name="modeloFipe1"
+                                        label="Modelo" 
+                                        variant="outlined" 
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    }
+                                  />
                                 </Col>
                                 <Col xs={6}>
-                                  <Field
+                                  <Autocomplete
                                     disabled={disableAno}
                                     name="anoFipe"
-                                    component={CssTextField}
-                                    type="select"
                                     label="Ano"
-                                    variant="outlined"
                                     fullWidth
-                                    select
-                                    size="small"
-                                    margin="dense"
-                                    onClick={e => buscaFipe(e.target)}
-                                  >
-                                    {anos.map((option) => (
-                                      <MenuItem key={option.value} value={option.value}>
-                                        {option.label}
-                                      </MenuItem>
-                                    ))}
-                                  </Field>
+                                    options={anos}
+                                    getOptionValue={option => option.value}
+                                    getOptionLabel={option => option.label}
+                                    onChange={buscaFipe}
+                                    renderInput={(params) => 
+                                      <CssMuiTextField 
+                                        {...params}
+                                        name="anoFipe1"
+                                        label="Ano" 
+                                        variant="outlined" 
+                                        size="small"
+                                        margin="dense"
+                                      />
+                                    }
+                                  />
                                 </Col>
                               </Row>
                             </div>
