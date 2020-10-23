@@ -50,6 +50,7 @@ export default function CardTransportes({ data, index }) {
   const [statusMotorista, setStatusMotorista] = useState('')
   const [statusPedido, setStatusPedido] = useState(false)
   const [confirmado, setConfirmado] = useState(false)
+  const [mostra, setMostra] = useState(false)
   // const [rotas, setRotas] = useState([])
   const [counter, setCounter] = useState(3 * 60) // <-- Tempo de espera para aceite
   const [tempo, setTempo] = useState({
@@ -435,6 +436,7 @@ export default function CardTransportes({ data, index }) {
   }
 
   const abrePedido = (e) => {
+    setMostra(!mostra)
     togglePedido()
   }
 
@@ -663,6 +665,7 @@ export default function CardTransportes({ data, index }) {
         tipoCad={'V'}
         pedidoID={data.id}
         disableEdit={true}
+        mostra={mostra}
       />
     </>
   )

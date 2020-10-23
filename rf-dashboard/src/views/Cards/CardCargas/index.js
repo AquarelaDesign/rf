@@ -31,6 +31,7 @@ export default function CardTransportes({ data, index }) {
   const [rotas, setRotas] = useState([])
   const [localColeta, setLocalColeta] = useState([])
   const [localEntrega, setLocalEntrega] = useState([])
+  const [mostra, setMostra] = useState(false)
 
   const { isShowPedido, togglePedido } = useModalPedido()
 
@@ -379,6 +380,7 @@ export default function CardTransportes({ data, index }) {
   }
 
   const abrePedido = (e) => {
+    setMostra(!mostra)
     togglePedido()
   }
 
@@ -449,6 +451,7 @@ export default function CardTransportes({ data, index }) {
         tipoCad={'V'}
         pedidoID={data.id}
         disableEdit={true}
+        mostra={mostra}
       />
     </>
   )

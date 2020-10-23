@@ -286,7 +286,7 @@ const numberMask = createNumberMask({
   requireDecimal: true, 
 })
 
-const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => {
+const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostra = false }) => {
   const classes = useStyles()
 
   const [initialValues, setInitialValues] = useState({})
@@ -384,7 +384,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID }) => 
         // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
     }
-  }, [pedidoID, tipoCad]) // , disableEdit, isShowPedido
+  }, [pedidoID, tipoCad, mostra]) // , disableEdit, isShowPedido
 
   const carregaDados = () => {
     buscaValoresAgregados() // <-- Adicionar busca direta no banco
