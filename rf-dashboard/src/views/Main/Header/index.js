@@ -6,11 +6,10 @@ import Filter from '../../../components/Filter'
 import Menu from '../Menu'
 import { FaIcon } from '../../../components/Icone'
 import logo from '../../../assets/arenaLog.png'
-import logoloc from '../../../assets/LogiLog.png'
 
 import api from '../../../services/rf'
 
-const nomeEmpresa = window.location.hostname === "localhost1" ? "Empresa" : "Arena Transautos"
+const nomeEmpresa = "Arena Transautos"
 
 export default function Header() {
   const [userID, setUserID] = useState(localStorage.getItem('@rf/userID'))
@@ -51,7 +50,7 @@ export default function Header() {
         <Titulo>{nomeEmpresa}</Titulo> 
         <FaIcon icon='FaDiscourse' size={30} /> 
         <FaIcon icon='FaBell' size={30} /> 
-        <Image id="logo" src={window.location.hostname === "localhost1" ? logoloc : logo} alt="" style={{marginTop: 0, height: 30}} />
+        <Image id="logo" src={logo} alt="" style={{marginTop: 0, height: 30}} />
       </Container>
       <Filter />
       <Menu />

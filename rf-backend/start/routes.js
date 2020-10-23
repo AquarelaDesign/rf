@@ -24,6 +24,9 @@ Route.post("/authenticate", "AuthController.authenticate")
 Route.post('images/:id/:iid', 'ImageController.store')
 Route.delete('images/:id', 'ImageController.destroy')
 
+Route.resource('empresas', 'EmpresaController')
+.apiOnly()
+
 Route.group(() => {
   Route.get('/status', "UsuarioController.status")
   Route.post("/buscausuarios", "UsuarioController.busca")

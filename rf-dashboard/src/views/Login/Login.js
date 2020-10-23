@@ -9,8 +9,6 @@ import { AccountCircle, Lock } from '@material-ui/icons'
 
 import api from '../../services/rf'
 import logo from '../../assets/logo.png'
-import logo1 from '../../assets/LogiLog.png'
-import dadosEmpresa from '../../services/json/empresa.json'
 
 import { 
   Loginsc, 
@@ -30,11 +28,11 @@ const Login = ({ history }) => {
   const [Empresa, setEmpresa] = useState(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  // const [rememberMe, setRememberMe] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
 
   useEffect(() => {
     if (Empresa === null) {
-      setEmpresa(dadosEmpresa)
+      buscaEmpresa()
     }
   },[Empresa])
   
@@ -54,7 +52,7 @@ const Login = ({ history }) => {
 
         localStorage.setItem('@rf/email', email)
         localStorage.setItem('@rf/token', token)
-        // localStorage.setItem('@rf/rememberMe', rememberMe)
+        localStorage.setItem('@rf/rememberMe', rememberMe)
         buscaUsuario(email)
       })
 
@@ -91,10 +89,43 @@ const Login = ({ history }) => {
           return
         }
 
+        localStorage.setItem('@rf/email', email)
         localStorage.setItem('@rf/userID', data[0].id)
         atualizaStatus(data[0].id)
         history.push('/rf/home')
 
+      }).catch((error) => {
+        if (error.response) {
+        } else if (error.request) {
+        } else {
+        }
+      })
+  }
+
+  const buscaEmpresa = async () => {
+    let rem = await localStorage.getItem('@rf/rememberMe')
+    if (typeof rem === 'string') {
+      rem = rem === 'true' ? true : false
+    }
+    // console.log('Login.buscaEmpresa.rem', rem, typeof rem)
+
+    if (rem) {
+      setEmail(localStorage.getItem('@rf/email'))
+    }
+
+    setRememberMe(rem)
+
+    await api
+      .get('/empresas/1',{
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
+      })
+      .then(response => {
+        const { data } = response
+        // console.log('Login.buscaEmpresa.data', data)
+        setEmpresa(data)
       }).catch((error) => {
         if (error.response) {
         } else if (error.request) {
@@ -165,7 +196,7 @@ const Login = ({ history }) => {
       <Loginsc>
         <Image 
           id="logo" 
-          src={window.location.hostname === "localhost1" ? logo1 : logo} 
+          src={logo} 
           alt="" 
           style={{marginTop: 20, minHeight: 150, height: '20vh'}} 
         />
@@ -194,27 +225,34 @@ const Login = ({ history }) => {
               autoComplete="current-password"
               value={password}
               onChange={event => setPassword(event.target.value)}
-            /><br/>
+            />
+            <br/>
             <button
               className="btnRLogin"
               type="button"
               onClick={clickEsqueceuSenha}
-              >Esqueci minha senha</button>
+              >Esqueci minha senha
+            </button>
+            <br/>
+            <div style={{ marginLeft: '30px' }}>
+              <label style={{
+                color: '#225378', 
+                fontSize: '14px'
+              }}>
+                <input  
+                  type="checkbox" 
+                  // label="Lembrar dados de acesso" 
+                  // id="rememberMe"
+                  name="rememberMe"
+                  checked={rememberMe}
+                  onChange={event => {setRememberMe(event.target.checked)}}
+                />
+                <span style={{marginLeft: '10px'}}>Lembrar dados de acesso</span>
+                
+              </label>
+            </div>
+
           </FormLabel>
-          
-          {/* 
-          <Form.Group controlId="formBasicCheckbox">
-            <Form.Check 
-              type="checkbox" 
-              label="Lembrar dados de acesso" 
-              id="rememberMe"
-              name="rememberMe"
-              value={rememberMe}
-              style={{color: '#225378'}}
-              onChange={event => setRememberMe(event.target.value)}
-            />
-          </Form.Group> 
-          */}
 
           <Botao>
             <button className="btn1" type="submit">ENTRAR</button>
@@ -228,7 +266,7 @@ const Login = ({ history }) => {
           {Empresa && <RTexto>
             {Empresa.email}<br/>
             {Empresa.telefone}<br/>
-            {Empresa.whatsapp}
+            {Empresa.whats}
           </RTexto>}
         </RLeft>
         <RCenter>
@@ -243,7 +281,7 @@ const Login = ({ history }) => {
         <RRight>
           <RTitulo>INFORMAÇÕES</RTitulo>
           {Empresa && <RTexto>
-            {Empresa.info}
+            Software para gestão de transporte de veículos, para transportistas e transportadoras
           </RTexto>}
         </RRight>
       </Rodape>
