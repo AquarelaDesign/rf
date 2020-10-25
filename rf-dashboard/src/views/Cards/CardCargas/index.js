@@ -16,7 +16,7 @@ import useModalPedido from '../../Pedidos/PedidoModal/useModal'
 
 // const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-export default function CardTransportes({ data, index }) {
+export default function CardCargas({ data, index }) {
   const ref = useRef()
   // const { removeM } = useContext(BoardContext)
   const [pedido, setPedido] = useState([])
@@ -40,78 +40,122 @@ export default function CardTransportes({ data, index }) {
   // const dataRotas = loadRotas()
 
   useEffect(() => {
-    const carrega = async () => {
-      setPedido(data)
-      setVeiculos(data.veiculos)
-      setRotas(data.rotas)
+    carrega()
+  }, [data, index])
 
-      const resColeta = await BuscaRota(data.localcoleta)
-      
-      // console.log('**** resColeta', resColeta)
-      setLocalColeta(resColeta[0])
+  const carrega = async () => {
+    // console.log('**** CardCargas.carrega.data', data, index)
+    setPedido(data)
+    setVeiculos(data.veiculos)
+    setRotas(data.rotas)
 
-      const resEntrega = await BuscaRota(data.localentrega)
+    let rotas = data.rotas
+    let localcoleta = undefined
+    let localentrega = undefined
 
-      // console.log('**** resEntrega', resEntrega)
-      setLocalEntrega(resEntrega[0])
+    if (data.localcoleta === undefined || data.localColeta === null || data.localEntrega === undefined || data.localEntrega === null) {
+      if (rotas !== undefined) {
+        let rt = []
+        rotas.map(r => {
+          rt.push({
+            status: r.status,
+            id: r.id,
+            localcoleta: r.localcoleta,
+            localentrega: r.localentrega,
+          })
+        })
 
-      // await sleep(500)
-      if (resColeta[0]) {
-        let _rota = ''
-        let _contatoc = ''
-        let _contatoe = ''
-
-        if (resColeta[0].cidade && resColeta[0].uf) {
-          _rota += `ROTA: ${resColeta[0].cidade}/${resColeta[0].uf} `
-        }
-
-        let _enderecoc = ''
-        let _enderecoe = ''
-
-        if (resColeta[0].contato) _contatoc += `CONTATO: ${resColeta[0].contato} ` 
-        if (resColeta[0].fone) _contatoc += `TEL: ${resColeta[0].fone}`
-        
-        if (resColeta[0].cidade) setLocal(`${resColeta[0].cidade}/${resColeta[0].uf}`)
-
-        if (resColeta[0].logradouro) _enderecoc = `${_enderecoc} ${resColeta[0].logradouro}`
-        if (resColeta[0].numero) _enderecoc = `${_enderecoc}, ${resColeta[0].numero}`
-        if (resColeta[0].complemento) _enderecoc = `${_enderecoc}, ${resColeta[0].complemento}`
-        if (resColeta[0].bairro) _enderecoc = `${_enderecoc}, ${resColeta[0].bairro}`
-        if (resColeta[0].cidade) _enderecoc = `${_enderecoc}, ${resColeta[0].cidade}`
-        if (resColeta[0].uf) _enderecoc = `${_enderecoc}/ ${resColeta[0].uf}`
-        setEnderecoc(_enderecoc)
-
-        if (resColeta[0].contato) _contatoc = `CONTATO: ${resColeta[0].contato} `
-        if (resColeta[0].fone) _contatoc = `${_contatoc}TEL: ${resColeta[0].fone}`
-        setContatoc(_contatoc)
-
-        if (resEntrega[0]) {
-          if (resEntrega[0].cidade && resEntrega[0].uf) {
-            _rota += (_rota ? 'X ' : 'ROTA: ') + `${resEntrega[0].cidade}/${resEntrega[0].uf}`
+        if (rt.length > 0) {
+          if (rt.localcoleta === undefined || rt.localentrega === undefined) {
+            try {
+              let cont = 0
+              for (let x = 0; x < rt.length; x++) {
+                // console.log('**** PedidoModal.buscaPedido.waypoints', rt[x].status, localcoleta, localentrega)
+                if (rt[x].status === 'D' && (localcoleta === undefined || localcoleta === null)) {
+                  localcoleta = rt[x].id
+                  cont++
+                } else if (rt[x].status === 'D' && (localentrega === undefined || localentrega === null)) {
+                  localentrega = rt[x].id
+                  cont++
+                }
+                if (cont >= 2) {
+                  break
+                }
+              }
+            }
+            catch (e) {
+              console.error('**** CardCargas.carrega.error', e)
+            }
           }
 
-          if (resEntrega[0].contato) _contatoe += `CONTATO: ${resEntrega[0].contato} ` 
-          if (resEntrega[0].fone) _contatoe += `TEL: ${resEntrega[0].fone}`
-            
-          if (resEntrega[0].logradouro) _enderecoe = `${_enderecoe} ${resEntrega[0].logradouro}`
-          if (resEntrega[0].numero) _enderecoe = `${_enderecoe}, ${resEntrega[0].numero}`
-          if (resEntrega[0].complemento) _enderecoe = `${_enderecoe}, ${resEntrega[0].complemento}`
-          if (resEntrega[0].bairro) _enderecoe = `${_enderecoe}, ${resEntrega[0].bairro}`
-          if (resEntrega[0].cidade) _enderecoe = `${_enderecoe}, ${resEntrega[0].cidade}`
-          if (resEntrega[0].uf) _enderecoe = `${_enderecoe}/ ${resEntrega[0].uf}`
-          setEnderecoe(_enderecoe)
-
-          if (resEntrega[0].contato) _contatoe = `CONTATO: ${resEntrega[0].contato} `
-          if (resEntrega[0].fone) _contatoe = `${_contatoe}TEL: ${resEntrega[0].fone}`
-          setContatoe(_contatoe)
         }
-        
-        setRota(_rota)
       }
     }
-    carrega()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data])
+
+    const resColeta = await BuscaRota(localcoleta)
+    
+    // console.log('**** resColeta', resColeta)
+    setLocalColeta(resColeta[0])
+
+    const resEntrega = await BuscaRota(localentrega)
+
+    // console.log('**** resEntrega', resEntrega)
+    setLocalEntrega(resEntrega[0])
+
+    // await sleep(500)
+    if (resColeta[0]) {
+      let _rota = ''
+      let _contatoc = ''
+      let _contatoe = ''
+
+      if (resColeta[0].cidade && resColeta[0].uf) {
+        _rota += `ROTA: ${resColeta[0].cidade}/${resColeta[0].uf} `
+      }
+
+      let _enderecoc = ''
+      let _enderecoe = ''
+
+      if (resColeta[0].contato) _contatoc += `CONTATO: ${resColeta[0].contato} ` 
+      if (resColeta[0].fone) _contatoc += `TEL: ${resColeta[0].fone}`
+      
+      if (resColeta[0].cidade) setLocal(`${resColeta[0].cidade}/${resColeta[0].uf}`)
+
+      if (resColeta[0].logradouro) _enderecoc = `${_enderecoc} ${resColeta[0].logradouro}`
+      if (resColeta[0].numero) _enderecoc = `${_enderecoc}, ${resColeta[0].numero}`
+      if (resColeta[0].complemento) _enderecoc = `${_enderecoc}, ${resColeta[0].complemento}`
+      if (resColeta[0].bairro) _enderecoc = `${_enderecoc}, ${resColeta[0].bairro}`
+      if (resColeta[0].cidade) _enderecoc = `${_enderecoc}, ${resColeta[0].cidade}`
+      if (resColeta[0].uf) _enderecoc = `${_enderecoc}/ ${resColeta[0].uf}`
+      setEnderecoc(_enderecoc)
+
+      if (resColeta[0].contato) _contatoc = `CONTATO: ${resColeta[0].contato} `
+      if (resColeta[0].fone) _contatoc = `${_contatoc}TEL: ${resColeta[0].fone}`
+      setContatoc(_contatoc)
+
+      if (resEntrega[0]) {
+        if (resEntrega[0].cidade && resEntrega[0].uf) {
+          _rota += (_rota ? 'X ' : 'ROTA: ') + `${resEntrega[0].cidade}/${resEntrega[0].uf}`
+        }
+
+        if (resEntrega[0].contato) _contatoe += `CONTATO: ${resEntrega[0].contato} ` 
+        if (resEntrega[0].fone) _contatoe += `TEL: ${resEntrega[0].fone}`
+          
+        if (resEntrega[0].logradouro) _enderecoe = `${_enderecoe} ${resEntrega[0].logradouro}`
+        if (resEntrega[0].numero) _enderecoe = `${_enderecoe}, ${resEntrega[0].numero}`
+        if (resEntrega[0].complemento) _enderecoe = `${_enderecoe}, ${resEntrega[0].complemento}`
+        if (resEntrega[0].bairro) _enderecoe = `${_enderecoe}, ${resEntrega[0].bairro}`
+        if (resEntrega[0].cidade) _enderecoe = `${_enderecoe}, ${resEntrega[0].cidade}`
+        if (resEntrega[0].uf) _enderecoe = `${_enderecoe}/ ${resEntrega[0].uf}`
+        setEnderecoe(_enderecoe)
+
+        if (resEntrega[0].contato) _contatoe = `CONTATO: ${resEntrega[0].contato} `
+        if (resEntrega[0].fone) _contatoe = `${_contatoe}TEL: ${resEntrega[0].fone}`
+        setContatoe(_contatoe)
+      }
+      
+      setRota(_rota)
+    }
+  }
 
   /*
   const localColeta = rotas.filter((dados) => {

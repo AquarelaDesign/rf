@@ -1506,7 +1506,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
                               name="email"
                               component={CssTextField}
                               type="text"
-                              validate={required}
+                              // validate={tipoCadastro !== 'C' && tipoCadastro !== 'F' ? false : required}
                               label="Email"
                               variant="outlined"
                               fullWidth

@@ -26,6 +26,7 @@
     "@types/react-select": "^3.0.19",
     "@unform/core": "^2.1.3",
     "@unform/web": "^2.1.3",
+    "@unicef/material-ui-currency-textfield": "^0.8.6",
     "ag-grid-community": "^24.0.0",
     "ag-grid-react": "^24.0.0",
     "autonumeric": "^4.6.0",

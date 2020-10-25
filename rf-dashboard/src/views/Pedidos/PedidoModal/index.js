@@ -40,18 +40,13 @@ import { makeStyles } from '@material-ui/core/styles'
 
 import { Form, Field } from 'react-final-form'
 import DatePicker from '../../../components/datepicker'
-// import { values } from 'lodash'
+
 import { AiOutlineSearch } from 'react-icons/ai'
 import { RiMoneyDollarBoxLine } from 'react-icons/ri'
 
-// import * as Yup from 'yup'
-// import { isCNPJ, isCPF } from 'brazilian-values'
 import MaskedInput from 'react-text-mask'
 import createNumberMask from 'text-mask-addons/dist/createNumberMask'
-// import CurrencyTextField from '../../Forms/CurrencyTextField'
-// import NumberFormat from 'react-number-format'
-// import NumberFormat from 'react-number-format'
-// import { IMaskInput } from 'react-imask'
+import CurrencyTextField from '@unicef/material-ui-currency-textfield'
 
 import { FaIcon } from '../../../components/Icone'
 import "./modal.css"
@@ -61,9 +56,6 @@ import Axios from 'axios'
 
 import { AgGridReact, gridApi } from 'ag-grid-react'
 import agPtBr from '../../../components/agPtBr'
-
-// import DocsModal from '../DocsModal'
-// import useModalDocs from '../DocsModal/useModal'
 
 import ConfirmaModal from '../../../components/ConfirmaModal'
 import useModalConfirma from '../../../components/ConfirmaModal/useModal'
@@ -82,12 +74,11 @@ import useModalHistorico from '../../../components/HistoricoModal/useModal'
 
 import moment from 'moment'
 import Map from '../../../components/Map'
-// import GoogleMaps from '../../GoogleMaps'
 
 import cadStatus from '../../../services/json/statusPedido.json'
 
 function TabPanel(props) {
-  const { children, value, index, ...other } = props;
+  const { children, value, index, ...other } = props
 
   return (
     <div
@@ -128,7 +119,7 @@ const AntTabs = withStyles({
   indicator: {
     backgroundColor: '#B5B5B5',
   },
-})(Tabs);
+})(Tabs)
 
 const AntTab = withStyles((theme) => ({
   root: {
@@ -167,7 +158,7 @@ const AntTab = withStyles((theme) => ({
     },
   },
   selected: {},
-}))((props) => <Tab disableRipple {...props} />);
+}))((props) => <Tab disableRipple {...props} />)
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -289,7 +280,7 @@ const numberMask = createNumberMask({
 const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostra = false }) => {
   const classes = useStyles()
 
-  const [initialValues, setInitialValues] = useState({})
+  const [initialValuesPed, setInitialValuesPed] = useState({})
   const [value, setValue] = useState(0)
   const [tipoCadVei, setTipoCadVei] = useState('')
 
@@ -404,12 +395,12 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
           data.limitecoleta = data.limitecoleta ? data.limitecoleta.substring(0, 10) : undefined
           data.limiteentrega = data.limiteentrega ? data.limiteentrega.substring(0, 10) : undefined
 
-          // console.log('**** PedidosModal.buscaPedido.data', data)
+          console.log('**** PedidosModal.buscaPedido.data', data)
 
-          setInitialValues(data)
+          setInitialValuesPed(data)
           setVeiculos(data.veiculos)
           setRotas(data.rotas)
-          updateMap(data.rotas)
+          updateMap(data.rotas, data.localcoleta, data.localentrega)
           buscaHistorico(data.id)
           setMotoristaID(data.motorista_id)
 
@@ -462,16 +453,25 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
 
   const novoPedido = () => {
     setValue(0)
-    setInitialValues({
-      cliente_id: null,
-      limitecoleta: undefined,
-      limiteentrega: undefined,
-      localcoleta: null,
-      localentrega: null,
-      motorista_id: null,
-      status: "",
-      tipo: "C",
-    })
+    // setInitialValuesPed({
+    //   cliente_id: null,
+    //   limitecoleta: undefined,
+    //   limiteentrega: undefined,
+    //   localcoleta: null,
+    //   localentrega: null,
+    //   motorista_id: null,
+    //   status: "",
+    //   tipo: "C",
+    // })
+    window.setFormValue('cliente_id', null)
+    window.setFormValue('limitecoleta', undefined)
+    window.setFormValue('limiteentrega', undefined)
+    window.setFormValue('localcoleta', null)
+    window.setFormValue('localentrega', null)
+    window.setFormValue('motorista_id', null)
+    window.setFormValue('status', "")
+    window.setFormValue('tipo', "C")
+
     semCliente()
     setVeiculos([])
     setRotas([])
@@ -553,7 +553,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
   }
 
   const callBackCliente = (e) => {
-    // setInitialValues({ ...initialValues, cliente_id: e })
+    // setInitialValuesPed({ ...initialValuesPed, cliente_id: e })
     window.setFormValue('cliente_id', e)
     buscaCliente(e)
   }
@@ -1403,9 +1403,9 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
           })
 
           if (temNull === true) {
-            console.log('**** PedidosModal.buscaRotas.temNull', temNull)
+            // console.log('**** PedidosModal.buscaRotas.temNull', temNull)
             data.forEach(function(row, index) {
-              console.log('**** PedidosModal.buscaRotas.row.index', row, index)
+              // console.log('**** PedidosModal.buscaRotas.row.index', row, index)
               atualizaOrdem(row.id, index)
             })
           }
@@ -1439,7 +1439,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
       rotas !== undefined && 
       seguros !== undefined && 
       tabelaDeRotas !== undefined 
-      // initialValues.valor === 0
+      // initialValuesPed.valor === 0
     ) {
 
       // console.log('**** PedidosModal.calculaValorPedido', veiculos, rotas)
@@ -1695,7 +1695,10 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
           return
         } 
 
-        window.setFormValue('valor', valor_total_pedido.toFixed(2))
+        let val = valor_total_pedido.toFixed(2)
+        val = val.replace(',', '.')
+        val = val.replace('.', ',')
+        window.setFormValue('valor', val)
 
         // console.table('**** PedidosModal.calculaValorPedido.percentual_desconto_pedido', percentual_desconto_pedido > 0, valor_total_desconto_pedido.toFixed(2))
         if (percentual_desconto_pedido > 0) {
@@ -1729,9 +1732,11 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
 
   }
 
-  const updateMap = async (rotas) => {
-    // console.clear()
+  const updateMap = async (rotas, localcoleta = undefined, localentrega = undefined) => {
+    // console.log('**** PedidoModal.updateMap.initialValuesPed', initialValuesPed)
     if (rotas !== undefined) {
+      // await sleep(500)
+
       if (rotas.length === 0) {
         confGeo()
         setOrigem({ lat: 0, lng: 0 })
@@ -1744,6 +1749,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
       let rt = []
       rotas.map(r => {
         rt.push({
+          status: r.status,
+          id: r.id,
           lat: parseFloat(r.latitude),
           lng: parseFloat(r.longitude),
           nome: r.nome,
@@ -1765,11 +1772,13 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
       setPlaces(rt)
       setParadas([])
 
-      // console.log('**** PedidoModal.updateMap.rt', rt)
+      // console.log('**** PedidoModal.updateMap.rt-01', rt, rt.length)
 
       if (rt.length > 0) {
         setOrigem(rt[0])
         setDestino(rt[rt.length - 1])
+
+        // console.log('**** PedidoModal.updateMap.rt-02', localcoleta, localentrega)
 
         if (rt.length > 2) {
           let waypoints = []
@@ -1783,6 +1792,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
             })
           }
           setParadas(waypoints)
+
           // console.log('**** PedidoModal.buscaPedido.waypoints', waypoints)
         }
 
@@ -2011,7 +2021,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
 
   async function onSubmit(values) {
 
-    // console.log('**** PedidoModal.onSubmit-values', values)
+    console.log('**** PedidoModal.onSubmit-values', values)
     let newValues = {}
     newValues['limitecoleta'] = moment(values['limitecoleta']).format('YYYY-MM-DD')
     newValues['limiteentrega'] = moment(values['limiteentrega']).format('YYYY-MM-DD')
@@ -2022,19 +2032,38 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
     newValues['localentrega'] = values['localentrega']
     newValues['status'] = values['status']
     newValues['valor'] = parseFloat(values['valor']).toFixed(2)
+    newValues['percentual_desconto'] = parseInt(values['percentual_desconto'])
+    newValues['valor_desconto'] = parseFloat(values['valor_desconto']).toFixed(2)
     // console.log('****', newValues)
 
-    /*
+    
     if (values['valor']) {
-      let val = values['valor'].replace('.', '')
-      val = val.replace(',', '.')
+      let val = values['valor'].toString()
+          val = val.replace('.', '')
+          val = val.replace(',', '.')
       newValues['valor'] = Math.round(val).toFixed(2)
     } else {
       newValues['valor'] = Math.round(values['valor']).toFixed(2)
     }
-    */
-
-    // console.log('**** PedidoModal.onSubmit-newValues', newValues)
+    
+    if (values['valor_desconto']) {
+      let val = values['valor_desconto'].toString()
+          val = val.replace('.', '')
+          val = val.replace(',', '.')
+      newValues['valor_desconto'] = Math.round(val).toFixed(2)
+    } else {
+      newValues['valor_desconto'] = Math.round(values['valor']).toFixed(2)
+    }
+    
+    // if (values['percentual_desconto']) {
+    //   let val = values['percentual_desconto'].replace('.', '')
+    //   val = val.replace(',', '.')
+    //   newValues['percentual_desconto'] = Math.round(val).toFixed(0)
+    // } else {
+    //   newValues['percentual_desconto'] = Math.round(values['valor']).toFixed(0)
+    // }
+    
+    console.log('**** PedidoModal.onSubmit-newValues', newValues)
     // return
 
     let apiParams = {}
@@ -2069,7 +2098,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
       .then(response => {
         const { data } = response
 
-        setInitialValues(data)
+        setInitialValuesPed(data)
         buscaCliente(data.cliente_id)
         if (response.status === 200) {
           toast('Registro atualizado com sucesso!', { type: 'success' })
@@ -2168,6 +2197,12 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
   }
   */
 
+  const Condition = ({ when, is, children }) => (
+    <Field name={when} subscription={{ value: true }}>
+      {({ input: { value } }) => (value === is ? children : null)}
+    </Field>
+  )
+
   const required = value => (value ? undefined : '* Obrigatório!')
 
   if (isShowPedido) {
@@ -2205,7 +2240,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
 
               <Form
                 onSubmit={onSubmit}
-                initialValues={initialValues}
+                initialValues={initialValuesPed}
                 validate={required}
                 height={'490px'} width={'100%'}
                 mutators={{
@@ -2351,9 +2386,23 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                                         size="small"
                                         margin="dense"
                                         // onChange={e => window.setFormValue('valor', e.target.value)}
-                                        InputProps={{
-                                          inputComponent: formatCurrency,
-                                        }}
+                                        // InputProps={{
+                                        //   inputComponent: formatCurrency,
+                                        // }}
+                                        // renderInput={(params) => 
+                                        //   <CurrencyTextField
+                                        //     {...params}
+                                        //     // label="Amount"
+                                        //     // variant="standard"
+                                        //     // value={value}
+                                        //     currencySymbol="R$"
+                                        //     //minimumValue="0"
+                                        //     outputFormat="string"
+                                        //     decimalCharacter=","
+                                        //     digitGroupSeparator="."
+                                        //     // onChange={(event, value)=> setValue(value)}
+                                        //   />
+                                        // }
                                       />
                                     </Col>
                                     <Col xs={2}>
@@ -2368,8 +2417,22 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                                         size="small"
                                         margin="dense"
                                         // onChange={e => window.setFormValue('valor', e.target.value)}
+                                        // renderInput={(params) => 
+                                        //   <CurrencyTextField
+                                        //     {...params}
+                                        //     // label="Amount"
+                                        //     // variant="standard"
+                                        //     // value={value}
+                                        //     currencySymbol="R$"
+                                        //     //minimumValue="0"
+                                        //     outputFormat="string"
+                                        //     decimalCharacter=","
+                                        //     digitGroupSeparator="."
+                                        //     // onChange={(event, value)=> setValue(value)}
+                                        //   />
+                                        // }
                                         InputProps={{
-                                          inputComponent: formatCurrency,
+                                          // inputComponent: formatCurrency,
                                           endAdornment: (
                                             <InputAdornment position="end">
                                               <button type="button" onClick={() => calculaValorPedido(values)}
@@ -2648,6 +2711,39 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                                           inputComponent: formatCep,
                                         }}
                                       />
+                                    </Col>
+
+                                    <Col xs={1}>
+                                      <div style={{ visibility: 'hidden' }}>
+                                        <Field
+                                          disabled={true}
+                                          name="localcoleta"
+                                          component={CssTextField}
+                                          type="text"
+                                          label="Coleta"
+                                          variant="outlined"
+                                          fullWidth
+                                          size="small"
+                                          margin="dense"
+                                          style={{ textAlign:"right" }}
+                                        />
+                                      </div>
+                                    </Col>
+                                    <Col xs={1}>
+                                      <div style={{ visibility: 'hidden' }}>
+                                        <Field
+                                          disabled={true}
+                                          name="localentrega"
+                                          component={CssTextField}
+                                          type="text"
+                                          label="Entrega"
+                                          variant="outlined"
+                                          fullWidth
+                                          size="small"
+                                          margin="dense"
+                                          style={{ textAlign:"right" }}
+                                        />
+                                      </div>
                                     </Col>
                                   </Row>
                                 </Grid>
