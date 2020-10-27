@@ -6,7 +6,8 @@ import {
   FaBoxOpen, 
   FaArrowAltCircleRight, 
   FaBox, 
-  FaBell, 
+  FaBell,
+  FaCheck,
   FaDiscourse,
   FaFilter,
   FaRegEdit,
@@ -18,6 +19,7 @@ import {
   FaCircle,
   FaSave,
   FaFileUpload,
+  FaCalendarCheck,
 } from 'react-icons/fa'
 
 import { BsBackspaceFill } from 'react-icons/bs'
@@ -26,8 +28,11 @@ import { GoChecklist } from 'react-icons/go'
 import { GrDeliver, GrUpdate, GrHostMaintenance, GrSecure } from 'react-icons/gr'
 import { GiExitDoor, GiStopwatch, GiReturnArrow } from 'react-icons/gi'
 import { RiSearchLine } from 'react-icons/ri'
+import { IoIosDocument } from 'react-icons/io'
+import { ImCloudCheck } from 'react-icons/im'
+import { TiArrowBack } from 'react-icons/ti'
 import { FcPlus, FcCancel, FcDocument, FcInTransit } from 'react-icons/fc'
-import { FiAlertOctagon, FiAlertTriangle } from 'react-icons/fi'
+import { FiAlertOctagon, FiAlertTriangle, FiSend } from 'react-icons/fi'
 import { MdDeleteForever, MdAddCircle, MdBlock, MdCheckCircle, MdCancel, MdZoomOutMap } from 'react-icons/md'
 
 import blank from '../assets/transparent.png'
@@ -46,6 +51,9 @@ export const FaIcon = ({ icon, size, height, width }) => {
     case 'FaBoxOpen': return <FaBoxOpen size={size} style={{ paddingTop: 10 }} />
     case 'FaArrowAltCircleRight': return <FaArrowAltCircleRight size={size} style={{ paddingTop: 10 }} />
     case 'FaBox': return <FaBox size={size} style={{ paddingTop: 10 }} />
+    case 'EmitirCTe': return <FiSend size={size} style={{ paddingTop: 10 }} />
+    case 'EncerrarManifesto': return <IoIosDocument size={size} style={{ paddingTop: 10 }} />
+    case 'TarefasRealizadas': return <ImCloudCheck size={size} style={{ paddingTop: 10 }} />
     case 'FaDiscourse': return <FaDiscourse size={size} style={{ marginLeft: 10, marginRight: 5 }} />
     case 'FaBell': return <FaBell size={size} style={{ marginLeft: 5, marginRight: 10 }} />
     case 'Usuario': return <FaHeadphonesAlt size={size} style={{ marginRight: 10 }} />
@@ -81,11 +89,14 @@ export const FaIcon = ({ icon, size, height, width }) => {
     case 'Aguardando': return <GiStopwatch size={size} />
     case 'Disponivel': return <MdCheckCircle size={size} />
     case 'Transporte': return <FcInTransit size={size} />
-    case 'Confere': return <GoChecklist size={size} />
+    case 'Confere': return <GoChecklist size={size} style={{ marginBottom: 2, color: '#FFFFFF' }} />
     case 'Cancelado': return <MdCancel size={size} />
     case 'Manutencao': return <GrHostMaintenance size={size} />
     case 'Entregue': return <Image src={entregue} alt="" style={{ height: {size}, width: {size} }} />
     case 'Aprovado': return <AiTwotoneLike size={size} style={{ marginBottom: 2, color: '#90D284' }} />
+    case 'Marcar': return <FaCheck size={size} style={{ marginBottom: 2, color: '#FFFFFF' }} />
+    case 'MarcarArquivado': return <FaCalendarCheck size={size} style={{ marginBottom: 2, color: '#FFFFFF' }} />
+    case 'Desfazer': return <TiArrowBack size={size} style={{ marginBottom: 2, color: '#FFFFFF' }} />
     case 'Whats': return <Image src={whats} alt="" style={{ height: 16, width: 16 }} />
     case 'pbWhats': return <Image src={pb_whats} alt="" style={{ height: 16, width: 16 }} />
     case 'pbEmail': return <Image src={pb_email} alt="" style={{ height: 16, width: 16 }} />

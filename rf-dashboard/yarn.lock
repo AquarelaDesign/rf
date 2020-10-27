@@ -10314,10 +10314,10 @@ react-hook-google-maps@^0.0.3:
   resolved "https://registry.yarnpkg.com/react-hook-google-maps/-/react-hook-google-maps-0.0.3.tgz#468b7631970a25ce070f9f2e7f5ca6fd6b6d536d"
   integrity sha512-ZgsFaKXOX/sTWBMlbgdvfRp6PAp1WYT3XYyJf1nplOwnoBfd81vqQoeLnM005q0tQaxq6/M5ymKuFUWrpFxJgQ==
 
-react-icons@^3.10.0:
-  version "3.10.0"
-  resolved "https://registry.yarnpkg.com/react-icons/-/react-icons-3.10.0.tgz#6c217a2dde2e8fa8d293210023914b123f317297"
-  integrity sha512-WsQ5n1JToG9VixWilSo1bHv842Cj5aZqTGiS3Ud47myF6aK7S/IUY2+dHcBdmkQcCFRuHsJ9OMUI0kTDfjyZXQ==
+react-icons@^3.11.0:
+  version "3.11.0"
+  resolved "https://registry.yarnpkg.com/react-icons/-/react-icons-3.11.0.tgz#2ca2903dfab8268ca18ebd8cc2e879921ec3b254"
+  integrity sha512-JRgiI/vdF6uyBgyZhVyYJUZAop95Sy4XDe/jmT3R/bKliFWpO/uZBwvSjWEdxwzec7SYbEPNPck0Kff2tUGM2Q==
   dependencies:
     camelcase "^5.0.0"
 

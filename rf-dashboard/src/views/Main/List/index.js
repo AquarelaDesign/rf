@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback } from 'react'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 // import { makeStyles } from '@material-ui/core/styles'
 
@@ -8,6 +8,7 @@ import { FaIcon } from '../../../components/Icone'
 import CardMotorista from '../../Cards/CardMotoristas'
 import CardCarga from '../../Cards/CardCargas'
 import CardTransporte from '../../Cards/CardTranportes'
+import CardEmitirCTe from '../../Cards/CardEmitirCTe'
 
 import GridUsuariosModal from '../../Cadastro/GridUsuariosModal'
 import useModal from '../../Cadastro/GridUsuariosModal/useModal'
@@ -17,38 +18,12 @@ import useModalPedidos from '../../Pedidos/GridPedidosModal/useModal'
 
 import { Container } from './styles'
 
-// const getModalStyle = () => {
-//   const top = 50
-//   const left = 50
-
-//   return {
-//     top: `${top}%`,
-//     left: `${left}%`,
-//     transform: `translate(-${top}%, -${left}%)`,
-//     // background: 'none',
-//     borderRadius: '5px',
-//     padding: '20px',
-//     backgroundColor: '#2699F8',
-//   }
-// }
-
-// const useStyles = makeStyles((theme) => ({
-//   paper: {
-//     position: 'absolute',
-//     width: '80%',
-//     height: '80%',
-//     backgroundColor: theme.palette.background.paper,
-//     border: '1px solid #000',
-//     boxShadow: theme.shadows[5],
-//     padding: theme.spacing(2, 4, 3),
-//   },
-// }))
-
 const List = ({ data }) => {
   const { isShowing, toggleGridUsuarios } = useModal()
   const { isShowPedido, toggleGridPedidos } = useModalPedidos()
 
-  const Card = (card, id) => {
+  const Card = useCallback((card, id) => {
+    // console.log('**** List.Card.tipo', card.tipo)
     switch (card.tipo) {
       case 'M':
         return <CardMotorista
@@ -68,9 +43,17 @@ const List = ({ data }) => {
           index={id}
           data={card}
         />
+      case 'F':
+      case 'X':
+      case 'Y':
+        return <CardEmitirCTe
+          key={card.id}
+          index={id}
+          data={card}
+        />
       default: return null
     }
-  }
+  }, [data])
 
   const handleClick = async (tipo, e) => {
     e.preventDefault()

@@ -90,4 +90,8 @@ Route.group(() => {
     .apiOnly()
   Route.post("/buscavalped/:id", "PedidosValoreController.busca")
 
+  Route.post("/buscafiscal", "FiscalController.busca")
+  Route.resource('fiscal', 'FiscalController')
+    .apiOnly()
+
 }).middleware('auth')

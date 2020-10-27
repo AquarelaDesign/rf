@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useDrag, useDrop } from 'react-dnd'
 import StarRatings from 'react-star-ratings'
 // import BoardContext from '../Board/context';
@@ -12,7 +12,10 @@ import semImagem from '../../../assets/sem_foto.png'
 import { FaIcon } from '../../../components/Icone'
 
 import Email from '../../../components/Email'
-import useModal from '../../../components/Email/useModal'
+import useModalEmail from '../../../components/Email/useModal'
+
+import UsuarioModal from '../../Cadastro/UsuarioModal'
+import useModal from '../../Cadastro/UsuarioModal/useModal'
 
 const useStyles = makeStyles((theme) => ({
   botoes: {
@@ -31,7 +34,15 @@ const dev = window.location.hostname === "localhost" ? 'https://www.retornofacil
 export default function CardMotoristas({ data, index }) {
   const ref = useRef()
   const classes = useStyles()
-  const { isShowEmail, toggleEmail } = useModal()
+  
+  const [mostra, setMostra] = useState(false)
+  const { isShowEmail, toggleEmail } = useModalEmail()
+  const { isShowUsuario, toggleUsuario } = useModal()
+
+  const abreCadastro = (e) => {
+    setMostra(!mostra)
+    toggleUsuario()
+  }
 
   const [{ isDragging }, dragRef] = useDrag({
     item: { type: 'CARD', index, data },
@@ -43,49 +54,6 @@ export default function CardMotoristas({ data, index }) {
   const [, dropRef] = useDrop({
     accept: 'CARD',
     hover(item, monitor) {
-      /*
-      const draggedListIndex = item.listIndex
-      // const targetListIndex = listIndex
-
-      const draggedIndex = item.index
-      const targetIndex = index
-
-      console.log('**** CardMotoristas.useDrop-1', draggedListIndex, targetIndex, item, monitor)
-
-      // if (draggedIndex === targetIndex && draggedListIndex === targetListIndex) {
-      if (draggedIndex === targetIndex) {
-        return
-      }
-      console.log('**** CardMotoristas.useDrop-2', item, monitor)
-
-      const pedido = {
-        'origem': item,
-        'destino': data
-      }
-      console.log('**** CardMotoristas.useDrop.pedido', pedido)
-      */
-
-      /*
-      const targetSize = ref.current.getBoundingClientRect();
-      const targetCenter = (targetSize.bottom - targetSize.top) / 2;
-
-      const draggedOffset = monitor.getClientOffset();
-      const draggedTop = draggedOffset.y - targetSize.top;
-
-      if (draggedIndex < targetIndex && draggedTop < targetCenter) {
-        return;
-      }
-
-      if (draggedIndex > targetIndex && draggedTop > targetCenter) {
-        return;
-      }
-      */
-
-      // move(draggedListIndex, targetListIndex, draggedIndex, targetIndex);
-      //removeM(draggedIndex);
-
-      // item.index = targetIndex;
-      // item.listIndex = targetListIndex;
     },
 
     drop(item, monitor) {
@@ -97,7 +65,7 @@ export default function CardMotoristas({ data, index }) {
     }
   })
 
-  dragRef(dropRef(ref));
+  dragRef(dropRef(ref))
 
   return (
     <>
@@ -157,45 +125,53 @@ export default function CardMotoristas({ data, index }) {
 
         </div>
 
-        <RLeft>
-          <img src={data.foto !== null ? `${dev}images/${data.foto}` : semImagem} alt="" />
-        </RLeft>
-        <RRight>
-          <Texto bgcolor='#E7E6E6' size={16} bold={true}>
-            {data.nome}
-          </Texto>
+        <div onDoubleClick={abreCadastro} >
+          <RLeft>
+            <img src={data.foto !== null ? `${dev}images/${data.foto}` : semImagem} alt="" />
+          </RLeft>
+          <RRight>
+            <Texto bgcolor='#E7E6E6' size={16} bold={true}>
+              {data.nome}
+            </Texto>
 
-          <StarRatings
-            rating={data.rate}
-            starRatedColor="#F9D36B"
-            starDimension="14px"
-            starSpacing="1px"
-            // changeRating={this.changeRating}
-            numberOfStars={5}
-            name='rating'
-          />
-          <Texto color='#2699FB' size={12}>
-            Tipo de veículo: {data.veiculos.length > 0 ? data.veiculos[0].tipo : ''}
+            <StarRatings
+              rating={data.rate}
+              starRatedColor="#F9D36B"
+              starDimension="14px"
+              starSpacing="1px"
+              // changeRating={this.changeRating}
+              numberOfStars={5}
+              name='rating'
+            />
+            <Texto color='#2699FB' size={12}>
+              Tipo de veículo: {data.veiculos.length > 0 ? data.veiculos[0].tipo : ''}
+            </Texto>
+            <Texto bgcolor='#E7E6E6' size={10}>
+              RT: {`${data.origem} x ${data.destino}`}
+            </Texto>
+            <Texto bgcolor='#E7E6E6' size={12}>
+              Vagas disponíveis: {data.veiculos.length > 0 ? data.veiculos[0].vagas : 0} vagas
           </Texto>
-          <Texto bgcolor='#E7E6E6' size={10}>
-            RT: {`${data.origem} x ${data.destino}`}
-          </Texto>
-          <Texto bgcolor='#E7E6E6' size={12}>
-            Vagas disponíveis: {data.veiculos.length > 0 ? data.veiculos[0].vagas : 0} vagas
-        </Texto>
-          <Texto bgcolor='#90D284' size={12}>
-            {data.localizacao}
-          </Texto>
-        </RRight>
-        {/* <header>
-        {data.labels.map(label => <Label key={label} color={label} />)}
-      </header> 
-      <p>{data.nome}</p>
-      */}
+            <Texto bgcolor='#90D284' size={12}>
+              {data.localizacao}
+            </Texto>
+          </RRight>
+          {/* <header>
+          {data.labels.map(label => <Label key={label} color={label} />)}
+          </header> 
+          <p>{data.nome}</p>
+          */}
+        </div>
       </Container>
       <Email 
         isShowEmail={isShowEmail}
         hide={toggleEmail}
+      />
+      <UsuarioModal
+        isShowUsuario={isShowUsuario}
+        hide={toggleUsuario}
+        tipo='V'
+        usuarioId={data.id}
       />
     </>
   )

@@ -11,7 +11,7 @@ import api from '../../../services/rf'
 
 const nomeEmpresa = "Arena Transautos"
 
-export default function Header() {
+export default function Header({backHeader}) {
   const [userID, setUserID] = useState(localStorage.getItem('@rf/userID'))
   const [userDados, setUserDados] = useState({})
 
@@ -42,6 +42,10 @@ export default function Header() {
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
+  const backMenu = (e) => {
+    backHeader(e)
+  }
+
   return (
     <>
       <Container>
@@ -53,7 +57,7 @@ export default function Header() {
         <Image id="logo" src={logo} alt="" style={{marginTop: 0, height: 30}} />
       </Container>
       <Filter />
-      <Menu />
+      <Menu backMenu={(e) => backMenu(e)} />
     </>
   )
 }

@@ -9,7 +9,7 @@ import api from '../../../services/rf'
 import { Container, Botao, BotaoExit, RLeft, RRight } from './styles';
 import { FaIcon } from '../../../components/Icone'
 
-export default function Menu() {
+export default function Menu({backMenu}) {
   const history = useHistory()
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -86,8 +86,8 @@ export default function Menu() {
     history.push('/rf')
   }
 
-  const mudaPainel = (e, opcao) => {
-    localStorage.setItem('@rf/painel', opcao)
+  const mudaPainel = async (e, opcao) => {
+    backMenu(opcao)
   }
 
   return (

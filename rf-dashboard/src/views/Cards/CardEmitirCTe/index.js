@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { useDrag, useDrop } from 'react-dnd'
 import StarRatings from 'react-star-ratings'
-// import BoardContext from '../Board/context';
+// import BoardContext from '../Board/context'
 import { makeStyles } from '@material-ui/core/styles'
 import { Tooltip } from '@material-ui/core'
 import { formatToPhone } from 'brazilian-values'
@@ -37,22 +37,22 @@ const useStyles = makeStyles((theme) => ({
 
 const dev = window.location.hostname === "localhost" ? 'https://www.retornofacil.com.br/rf/' : ''
 
-export default function CardTransportes({ data, index }) {
-  const ref = useRef();
+export default function CardEmitirCTe({ data, index }) {
+  const ref = useRef()
   const classes = useStyles()
 
-  const [cliente, setCliente] = useState({})
+  // const [cliente, setCliente] = useState({})
   const [motorista, setMotorista] = useState({})
   const [local, setLocal] = useState('')
   const [localColeta, setLocalColeta] = useState([])
   const [localEntrega, setLocalEntrega] = useState([])
   const [rota, setRota] = useState('')
   const [statusMotorista, setStatusMotorista] = useState('')
-  const [statusPedido, setStatusPedido] = useState(false)
-  const [confirmado, setConfirmado] = useState(false)
+  // const [statusPedido, setStatusPedido] = useState(false)
+  // const [confirmado, setConfirmado] = useState(false)
   const [mostra, setMostra] = useState(false)
+  const [mostraDesfaz, setMostraDesfaz] = useState(false)
   // const [rotas, setRotas] = useState([])
-  const [counter, setCounter] = useState(3 * 60) // <-- Tempo de espera para aceite
   const [tempo, setTempo] = useState({
     "h": 0,
     "m": 0,
@@ -67,6 +67,12 @@ export default function CardTransportes({ data, index }) {
   useEffect(() => {
     // console.log('**** CardTransportes.data', data)
     // setRotas(data.rotas)
+    if (data.tipo === 'F') {
+      setMostraDesfaz('hidden')
+    } else {
+      setMostraDesfaz('visible')
+    }
+
     if (data.rotas.length > 0) {
       setLocal(`${data.rotas[0].cidade}/${data.rotas[0].uf}`)
     }
@@ -143,102 +149,12 @@ export default function CardTransportes({ data, index }) {
 
   }, [])
 
-  useEffect(() => {
-    secondsToTime(counter)
-    const timer =
-      counter > 0 && setInterval(() => setCounter(counter - 1), 1000)
-    /*
-    Status Pedidos
-      [ ]Em Manutenção, 
-      [D]isponivel,
-      [A]guardando, 
-      Em [C]oleta, 
-      Em [T]ransporte, 
-      Em c[O]nferencia, 
-      [E]ntregue, 
-      [X]Cancelado
-    */
-
-    if (data.status === 'C') {
-      setCounter(0)
-    }
-
-    // console.log('**** CardTransportes.atualizaPedido.data.status', counter, data.status, statusMotorista)
-    if (counter <= 0 && statusPedido) {
-      atualizaPedido(data.id, data.motorista_id, 'D')
-      setStatusPedido(false)
-    }
-
-    if (counter <= 0 && statusMotorista === 'P' && !statusPedido) {
-      atualizaPedido(data.id, data.motorista_id, 'C')
-      setStatusPedido(false)
-    }
-
-    if (counter <= 0 && statusMotorista === 'P' && data.status === 'A' && !confirmado) {
-      atualizaPedido(data.id, data.motorista_id, 'D')
-      setStatusPedido(false)
-    }
-
-    return () => {
-      clearInterval(timer)
-      setStatusPedido(false)
-    }
-  }, [counter])
-
-  const secondsToTime = (secs) => {
-    let hours = Math.floor(secs / (60 * 60))
-
-    let divisor_for_minutes = secs % (60 * 60)
-    let minutes = Math.floor(divisor_for_minutes / 60)
-
-    let divisor_for_seconds = divisor_for_minutes % 60
-    let seconds = Math.ceil(divisor_for_seconds)
-
-    let obj = {
-      "h": hours.toString().padStart(2, '0'),
-      "m": minutes.toString().padStart(2, '0'),
-      "s": seconds.toString().padStart(2, '0')
-    }
-    setTempo(obj)
-  }
-
   function BuscaRota(id, rotas) {
     return rotas.filter(rota => rota.id === id).map(
       frota => {
         return frota
       }
     )
-  }
-
-  const buscaCliente = async (clienteID) => {
-    if (clienteID) {
-      // await sleep(500)
-      await api
-        .get(`/usuarios/${clienteID}`)
-        .then(response => {
-          const { data } = response
-
-          console.log('**** CardTransportes.buscaCliente', data)
-          setCliente(data)
-        }).catch((error) => {
-          if (error.response) {
-            const { data } = error.response
-            try {
-              data.map(mensagem => {
-                toast(mensagem.message, { type: 'error' })
-              })
-            }
-            catch (e) {
-              console.log('**** CardTransportes.buscaCliente.error.data', data)
-            }
-          } else if (error.request) {
-            console.log('**** CardTransportes.buscaCliente.error', error)
-            // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
-          } else {
-            // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
-          }
-        })
-    }
   }
 
   const buscaMotorista = async (motoristaID) => {
@@ -253,12 +169,6 @@ export default function CardTransportes({ data, index }) {
           setMotorista(data)
           setStatusMotorista(data.estado)
 
-          if (data.estado !== 'P') {
-            const timer =
-              counter > 0 && setInterval(() => setCounter(counter - 1), 1000)
-            clearInterval(timer)
-          }
-          
         }).catch((error) => {
           if (error.response) {
             const { data } = error.response
@@ -281,7 +191,7 @@ export default function CardTransportes({ data, index }) {
   }
 
   const salvaHistorico = async (pedidoId, motoristaId, clienteId, operadorId, observacao) => {
-    // console.log('**** PedidosModal.salvaHistorico.pedidoId', pedidoId)
+    console.log('**** PedidosModal.salvaHistorico', pedidoId, motoristaId, clienteId, operadorId, observacao)
     await api
       .post(`/historicos`, {
         "motorista_id": motoristaId,
@@ -315,39 +225,41 @@ export default function CardTransportes({ data, index }) {
       })
   }
 
-  const atualizaPedido = async (pedidoID, motoristaID, status) => {
-    // console.log('**** CardTransportes.atualizaPedido', pedidoID, motoristaID, status)
-    if (status === 'D') {
-      atualizaRotas()
-      atualizaMotorista(motoristaID, ' ')
-      salvaHistorico(
-        pedidoID, 
-        motoristaID, 
-        null, 
-        userID,
-        `O Motorista não aceitou o transporte`
-      )
+  const atualizaStatus = async () => {
+    let par_tipo = ''
+    let par_status = ''
+    let par_hist = ''
+    let par_pedido = data.id
+    
+    if (data.tipo === 'F') {
+      par_tipo = 'X'
+      par_status = ' '
+      par_hist = 'CT-e emitido'
+    } else if (data.tipo === 'X') {
+      par_tipo = 'Y'
+      par_status = ' '
+      par_hist = 'Manifesto encerrado'
     } else {
-      atualizaMotorista(motoristaID, 'A')
-      buscaMotorista(motoristaID)
+      par_tipo = 'T'
+      par_status = 'T'
+      par_hist = 'CT-e e Manifesto arquivados no Fiscal'
     }
-
-    await api.put(`/pedidos/${pedidoID}`, {
-      motorista_id: status === 'D' ? null : motoristaID,
-      status: status, // Disponivel/Em coleta
-      tipo: status === 'D' ? "C" : 'T', // Cargas
+    
+    // console.log('**** CardTransportes.atualizaStatus', data.fiscal, par_pedido)
+    await api.put(`/fiscal/${data.fiscal}`, {
+      tipo: par_tipo,
+      status: par_status,
     })
     .then(response => {
       const { data } = response
-      if (status !== 'D') {
-        salvaHistorico(
-          data.id, 
-          data.motorista_id, 
-          null, 
-          userID,
-          `O Pedido está aguardando a coleta`
-        )
-      }
+      // (pedidoId, motoristaId, clienteId, operadorId, observacao)
+      salvaHistorico(
+        par_pedido, 
+        null, 
+        null, 
+        userID,
+        par_hist
+      )
     })
     .catch((error) => {
       if (error.response) {
@@ -370,49 +282,41 @@ export default function CardTransportes({ data, index }) {
     
   }
 
-  const atualizaRotas = async () => {
-    // verificar filtro somente para o motorista (motorista_id)
-    data.rotas.map(rota => {
-      if (rota.status !== 'D') {
-        api.put(`/rotas/${rota.id}`, {
-          motorista_id: null,
-          status: 'D',
-        })
-        .then(response => {
-          const { data } = response
-        })
-        .catch((error) => {
-          if (error.response) {
-            const { data } = error.response
-            try {
-              data.map(mensagem => {
-                toast(mensagem.message, { type: 'error' })
-              })
-            }
-            catch (e) {
-              console.log('**** CardTransportes.atualizaRotas.error.data', data)
-            }
-          } else if (error.request) {
-            console.log('**** CardTransportes.atualizaRotas.error', error)
-            // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
-          } else {
-          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
-          }
-        })
-      }
-    })
-
-  }
-
-  const atualizaMotorista = async (motoristaID, estado) => {
-    const vagas = motorista.vagas - data.veiculos.length
-
-    await api.put(`/usuarios/${motoristaID}`, {
-      estado: estado, // Aguardando Aprovacao
-      // vagas: vagas,
+  const desfazStatus = async () => {
+    let par_tipo = ''
+    let par_status = ''
+    let par_hist = ''
+    let par_pedido = data.id
+    
+    if (data.tipo === 'X') {
+      par_tipo = 'F'
+      par_status = ' '
+      par_hist = 'Retornado de Manifesto para emissão do CT-e'
+    } else if (data.tipo === 'Y') {
+      par_tipo = 'X'
+      par_status = ' '
+      par_hist = 'Retornado de Realizado para Manifesto'
+    } else {
+      par_tipo = 'F'
+      par_status = ' '
+      par_hist = 'Processo desfeito no Fiscal'
+    }
+    
+    // console.log('**** CardTransportes.atualizaStatus', data.fiscal, par_pedido)
+    await api.put(`/fiscal/${data.fiscal}`, {
+      tipo: par_tipo,
+      status: par_status,
     })
     .then(response => {
       const { data } = response
+      // (pedidoId, motoristaId, clienteId, operadorId, observacao)
+      salvaHistorico(
+        par_pedido, 
+        null, 
+        null, 
+        userID,
+        par_hist
+      )
     })
     .catch((error) => {
       if (error.response) {
@@ -423,15 +327,16 @@ export default function CardTransportes({ data, index }) {
           })
         }
         catch (e) {
-          console.log('**** CardTransportes.atualizaMotorista.error.data', data)
+          console.log('**** CardTransportes.atualizaPedido.error.data', data)
         }
       } else if (error.request) {
-        console.log('**** CardTransportes.atualizaMotorista.error', error)
+        console.log('**** CardTransportes.atualizaPedido.error', error)
         // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
       } else {
       // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
     })
+    
   }
 
   const abrePedido = (e) => {
@@ -439,53 +344,34 @@ export default function CardTransportes({ data, index }) {
     togglePedido()
   }
 
-  const aprovaMotorista = (e) => {
-    // alert('Motorista Aprovado !!!')
-    /*
-      Status Motorista
-      [] Disponível, 
-      Aguardando A[P]rovacao, 
-      [A]guardando Coleta, 
-      Em [T]ransporte    
-    */
-    
-    // console.log('**** CardTransportes.aprovaMotorista.statusMotorista', statusMotorista)
-    if (statusMotorista === 'P') {
-      setCounter(0)
-      atualizaPedido(data.id, data.motorista_id, 'C')
-      setStatusPedido(false)
-      setConfirmado(true)
-    } else {
-      atualizaPedido(data.id, data.motorista_id, 'D')
-      setStatusPedido(true)
-    }
-  }
-
   const [{ isDragging }, dragRef] = useDrag({
-    item: { type: 'CARD', index, data },
+    item: { type: 'FISCAL', index, data },
     collect: monitor => ({
       isDragging: monitor.isDragging(),
     }),
   })
 
   const [, dropRef] = useDrop({
-    accept: 'CARD',
+    accept: 'FISCAL', 
     hover(item, monitor) {
       // item.index = targetIndex
-      
-      console.log('**** CardTransportes.item', item)
+      // console.log('**** CardEmitirCTe.item.hover', item)
     },
 
     drop(item, monitor) {
+      console.log('**** CardEmitirCTe.item.drop', item)
       // removeM(index)
-      const userID = item.data.id
-      const pedidoID = data.id
+      // const userID = item.data.id
+      // const pedidoID = data.id
+      atualizaStatus()
     }
   })
   
+  dragRef(dropRef(ref))
+  
   return (
     <>
-      <Container ref={ref}>
+      <Container ref={ref} isDragging={isDragging}>
         <div className={classes.botoes}>
           {motorista.whats && (
             <a target="_blank"
@@ -633,20 +519,50 @@ export default function CardTransportes({ data, index }) {
             right: 10,
             bottom: 10,
           }}>
-            <button onClick={aprovaMotorista}
-              style={{ backgroundColor: 'transparent' }}
+            <button onClick={desfazStatus}
+              style={{ backgroundColor: 'transparent', visibility: mostraDesfaz }}
             >
-              <Tooltip title={`${statusMotorista === 'P' ? 'Aprovar' : 'Cancelar'} transporte`}>
+              <Tooltip 
+                title={
+                    data.tipo === 'X' 
+                      ? 'Voltar para Emitir CT-e' 
+                      : 'Voltar para Encerrar Manifesto'
+                }
+              >
                 <span style={{
                   alignItems: 'center',
                   cursor: 'pointer',
                   marginTop: '3px',
                 }}>
-                  { statusMotorista === 'P' ? 
-                    <FaIcon icon='Aprovado' size={20} />
-                  : 
-                    <FaIcon icon='Cancelado' size={20} />
-                  }
+                  <FaIcon icon='Desfazer' size={20} />
+                </span>
+              </Tooltip>
+            </button>
+
+            <button onClick={atualizaStatus}
+              style={{ backgroundColor: 'transparent' }}
+            >
+              <Tooltip 
+                title={
+                  data.tipo === 'F' 
+                    ? 'Marcar como CT-e Emitido' 
+                    : data.tipo === 'X' 
+                      ? 'Marcar Manifesto como Encerrado' 
+                      : 'Arquivar'
+                }
+              >
+                <span style={{
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  marginTop: '3px',
+                }}>
+                  <FaIcon icon={
+                  data.tipo === 'F' 
+                    ? 'Marcar' 
+                    : data.tipo === 'X' 
+                      ? 'Confere' 
+                      : 'MarcarArquivado'
+                } size={20} />
                 </span>
               </Tooltip>
             </button>
