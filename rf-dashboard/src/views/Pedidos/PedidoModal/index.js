@@ -395,7 +395,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
           data.limitecoleta = data.limitecoleta ? data.limitecoleta.substring(0, 10) : undefined
           data.limiteentrega = data.limiteentrega ? data.limiteentrega.substring(0, 10) : undefined
 
-          console.log('**** PedidosModal.buscaPedido.data', data)
+          // console.log('**** PedidosModal.buscaPedido.data', data)
 
           setInitialValuesPed(data)
           setVeiculos(data.veiculos)

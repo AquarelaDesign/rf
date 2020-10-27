@@ -43,7 +43,7 @@ class PedidoController {
 
   /**
    * Show a list of pedidos with parameters.
-   * GET pedidos
+   * POST pedidos
    */
   async busca ({ auth, request, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
@@ -168,7 +168,7 @@ class PedidoController {
    * Display a single pedido.
    * GET pedidos/:id
    */
-  async show ({ auth, params }) {
+  async show ({ auth, params, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
     if (usuarios.tipo !== 'O') {
       return response.status(401).send({ 

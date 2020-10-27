@@ -34,7 +34,7 @@ const ConfirmaModal = ({
     await sleep(1000)
 
     if (callback) {
-      console.log('**** ConfirmaModal.fechar', modulo)
+      // console.log('**** ConfirmaModal.fechar', modulo)
       callback(modulo)
       hide()
     }
