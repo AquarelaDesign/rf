@@ -28,7 +28,6 @@ class PedidoController {
       const pedidos = Pedido.query()
                             .with('veiculos')
                             .with('rotas')
-                            .with('rotaspedido')
                             .fetch()
       return pedidos
     }
@@ -77,9 +76,8 @@ class PedidoController {
       query
         .with('veiculos')
         .with('rotas')
-        .with('rotaspedido')
-        const pedido = await query.fetch()
 
+      const pedido = await query.fetch()
       return pedido
     }
     catch(e) {
@@ -109,7 +107,6 @@ class PedidoController {
       query
         .with('veiculos')
         .with('rotas')
-        .with('rotaspedido')
       const pedido = await query.fetch()
   
       Event.fire('statusp::results', pedido)
@@ -154,6 +151,8 @@ class PedidoController {
     
     try {
       const pedidos = await Pedido.create(data)
+      await pedidos.load('veiculos')
+      await pedidos.load('rotas')
       return pedidos
     }
     catch(e) {
@@ -180,7 +179,6 @@ class PedidoController {
       const pedidos = await Pedido.findOrFail(params.id)
       await pedidos.load('veiculos')
       await pedidos.load('rotas')
-      await pedidos.load('rotaspedido')
       return pedidos
     }
     catch(e) {
@@ -223,6 +221,8 @@ class PedidoController {
         
       pedidos.merge(data)
       await pedidos.save()
+      await pedidos.load('veiculos')
+      await pedidos.load('rotas')
       return pedidos
     }
     catch(e) {
