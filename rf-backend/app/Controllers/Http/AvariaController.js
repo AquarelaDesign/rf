@@ -4,17 +4,16 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
-const Fiscal = use('App/Models/Fiscal')
+const Avaria = use('App/Models/Avaria')
 const Usuario = use('App/Models/Usuario')
-// const Event = use('Event')
 
 /**
- * Resourceful controller for interacting with fiscals
+ * Resourceful controller for interacting with avarias
  */
-class FiscalController {
+class AvariaController {
   /**
-   * Show a list of all fiscals.
-   * GET fiscals
+   * Show a list of all avarias.
+   * GET avarias
    */
   async index ({ auth, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
@@ -25,23 +24,23 @@ class FiscalController {
     }
 
     try {    
-      const fiscals = Fiscal.all()
-      return fiscals
+      const avarias = Avaria.all()
+      return avarias
     }
     catch(e) {
       return response.status(404).send({
         status: 404,
-        message: `Nenhum controle encontrado`
+        message: `Nenhuma avaria encontrada`
       })
     }
 
   }
 
   /**
-   * Show a list of fiscals with parameters.
-   * POST fiscals
+   * Show a list of avarias with financeiro.
+   * POST avarias
    */
-  async busca ({ auth, request, response }) {
+  async busca({auth, params, request, response}) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
     if (usuarios.tipo !== 'O') {
       return response.status(401).send({ 
@@ -50,40 +49,41 @@ class FiscalController {
     }
 
     const condicoes = request.only([
-      "tipo", 
-      "pedido_id",
-      "cliente_id",
+      "financeiro_id",
+      "fornecedor_id",
+      "placa",
       "status",
     ])
 
     try {    
-      const query = Fiscal.query()
-      if (condicoes.tipo !== null){
-        query.andWhere('tipo','=',condicoes.tipo)
+      const query = Avaria.query()
+      if (condicoes.financeiro_id !== null){
+        query.andWhere('financeiro_id','=',condicoes.financeiro_id)
       }
-      if (condicoes.pedido_id !== null){
-        query.andWhere('pedido_id','=',condicoes.pedido_id)
+      if (condicoes.fornecedor_id !== null){
+        query.andWhere('fornecedor_id','=',condicoes.fornecedor_id)
       }
-      if (condicoes.cliente_id !== null){
-        query.andWhere('cliente_id','=',condicoes.cliente_id)
+      if (condicoes.placa !== null){
+        query.andWhere('placa','=',condicoes.placa)
       }
       if (condicoes.status !== null){
         query.andWhere('status','=',condicoes.status)
       }
-      const fiscal = await query.fetch()
-      return fiscal
+      const avarias = await query.fetch()
+      return avarias
     }
     catch(e) {
       return response.status(404).send({
         status: 404,
-        message: `Nenhum controle encontrado`
+        message: `Avaria não encontrada ${e}`
       })
     }
+
   }
 
   /**
-   * Create/save a new fiscal.
-   * POST fiscals
+   * Create/save a new avaria.
+   * POST avarias
    */
   async store ({ auth, request, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
@@ -94,28 +94,29 @@ class FiscalController {
     }
   
     const data = request.only([
-      "tipo", 
-      "pedido_id",
-      "cliente_id", 
-      "motorista_id",
+      "financeiro_id",
+      "fornecedor_id",
+      "placa",
+      "descricao",
+      "valor",
       "status",
-    ])
+  ])
     
     try {
-      const fiscals = await Fiscal.create(data)
-      return fiscals
+      const avarias = await Avaria.create(data)
+      return avarias
     }
     catch(e) {
       return response.status(404).send({
         status: 404,
-        message: `Nenhum controle encontrado`
+        message: `Nenhuma avaria encontrada`
       })
     }
   }
 
   /**
-   * Display a single fiscal.
-   * GET fiscals/:id
+   * Display a single avaria.
+   * GET avarias/:id
    */
   async show ({ auth, params, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
@@ -126,20 +127,20 @@ class FiscalController {
     }
     
     try {
-      const fiscals = await Fiscal.findOrFail(params.id)
-      return fiscals
+      const avarias = await Avaria.findOrFail(params.id)
+      return avarias
     }
     catch(e) {
       return response.status(404).send({
         status: 404,
-        message: `Nenhum controle encontrado`
+        message: `Nenhuma avaria encontrada`
       })
     }
   }
 
   /**
-   * Update fiscal details.
-   * PUT or PATCH fiscals/:id
+   * Update avaria details.
+   * PUT or PATCH avarias/:id
    */
   async update ({ auth, params, request, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
@@ -150,30 +151,31 @@ class FiscalController {
     }
   
     try {
-      const fiscals = await Fiscal.findOrFail(params.id);
+      const avarias = await Avaria.findOrFail(params.id)
       const data = request.only([
-        "tipo", 
-        "pedido_id",
-        "cliente_id",
-        "motorista_id",
+        "financeiro_id",
+        "fornecedor_id",
+        "placa",
+        "descricao",
+        "valor",
         "status",
-      ])
+        ])
         
-      fiscals.merge(data)
-      await fiscals.save()
-      return fiscals
+      avarias.merge(data)
+      await avarias.save()
+      return avarias
     }
     catch(e) {
       return response.status(404).send({
         status: 404,
-        message: `Controle não encontrado`
+        message: `Avaria não encontrada`
       })
     }
   }
 
   /**
-   * Delete a fiscal with id.
-   * DELETE fiscals/:id
+   * Delete a avaria with id.
+   * DELETE avarias/:id
    */
   async destroy ({ params, auth, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
@@ -184,8 +186,8 @@ class FiscalController {
     }
   
     try {
-      const fiscals = await Fiscal.findOrFail(params.id)
-      await fiscals.delete()    
+      const avarias = await Avaria.findOrFail(params.id)
+      await avarias.delete()    
       return response.status(200).send({
         status: 200,
         message: `Registro excluído com sucesso`
@@ -193,10 +195,10 @@ class FiscalController {
     } catch (e) {
       return response.status(404).send({
         status: 404,
-        message: `Fiscal não encontrado`
+        message: `Avaria não encontrada`
       })
     }
   }
 }
 
-module.exports = FiscalController
+module.exports = AvariaController

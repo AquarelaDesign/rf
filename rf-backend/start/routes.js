@@ -94,4 +94,12 @@ Route.group(() => {
   Route.resource('fiscal', 'FiscalController')
     .apiOnly()
 
+  Route.post("/buscafin", "FinanceiroController.busca")
+  Route.resource('financeiros', 'FinanceiroController')
+    .apiOnly()
+
+  Route.post("/buscaavaria", "AvariaController.busca")
+  Route.resource('avarias', 'AvariaController')
+    .apiOnly()
+
 }).middleware('auth')

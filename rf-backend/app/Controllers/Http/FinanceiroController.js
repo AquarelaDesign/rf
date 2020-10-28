@@ -4,17 +4,16 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
-const Fiscal = use('App/Models/Fiscal')
+const Financeiro = use('App/Models/Financeiro')
 const Usuario = use('App/Models/Usuario')
-// const Event = use('Event')
 
 /**
- * Resourceful controller for interacting with fiscals
+ * Resourceful controller for interacting with financeiros
  */
-class FiscalController {
+class FinanceiroController {
   /**
-   * Show a list of all fiscals.
-   * GET fiscals
+   * Show a list of all financeiros.
+   * GET financeiros
    */
   async index ({ auth, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
@@ -25,8 +24,10 @@ class FiscalController {
     }
 
     try {    
-      const fiscals = Fiscal.all()
-      return fiscals
+      const financeiros = Financeiro.query()
+                                    .with('avarias')
+                                    .fetch()
+      return financeiros
     }
     catch(e) {
       return response.status(404).send({
@@ -38,10 +39,10 @@ class FiscalController {
   }
 
   /**
-   * Show a list of fiscals with parameters.
-   * POST fiscals
+   * Show a list of financeiros with financeiro.
+   * POST financeiros
    */
-  async busca ({ auth, request, response }) {
+  async busca({auth, params, request, response}) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
     if (usuarios.tipo !== 'O') {
       return response.status(401).send({ 
@@ -53,11 +54,14 @@ class FiscalController {
       "tipo", 
       "pedido_id",
       "cliente_id",
+      "motorista_id",
+      "operador_id",
+      "fornecedor_id",
       "status",
     ])
 
     try {    
-      const query = Fiscal.query()
+      const query = Financeiro.query()
       if (condicoes.tipo !== null){
         query.andWhere('tipo','=',condicoes.tipo)
       }
@@ -67,23 +71,35 @@ class FiscalController {
       if (condicoes.cliente_id !== null){
         query.andWhere('cliente_id','=',condicoes.cliente_id)
       }
+      if (condicoes.motorista_id !== null){
+        query.andWhere('motorista_id','=',condicoes.motorista_id)
+      }
+      if (condicoes.operador_id !== null){
+        query.andWhere('operador_id','=',condicoes.operador_id)
+      }
+      if (condicoes.fornecedor_id !== null){
+        query.andWhere('fornecedor_id','=',condicoes.fornecedor_id)
+      }
       if (condicoes.status !== null){
         query.andWhere('status','=',condicoes.status)
       }
-      const fiscal = await query.fetch()
-      return fiscal
+      query
+        .with('avarias')
+      
+      const financeiros = await query.fetch()
+      return financeiros
     }
     catch(e) {
       return response.status(404).send({
         status: 404,
-        message: `Nenhum controle encontrado`
+        message: `Financeiro não encontrada ${e}`
       })
     }
   }
 
   /**
    * Create/save a new fiscal.
-   * POST fiscals
+   * POST financeiros
    */
   async store ({ auth, request, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
@@ -98,12 +114,15 @@ class FiscalController {
       "pedido_id",
       "cliente_id", 
       "motorista_id",
+      "operador_id",
+      "fornecedor_id",
       "status",
     ])
     
     try {
-      const fiscals = await Fiscal.create(data)
-      return fiscals
+      const financeiros = await Financeiro.create(data)
+      await financeiros.load('avarias')
+      return financeiros
     }
     catch(e) {
       return response.status(404).send({
@@ -114,8 +133,8 @@ class FiscalController {
   }
 
   /**
-   * Display a single fiscal.
-   * GET fiscals/:id
+   * Display a single financeiro.
+   * GET financeiros/:id
    */
   async show ({ auth, params, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
@@ -126,8 +145,9 @@ class FiscalController {
     }
     
     try {
-      const fiscals = await Fiscal.findOrFail(params.id)
-      return fiscals
+      const financeiros = await Financeiro.findOrFail(params.id)
+      await financeiros.load('avarias')
+      return financeiros
     }
     catch(e) {
       return response.status(404).send({
@@ -138,8 +158,8 @@ class FiscalController {
   }
 
   /**
-   * Update fiscal details.
-   * PUT or PATCH fiscals/:id
+   * Update financeiro details.
+   * PUT or PATCH financeiros/:id
    */
   async update ({ auth, params, request, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
@@ -150,18 +170,21 @@ class FiscalController {
     }
   
     try {
-      const fiscals = await Fiscal.findOrFail(params.id);
+      const financeiros = await Financeiro.findOrFail(params.id);
       const data = request.only([
         "tipo", 
         "pedido_id",
-        "cliente_id",
+        "cliente_id", 
         "motorista_id",
+        "operador_id",
+        "fornecedor_id",
         "status",
-      ])
+        ])
         
-      fiscals.merge(data)
-      await fiscals.save()
-      return fiscals
+      financeiros.merge(data)
+      await financeiros.save()
+      await financeiros.load('avarias')
+      return financeiros
     }
     catch(e) {
       return response.status(404).send({
@@ -172,8 +195,8 @@ class FiscalController {
   }
 
   /**
-   * Delete a fiscal with id.
-   * DELETE fiscals/:id
+   * Delete a financeiro with id.
+   * DELETE financeiros/:id
    */
   async destroy ({ params, auth, response }) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
@@ -184,8 +207,8 @@ class FiscalController {
     }
   
     try {
-      const fiscals = await Fiscal.findOrFail(params.id)
-      await fiscals.delete()    
+      const financeiros = await Financeiro.findOrFail(params.id)
+      await financeiros.delete()    
       return response.status(200).send({
         status: 200,
         message: `Registro excluído com sucesso`
@@ -193,10 +216,10 @@ class FiscalController {
     } catch (e) {
       return response.status(404).send({
         status: 404,
-        message: `Fiscal não encontrado`
+        message: `Financeiro não encontrado`
       })
     }
   }
 }
 
-module.exports = FiscalController
+module.exports = FinanceiroController
