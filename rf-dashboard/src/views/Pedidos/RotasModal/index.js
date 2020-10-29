@@ -182,9 +182,11 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
 
           data.tipo = data.tipo === "V" ? true : false
 
-          if (rotas.length > 0 && rotas.length % 2 === 0) {
-            setDisableValor(true)
-          }
+          // if (data.celular === )
+
+          // if (rotas.length > 0 && rotas.length % 2 === 0) {
+          //   setDisableValor(true)
+          // }
           // console.log('**** RotasModal.buscaRota.data', data)
           setInitialValues(data)
         })
@@ -270,27 +272,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
         .get(`/usuarios/${clienteID}`)
         .then(response => {
           const { data } = response
-          // console.log('**** RotasModal.buscaCliente.data', data)
-          /*
-          setInitialValues({ 
-            ...initialValues, 
-            cpfcnpj: data.cpfcnpj,
-            nome: data.nome,
-            logradouro: data.logradouro,
-            numero: data.numero,
-            complemento: data.complemento,
-            bairro: data.bairro,
-            cidade: data.cidade,
-            uf: data.uf,
-            pais: data.pais,
-            cep: data.cep,
-            contato: data.contato,
-            celular: data.celular,
-            telefone: data.telefone,
-            whats: data.whats,
-            email: data.email,
-          })
-          */
+          console.log('**** RotasModal.buscaCliente.data', data)
 
           window.setFormValue('cpfcnpj', data.cpfcnpj)
           window.setFormValue('nome', data.nome)
@@ -303,10 +285,15 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
           window.setFormValue('pais', data.pais)
           window.setFormValue('cep', data.cep)
           window.setFormValue('contato', data.contato)
-          window.setFormValue('celular', data.celular)
           window.setFormValue('telefone', data.telefone)
           window.setFormValue('whats', data.whats)
           window.setFormValue('email', data.email)
+
+          if (data.celular === null && data.whats !== null) {
+            window.setFormValue('celular', data.whats)
+          } else {
+            window.setFormValue('celular', data.celular)
+          }
 
         }).catch((error) => {
           if (error.response) {
@@ -546,7 +533,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
       return
     }
 
-    console.log('**** RotasModal.onSubmit-values-0', values)
+    // console.log('**** RotasModal.onSubmit-values-0', values)
     
     if (tipoCad === 'N') {
       values.rota_relacionada = rotas.length
@@ -565,7 +552,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
       values.valor_pago = val
     }
 
-    console.log('**** RotasModal.onSubmit-values-1', values)
+    // console.log('**** RotasModal.onSubmit-values-1', values)
     let apiParams = {}
     if (rotaID !== null && tipoCad === 'E') {
       apiParams = {

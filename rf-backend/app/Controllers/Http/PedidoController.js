@@ -176,9 +176,17 @@ class PedidoController {
     }
     
     try {
-      const pedidos = await Pedido.findOrFail(params.id)
-      await pedidos.load('veiculos')
-      await pedidos.load('rotas')
+      // const pedidos = await Pedido.findOrFail(params.id)
+      // await pedidos.load('veiculos')
+      // await pedidos.load('rotas')
+      
+      const query = Pedido.query()
+            query.andWhere('id','=',params.id)
+            query.with('veiculos')
+                 .with('rotas', (builder) => {
+                   builder.orderBy('rota_relacionada', 'asc') 
+                 })
+      const pedidos = await query.fetch()
       return pedidos
     }
     catch(e) {

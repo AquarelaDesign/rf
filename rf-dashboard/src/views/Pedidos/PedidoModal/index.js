@@ -308,10 +308,13 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
   const [motoristaID, setMotoristaID] = useState(null)
   const [clienteID, setClienteID] = useState(null)
   const [operadorID, setOperadorID] = useState(null)
+  const [cliente, setCliente] = useState([])
 
   const [confTexto, setConfTexto] = useState('')
   const [confTexto1, setConfTexto1] = useState('')
   const [modulo, setModulo] = useState('')
+  
+  const [atualiza, setAtualiza] = useState(mostra)
 
   // const [responseMap, setResponseMap] = useState(null)
   // const [waypoints, setWaypoints] = useState([])
@@ -360,6 +363,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
 
   useEffect(() => {
     try {
+      // console.log('**** PedidosModal.useEffect.pedidoID', pedidoID)
       setValue(0)
       buscaPedido(pedidoID)
       carregaDados()
@@ -375,7 +379,11 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
         // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
     }
-  }, [pedidoID, tipoCad, mostra]) // , disableEdit, isShowPedido
+
+    return () => {
+      // console.log('**** PedidosModal.useEffect.return')
+    }
+  }, [pedidoID, tipoCad, atualiza]) // , disableEdit, isShowPedido
 
   const carregaDados = () => {
     buscaValoresAgregados() // <-- Adicionar busca direta no banco
@@ -392,21 +400,21 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
         .then(response => {
           const { data } = response
 
-          data.limitecoleta = data.limitecoleta ? data.limitecoleta.substring(0, 10) : undefined
-          data.limiteentrega = data.limiteentrega ? data.limiteentrega.substring(0, 10) : undefined
+          data[0].limitecoleta = data[0].limitecoleta ? data[0].limitecoleta.substring(0, 10) : undefined
+          data[0].limiteentrega = data[0].limiteentrega ? data[0].limiteentrega.substring(0, 10) : undefined
 
-          // console.log('**** PedidosModal.buscaPedido.data', data)
+          setInitialValuesPed(data[0])
+          setVeiculos(data[0].veiculos)
+          setRotas(data[0].rotas)
+          updateMap(data[0].rotas, data[0].localcoleta, data[0].localentrega)
+          buscaHistorico(data[0].id)
+          setMotoristaID(data[0].motorista_id)
 
-          setInitialValuesPed(data)
-          setVeiculos(data.veiculos)
-          setRotas(data.rotas)
-          updateMap(data.rotas, data.localcoleta, data.localentrega)
-          buscaHistorico(data.id)
-          setMotoristaID(data.motorista_id)
+          // console.log('**** PedidosModal.buscaPedido.data', data[0].cliente_id)
 
-          if (data.cliente_id !== null) {
-            setClienteID(data.cliente_id)
-            buscaCliente(data.cliente_id)
+          if (data[0].cliente_id !== null) {
+            setClienteID(data[0].cliente_id)
+            buscaCliente(data[0].cliente_id)
             buscaRotas(true)
             buscaVeiculos(true)
           } else {
@@ -414,20 +422,20 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
           }
 
           let temNull = false
-          data.rotas.forEach(r => {
+          data[0].rotas.forEach(r => {
             if (r.rota_relacionada === null) {
               temNull = true
             }
           })
 
           if (temNull === true) {
-            data.rotas.forEach(function(row, index) {
+            data[0].rotas.forEach(function(row, index) {
               atualizaOrdem(row.id, index)
             })
             buscaRotas(true)
           }
 
-          window.setFormValue('valor', data.valor)
+          window.setFormValue('valor', data[0].valor)
         }).catch((error) => {
           if (error.response) {
             const { data } = error.response
@@ -486,20 +494,21 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
 
   const semCliente = () => {
     try {
-      window.setFormValue('cpfcnpj', '')
-      window.setFormValue('nome', '')
-      window.setFormValue('contato', '')
-      window.setFormValue('email', '')
-      window.setFormValue('celular', '')
-      window.setFormValue('whats', '')
-      window.setFormValue('logradouro', '')
-      window.setFormValue('numero', '')
-      window.setFormValue('complemento', '')
-      window.setFormValue('bairro', '')
-      window.setFormValue('cidade', '')
-      window.setFormValue('uf', '')
-      window.setFormValue('cep', '')
+      // window.setFormValue('cpfcnpj', '')
+      // window.setFormValue('nome', '')
+      // window.setFormValue('contato', '')
+      // window.setFormValue('email', '')
+      // window.setFormValue('celular', '')
+      // window.setFormValue('whats', '')
+      // window.setFormValue('logradouro', '')
+      // window.setFormValue('numero', '')
+      // window.setFormValue('complemento', '')
+      // window.setFormValue('bairro', '')
+      // window.setFormValue('cidade', '')
+      // window.setFormValue('uf', '')
+      // window.setFormValue('cep', '')
       setClienteID(null)
+      setCliente([])
     } catch (error) { }
   }
 
@@ -512,7 +521,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
           const { data } = response
 
           // console.log('**** PedidoModal.buscaCliente', data)
-          // setDadosCliente(data)
+          setCliente(data)
           window.setFormValue('cpfcnpj', data.cpfcnpj)
           window.setFormValue('nome', data.nome)
           window.setFormValue('contato', data.contato)
@@ -1099,6 +1108,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
 
   
   const buscaVeiculos = async (stRetorno) => {
+
+    if (typeof pedidoID !== 'number') { return }
     
     await sleep(500)
     if (stRetorno && pedidoID) {
@@ -1387,6 +1398,10 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
   }
 
   const buscaRotas = async (stRetorno) => {
+    // console.log('**** PedidosModal.buscaRotas.pedidoID', pedidoID, stRetorno, typeof pedidoID)
+    
+    if (typeof pedidoID !== 'number') { return }
+
     if (stRetorno && pedidoID) {
       await api
         .post(`/buscarotas/${pedidoID}`)
@@ -2041,19 +2056,30 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
       let val = values['valor'].toString()
           val = val.replace('.', '')
           val = val.replace(',', '.')
-      newValues['valor'] = Math.round(val).toFixed(2)
+      newValues['valor'] = parseFloat(val).toFixed(2)
+      // newValues['valor'] = Math.round(val).toFixed(2)
     } else {
-      newValues['valor'] = Math.round(values['valor']).toFixed(2)
+      newValues['valor'] = parseFloat(values['valor']).toFixed(2)
+      // newValues['valor'] = Math.round(values['valor']).toFixed(2)
     }
     
     if (values['valor_desconto']) {
       let val = values['valor_desconto'].toString()
           val = val.replace('.', '')
           val = val.replace(',', '.')
-      newValues['valor_desconto'] = Math.round(val).toFixed(2)
+
+      newValues['valor_desconto'] = parseFloat(val).toFixed(2)
+      // newValues['valor_desconto'] = Math.round(val).toFixed(2)
+      console.log('**** PedidoModal.onSubmit-values.valor_desconto-0', values['valor_desconto'], val, newValues['valor_desconto'])
     } else {
-      newValues['valor_desconto'] = Math.round(values['valor']).toFixed(2)
+      newValues['valor_desconto'] = parseFloat(values['valor_desconto']).toFixed(2)
+      // newValues['valor_desconto'] = Math.round(values['valor_desconto']).toFixed(2)
+      console.log('**** PedidoModal.onSubmit-values.valor_desconto-1', values['valor_desconto'])
     }
+
+    // if (newValues['valor_desconto'] === "NaN") {
+    //   newValues['valor_desconto'] = 0
+    // }
     
     // if (values['percentual_desconto']) {
     //   let val = values['percentual_desconto'].replace('.', '')
@@ -2205,6 +2231,11 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
 
   const required = value => (value ? undefined : '* Obrigatório!')
 
+  const fechaJanela = () => {
+    setAtualiza(!atualiza)
+    hide()
+  }
+
   if (isShowPedido) {
     return ReactDOM.createPortal(
       <React.Fragment>
@@ -2232,7 +2263,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                       </Tooltip>
                     }
                     <Tooltip title="Fechar Janela">
-                      <Botao onClick={hide}><FaIcon icon='GiExitDoor' size={20} /></Botao>
+                      <Botao onClick={fechaJanela}><FaIcon icon='GiExitDoor' size={20} /></Botao>
                     </Tooltip>
                   </RRight>
                 </GridModal>
@@ -2358,7 +2389,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                                     </Col>
                                     <Col xs={1}>
                                       <Field
-                                        disabled={disableEdit || parseFloat(values.valor_desconto) > 0}
+                                        disabled={disableEdit}
+                                        // disabled={disableEdit || parseFloat(values.valor_desconto) > 0}
                                         name="percentual_desconto"
                                         component={CssTextField}
                                         type="text"
@@ -2376,7 +2408,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                                     </Col>
                                     <Col xs={2}>
                                       <Field
-                                        disabled={disableEdit || parseFloat(values.percentual_desconto) > 0}
+                                        disabled={disableEdit}
+                                        // disabled={disableEdit || parseFloat(values.percentual_desconto) > 0}
                                         name="valor_desconto"
                                         component={CssTextField}
                                         type="text"
@@ -2522,7 +2555,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                                         }}
                                       />
                                     </Col>
-                                    <Col xs={2}>
+                                    <Col xs={3}>
                                       <Field
                                         disabled={true}
                                         name="cpfcnpj"
@@ -2533,12 +2566,14 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                                         fullWidth
                                         size="small"
                                         margin="dense"
+                                        initialValue={cliente.cpfcnpj}
+                                        value={cliente.cpfcnpj}
                                         InputProps={{
                                           inputComponent: formatCpfCnpj,
                                         }}
                                       />
                                     </Col>
-                                    <Col xs={8}>
+                                    <Col xs={7}>
                                       <Field
                                         disabled={true}
                                         name="nome"
@@ -2549,6 +2584,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                                         fullWidth
                                         size="small"
                                         margin="dense"
+                                        initialValue={cliente.nome}
+                                        value={cliente.nome}
                                       />
                                     </Col>
                                   </Row>
@@ -2564,6 +2601,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                                         fullWidth
                                         size="small"
                                         margin="dense"
+                                        initialValue={cliente.contato}
+                                        value={cliente.contato}
                                       />
                                     </Col>
                                     <Col xs={5}>
@@ -2577,6 +2616,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                                         fullWidth
                                         size="small"
                                         margin="dense"
+                                        initialValue={cliente.email}
+                                        value={cliente.email}
                                       />
                                     </Col>
                                     <Col xs={2}>
@@ -2590,6 +2631,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                                         fullWidth
                                         size="small"
                                         margin="dense"
+                                        initialValue={cliente.celular}
+                                        value={cliente.celular}
                                         pattern="[\d|(|)|-]{11,12}"
                                         InputProps={{
                                           inputComponent: formatCelular,
@@ -2607,6 +2650,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                                         fullWidth
                                         size="small"
                                         margin="dense"
+                                        initialValue={cliente.whats}
+                                        value={cliente.whats}
                                         pattern="[\d|(|)|-]{11,12}"
                                         InputProps={{
                                           inputComponent: formatCelular,
@@ -2627,6 +2672,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                                         fullWidth
                                         size="small"
                                         margin="dense"
+                                        initialValue={cliente.logradouro}
+                                        value={cliente.logradouro}
                                       />
                                     </Col>
                                     <Col xs={2}>
@@ -2640,6 +2687,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                                         fullWidth
                                         size="small"
                                         margin="dense"
+                                        initialValue={cliente.numero}
+                                        value={cliente.numero}
                                       />
                                     </Col>
                                     <Col xs={4}>
@@ -2653,6 +2702,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                                         fullWidth
                                         size="small"
                                         margin="dense"
+                                        initialValue={cliente.complemento}
+                                        value={cliente.complemento}
                                       />
                                     </Col>
                                   </Row>
@@ -2668,6 +2719,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                                         fullWidth
                                         size="small"
                                         margin="dense"
+                                        initialValue={cliente.bairro}
+                                        value={cliente.bairro}
                                       />
                                     </Col>
                                     <Col xs={3}>
@@ -2681,6 +2734,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                                         fullWidth
                                         size="small"
                                         margin="dense"
+                                        initialValue={cliente.cidade}
+                                        value={cliente.cidade}
                                       />
                                     </Col>
                                     <Col xs={1}>
@@ -2694,6 +2749,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                                         fullWidth
                                         size="small"
                                         margin="dense"
+                                        initialValue={cliente.uf}
+                                        value={cliente.uf}
                                       />
                                     </Col>
                                     <Col xs={2}>
@@ -2707,6 +2764,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                                         fullWidth
                                         size="small"
                                         margin="dense"
+                                        initialValue={cliente.cep}
+                                        value={cliente.cep}
                                         InputProps={{
                                           inputComponent: formatCep,
                                         }}
