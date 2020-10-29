@@ -8,6 +8,7 @@ import GlobalStyle from '../../../styles/global'
 import Header from '../Header'
 import Board from '../Board'
 import Fiscal from '../Fiscal'
+import Financeiro from '../Financeiro'
 
 export default function Dashboard() {
   const [opcao, setOpcao] = useState('LOG')
@@ -20,6 +21,7 @@ export default function Dashboard() {
     switch (opcao) {
       case 'LOG': return <Board />
       case 'FIS': return <Fiscal />
+      case 'FIN': return <Financeiro />
       default: return <></>
     }
   }

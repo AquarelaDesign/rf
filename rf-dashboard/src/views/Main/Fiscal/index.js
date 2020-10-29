@@ -254,15 +254,15 @@ const Fiscal = () => {
         .then(response => {
           const { data } = response
           
-          data['tipo'] = modo
-          data['fiscal'] = fiscalId
+          data[0]['tipo'] = modo
+          data[0]['fiscal'] = fiscalId
           
           if (modo === 'X') {
-            cardsMan.push(data)
+            cardsMan.push(data[0])
           } else if (modo === 'Y') {
-            cardsFim.push(data)
+            cardsFim.push(data[0])
           } else {
-            cardsCte.push(data)
+            cardsCte.push(data[0])
           }
         }).catch((error) => {
           if (error.response) {
