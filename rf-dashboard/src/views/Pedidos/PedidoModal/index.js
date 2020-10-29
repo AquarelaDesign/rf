@@ -47,6 +47,8 @@ import { RiMoneyDollarBoxLine } from 'react-icons/ri'
 import MaskedInput from 'react-text-mask'
 import createNumberMask from 'text-mask-addons/dist/createNumberMask'
 import CurrencyTextField from '@unicef/material-ui-currency-textfield'
+import { formatToPhone } from 'brazilian-values'
+
 
 import { FaIcon } from '../../../components/Icone'
 import "./modal.css"
@@ -785,7 +787,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
     await api
       .post(`/buscausuarios`, {
         "email": "",
-        "tipo": "M",
+        "tipo": "",
         "status": "",
         "estado": ""
       })
@@ -972,6 +974,32 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
       sortable: true,
       // editable: true,
       // cellEditor: 'numericCellEditor',
+    },
+    {
+      headerName: "",
+      width: 30,
+      sortable: false,
+      editable: false,
+      hide: disableEdit,
+      cellRendererFramework: (props) => {
+        return (
+          <button onClick={(e) => editaAvaria(props, e)}
+            disabled={disableEdit}
+            style={{ backgroundColor: 'transparent' }}
+          >
+            <Tooltip title="Informar Avaria">
+              <span style={{
+                alignItems: 'center',
+                color: '#ff5330',
+                marginLeft: '-18px',
+                marginTop: '3px',
+              }}>
+                <FaIcon icon='btAvarias' size={20} />
+              </span>
+            </Tooltip>
+          </button>
+        )
+      },
     },
     {
       headerName: "",
@@ -1217,6 +1245,13 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
     })
   }
 
+  const FormatWhats = async (props, e) => {
+    e.preventDefault()
+    if (props.data.whats) {
+      window.open(`https://api.whatsapp.com/send?phone=55${props.data.whats}&text=`, "_blank")
+    }
+  }
+
   const colDefsRotas = [
     {
       headerName: "O",
@@ -1241,23 +1276,41 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
       // editable: true,
     },
     {
+      headerName: "Motorista",
+      field: "motorista_id",
+      flex: 1,
+      sortable: false,
+      cellRenderer: 'buscaNome',
+    },
+    {
       headerName: "Contato",
       field: "contato",
       flex: 1,
       sortable: false,
-      // editable: true,
-      // cellEditor: 'agSelectCellEditor',
-      // cellEditorParams: {
-      //   values: TipoVeiculo(), // ['CARRETA', 'CAVALO', 'PLATAFORMA'],
-      // },
     },
     {
-      headerName: "Telefone",
-      field: "telefone",
-      width: 150,
-      sortable: true,
-      // editable: true,
-      // cellEditor: 'numericCellEditor',
+      headerName: "",
+      field: "whats",
+      width: 30,
+      sortable: false,
+      editable: false,
+      cellRendererFramework: (props) => {
+        return (
+          <button onClick={(e) => FormatWhats(props, e)}
+            style={{ backgroundColor: 'transparent' }}
+          >
+            <Tooltip title={formatToPhone(props.data.whats)}>
+              <span style={{
+                alignItems: 'center',
+                marginLeft: '-18px',
+                marginTop: '3px',
+              }}>
+                <FaIcon icon='Whats' size={20} />
+              </span>
+            </Tooltip>
+          </button>
+        )
+      },
     },
     {
       headerName: "",
@@ -1329,6 +1382,12 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
     setModulo('R')
 
     toggleConfirma()
+  }
+
+  const editaAvaria = async (props, e) => {
+    e.preventDefault()
+    const selectedData = props.api.getSelectedRows()
+    console.log('**** PedidoModal.deleteRowRota', selectedData, props)
   }
 
   const excluiRota = async () => {
@@ -1875,7 +1934,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
       // console.log('**** PedidosModal.buscaDistancia.directions', data)
 
       let dists = []
-      // console.log('**** data', data.origin_addresses)
+      // console.log('**** data', response)
       
       for (let x=0; x < data.origin_addresses.length; x++) {
         let dist = {
@@ -2032,6 +2091,10 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
 
   const handleChange = (event, newValue) => {
     setValue(newValue)
+  }
+
+  const gerarPagamento  = () => {
+
   }
 
   async function onSubmit(values) {
@@ -2254,7 +2317,14 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                     </Texto>
                   </RLeft>
                   <RRight>
-                    <Blank><FaIcon icon='blank' size={20} height={20} width={20} /></Blank>
+                    {/* <Blank><FaIcon icon='blank' size={20} height={20} width={20} /></Blank> */}
+                    {disableEdit ?
+                      <Blank><FaIcon icon='blank' size={10} height={10} width={10} /> </Blank>
+                      :
+                      <Tooltip title="Gerar Pagamento Motorista">
+                        <Botao onClick={gerarPagamento}><FaIcon icon='btContasPagar' size={20} /></Botao>
+                      </Tooltip>
+                    }
                     {disableEdit ?
                       <Blank><FaIcon icon='blank' size={10} height={10} width={10} /> </Blank>
                       :
@@ -2969,6 +3039,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                                     tooltipShowDelay={0}
                                     // pagination={true}
                                     // paginationPageSize={10}
+                                    frameworkComponents={frameworkComponents}
                                     rowDragManaged={true}
                                     animateRows={true}
                                     onRowDragEnter={onRowDragEnter}

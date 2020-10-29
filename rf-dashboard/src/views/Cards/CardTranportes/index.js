@@ -341,8 +341,8 @@ export default function CardTransportes({ data, index }) {
       const { data } = response
       if (status !== 'D') {
         salvaHistorico(
-          data.id, 
-          data.motorista_id, 
+          data[0].id, 
+          data[0].motorista_id, 
           null, 
           userID,
           `O Pedido está aguardando a coleta`

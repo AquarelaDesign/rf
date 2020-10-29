@@ -148,19 +148,14 @@ const CssTextField = withStyles({
 
 })(TextField)
 
-const tipos = [
-  { value: 'C', label: 'Coleta' },
-  { value: 'E', label: 'Entrega' },
-]
-
 const cadStatus = [
-  { Id: 1, Code: 'D', Description: 'Aguardando Coleta' },
-  { Id: 2, Code: 'C', Description: 'Coletando' },
-  { Id: 3, Code: 'A', Description: 'A Caminho' },
-  { Id: 4, Code: 'E', Description: 'Entregue' },
+  { Id: 1, Code: 'A', Description: 'Em Analise' },
+  { Id: 2, Code: 'R', Description: 'Em Reparo' },
+  { Id: 3, Code: 'L', Description: 'Liberado' },
+  { Id: 4, Code: 'F', Description: 'Fechado' },
 ]
 
-const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit, callback, rotas }) => {
+const AvariasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit, callback, rotas }) => {
   const [initialValues, setInitialValues] = useState([])
   const { isShowing, toggleGridUsuarios } = useModalUsuarios()
   
@@ -173,7 +168,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
   useEffect(() => {
     limpaCampos()
 
-    // console.log('**** RotasModal.buscaRota')
+    // console.log('**** AvariasModal.buscaRota')
     const buscaRota = async () => {
       await api
         .get(`/rotas/${rotaID}`)
@@ -182,16 +177,12 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
 
           data.tipo = data.tipo === "V" ? true : false
 
-          if (data.motorista_id && data.motorista_id > 0) {
-            buscaCliente(data.motorista_id, 'M')
-          }
-
           // if (data.celular === )
 
           // if (rotas.length > 0 && rotas.length % 2 === 0) {
           //   setDisableValor(true)
           // }
-          // console.log('**** RotasModal.buscaRota.data', data)
+          // console.log('**** AvariasModal.buscaRota.data', data)
           setInitialValues(data)
         })
         .catch((error) => {
@@ -203,10 +194,10 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
               })
             }
             catch (e) {
-              console.log('**** RotasModal.buscaRota.error.data', data)
+              console.log('**** AvariasModal.buscaRota.error.data', data)
             }
           } else if (error.request) {
-            console.log('**** RotasModal.buscaRota.error', error)
+            console.log('**** AvariasModal.buscaRota.error', error)
             // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
           // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
@@ -214,7 +205,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
         })
     }
 
-    // console.log('**** RotasModal', rotaID, tipoCad)
+    // console.log('**** AvariasModal', rotaID, tipoCad)
 
     if (rotaID && rotaID > 0 && tipoCad === 'E') {
       // setDisableEdit(false)
@@ -238,27 +229,12 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
   const limpaCampos = () => {
     var newData = {
       pedido_id: pedidoID,
-      tipo: "",
-      nome: "",
-      cpfcnpj: "",
-      logradouro: "",
-      numero: "",
-      complemento: "",
-      bairro: "",
-      cidade: "",
-      uf: "",
-      pais: "",
-      cep: "",
-      contato: "",
-      celular: "",
-      telefone: "",
-      whats: "",
-      email: "",
-      valor_pago: 0,
-      motorista: "",
-      motorista_id: null,
-      rota_relacionada: null,
-      status: "D",
+      financeiro_id: "",
+      fornecedor_id: "",
+      placa: "",
+      descricao: "",
+      valor: "",
+      status: "",
     }
     setInitialValues(newData)
   }
@@ -271,37 +247,33 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
     buscaCliente(e)
   }
 
-  const buscaCliente = async (clienteID, tipo = '') => {
+  const buscaCliente = async (clienteID) => {
     if (clienteID) {
       await api
         .get(`/usuarios/${clienteID}`)
         .then(response => {
           const { data } = response
-          // console.log('**** RotasModal.buscaCliente.data', data)
+          console.log('**** AvariasModal.buscaCliente.data', data)
 
-          if (tipo === 'M') {
-            window.setFormValue('motorista', data.nome)
+          window.setFormValue('cpfcnpj', data.cpfcnpj)
+          window.setFormValue('nome', data.nome)
+          window.setFormValue('logradouro', data.logradouro)
+          window.setFormValue('numero', data.numero)
+          window.setFormValue('complemento', data.complemento)
+          window.setFormValue('bairro', data.bairro)
+          window.setFormValue('cidade', data.cidade)
+          window.setFormValue('uf', data.uf)
+          window.setFormValue('pais', data.pais)
+          window.setFormValue('cep', data.cep)
+          window.setFormValue('contato', data.contato)
+          window.setFormValue('telefone', data.telefone)
+          window.setFormValue('whats', data.whats)
+          window.setFormValue('email', data.email)
+
+          if (data.celular === null && data.whats !== null) {
+            window.setFormValue('celular', data.whats)
           } else {
-            window.setFormValue('cpfcnpj', data.cpfcnpj)
-            window.setFormValue('nome', data.nome)
-            window.setFormValue('logradouro', data.logradouro)
-            window.setFormValue('numero', data.numero)
-            window.setFormValue('complemento', data.complemento)
-            window.setFormValue('bairro', data.bairro)
-            window.setFormValue('cidade', data.cidade)
-            window.setFormValue('uf', data.uf)
-            window.setFormValue('pais', data.pais)
-            window.setFormValue('cep', data.cep)
-            window.setFormValue('contato', data.contato)
-            window.setFormValue('telefone', data.telefone)
-            window.setFormValue('whats', data.whats)
-            window.setFormValue('email', data.email)
-
-            if (data.celular === null && data.whats !== null) {
-              window.setFormValue('celular', data.whats)
-            } else {
-              window.setFormValue('celular', data.celular)
-            }
+            window.setFormValue('celular', data.celular)
           }
 
         }).catch((error) => {
@@ -313,10 +285,10 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
               })
             }
             catch (e) {
-              console.log('**** RotasModal.buscaCliente.error.data', data)
+              console.log('**** AvariasModal.buscaCliente.error.data', data)
             }
           } else if (error.request) {
-            console.log('**** RotasModal.buscaCliente.error', error)
+            console.log('**** AvariasModal.buscaCliente.error', error)
             // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
           // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
@@ -454,7 +426,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
   const validaCEP = async (value) => {
     setAtualizaCEP(true)
 
-    // console.log('**** RotasModal.validaCEP.values', value, values.logradouro)
+    // console.log('**** AvariasModal.validaCEP.values', value, values.logradouro)
 
     if (!value) {
       setAtualizaCEP(false)
@@ -477,7 +449,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
     const port = window.location.protocol === 'http:' ? 3003 : 3004
     const service = `${prot}//www.retornofacil.com.br:${port}/api/cep/${cep}`
 
-    // console.log('**** RotasModal.validaCEP.Axios.service', service)
+    // console.log('**** AvariasModal.validaCEP.Axios.service', service)
 
     Axios.get(service, {})
       .then(response => {
@@ -489,7 +461,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
           return
         }
 
-        // console.log('**** RotasModal.validaCEP.Axios.data', data)
+        // console.log('**** AvariasModal.validaCEP.Axios.data', data)
 
         const Logradouro = `${data[0].data[0].Tipo_Logradouro} ${data[0].data[0].Logradouro}`
         const Bairro = data[0].data[0].Bairro
@@ -516,10 +488,10 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
             })
           }
           catch (e) {
-            console.log('**** RotasModal.validaCEP.error.data', data)
+            console.log('**** AvariasModal.validaCEP.error.data', data)
           }
         } else if (error.request) {
-          console.log('**** RotasModal.validaCEP.error.data', error)
+          console.log('**** AvariasModal.validaCEP.error.data', error)
         } else {
         // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
@@ -528,7 +500,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
   }
   
   const fechar = async (e) => {
-    // console.log('**** RotasModal.fechar', e)
+    // console.log('**** AvariasModal.fechar', e)
     if (callback) {
       // await sleep(1000)
       callback(typeof e === 'object' ? false : e)
@@ -542,7 +514,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
       return
     }
 
-    // console.log('**** RotasModal.onSubmit-values-0', values)
+    // console.log('**** AvariasModal.onSubmit-values-0', values)
     
     if (tipoCad === 'N') {
       values.rota_relacionada = rotas.length
@@ -561,7 +533,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
       values.valor_pago = val
     }
 
-    // console.log('**** RotasModal.onSubmit-values-1', values)
+    // console.log('**** AvariasModal.onSubmit-values-1', values)
     let apiParams = {}
     if (rotaID !== null && tipoCad === 'E') {
       apiParams = {
@@ -585,7 +557,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
       }
     }
     
-    // console.log('**** RotasModal.onSubmit-apiParams', apiParams)
+    // console.log('**** AvariasModal.onSubmit-apiParams', apiParams)
     const cidade = values.cidade
 
     await api(apiParams, {
@@ -614,10 +586,10 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
           })
         }
         catch (e) {
-          console.log('**** RotasModal.onSubmit.error.data', data)
+          console.log('**** AvariasModal.onSubmit.error.data', data)
         }
       } else if (error.request) {
-        console.log('**** RotasModal.onSubmit.error', error)
+        console.log('**** AvariasModal.onSubmit.error', error)
       } else {
       // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
@@ -645,7 +617,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
                       size={22} height={24} italic={true} bold={700} font='Arial'
                       mt={3}
                       color='#2699FB' shadow={true}>
-                      Dados da Rota
+                      Dados da AVaria
                     </Texto>
                   </RLeft>
                   <RRight>
@@ -699,19 +671,6 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
                           <Row style={{ height: '54px', marginTop: '15px' }}>
                             <Col xs={3}>
                               <Field
-                                disabled={true}
-                                name="motorista"
-                                component={CssTextField}
-                                type="text"
-                                label="Motorista"
-                                variant="outlined"
-                                fullWidth
-                                size="small"
-                                margin="dense"
-                              />
-                            </Col>
-                            <Col xs={3}>
-                              <Field
                                 disabled={disableEdit}
                                 name="cpfcnpj"
                                 component={CssTextField}
@@ -738,7 +697,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
                                 }}
                               />
                             </Col>
-                            <Col xs={2}>
+                            <Col xs={3}>
                               <Field
                                 disabled={disableEdit}
                                 name="cep"
@@ -766,7 +725,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
                                 }}
                               />
                             </Col>
-                            <Col xs={2}>
+                            <Col xs={3}>
                               <Field
                                 disabled={disableEdit || disableValor}
                                 name="valor_pago"
@@ -782,7 +741,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
                                 }}
                               />
                             </Col>
-                            <Col xs={2}>
+                            <Col xs={3}>
                               <label>
                                 <Field
                                   disabled={disableEdit}
@@ -1032,7 +991,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
             <GridUsuariosModal 
               isShowing={isShowing}
               hide={toggleGridUsuarios}
-              tipoConsulta='C'
+              tipoConsulta='F'
               callFind={callBackCliente}
             />
           </div>
@@ -1043,4 +1002,4 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
   return null
 }
 
-export default RotasModal
+export default AvariasModal

@@ -9,6 +9,7 @@ import CardMotorista from '../../Cards/CardMotoristas'
 import CardCarga from '../../Cards/CardCargas'
 import CardTransporte from '../../Cards/CardTranportes'
 import CardEmitirCTe from '../../Cards/CardEmitirCTe'
+import CardFinanceiro from '../../Cards/CardFinanceiro'
 
 import GridUsuariosModal from '../../Cadastro/GridUsuariosModal'
 import useModal from '../../Cadastro/GridUsuariosModal/useModal'
@@ -51,6 +52,15 @@ const List = ({ data }) => {
           index={id}
           data={card}
         />
+      case 'P':
+      case 'A':
+      case 'H':
+        return <CardFinanceiro
+          key={card.id}
+          index={id}
+          data={card}
+        />
+  
       default: return null
     }
   }, [data])

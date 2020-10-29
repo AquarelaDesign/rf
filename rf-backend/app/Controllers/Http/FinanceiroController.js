@@ -116,6 +116,7 @@ class FinanceiroController {
       "motorista_id",
       "operador_id",
       "fornecedor_id",
+      "valor",
       "status",
     ])
     
@@ -178,6 +179,7 @@ class FinanceiroController {
         "motorista_id",
         "operador_id",
         "fornecedor_id",
+        "valor",
         "status",
         ])
         

@@ -7,6 +7,7 @@ import {
   FaArrowAltCircleRight, 
   FaBox, 
   FaBell,
+  FaCarCrash,
   FaCheck,
   FaDiscourse,
   FaFilter,
@@ -22,6 +23,7 @@ import {
   FaCalendarCheck,
 } from 'react-icons/fa'
 
+import { SiCashapp } from 'react-icons/si'
 import { BsBackspaceFill } from 'react-icons/bs'
 import { AiOutlineCloseCircle, AiTwotoneLike } from 'react-icons/ai'
 import { GoChecklist } from 'react-icons/go'
@@ -54,6 +56,11 @@ export const FaIcon = ({ icon, size, height, width }) => {
     case 'EmitirCTe': return <FiSend size={size} style={{ paddingTop: 10 }} />
     case 'EncerrarManifesto': return <IoIosDocument size={size} style={{ paddingTop: 10 }} />
     case 'TarefasRealizadas': return <ImCloudCheck size={size} style={{ paddingTop: 10 }} />
+    case 'ContasPagar': return <SiCashapp size={size} style={{ paddingTop: 10 }} />
+    case 'btContasPagar': return <SiCashapp size={size} style={{ marginLeft: 0, marginRight: 10, color: '#90D284' }} />
+    case 'Avarias': return <IoIosDocument size={size} style={{ paddingTop: 10 }} />
+    case 'btAvarias': return <FaCarCrash size={size} />
+    case 'HistoricoPagamentos': return <ImCloudCheck size={size} style={{ paddingTop: 10 }} />
     case 'FaDiscourse': return <FaDiscourse size={size} style={{ marginLeft: 10, marginRight: 5 }} />
     case 'FaBell': return <FaBell size={size} style={{ marginLeft: 5, marginRight: 10 }} />
     case 'Usuario': return <FaHeadphonesAlt size={size} style={{ marginRight: 10 }} />

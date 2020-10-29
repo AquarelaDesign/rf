@@ -13,8 +13,9 @@ class FinanceiroSchema extends Schema {
       table.integer('motorista_id')
       table.integer('operador_id')
       table.integer('fornecedor_id')
+      table.decimal('valor', 9, 2).defaultTo(0)
       table.string('status').defaultTo('')
-        .comment('[ ] Aguardando, Em [A]nalise, [X] Com Avaria, Em processo de [L]iberacao, [F]echado')
+        .comment('[ ] Aguardando, Em [A]nalise, [X] Com Avaria, Em processo de [L]iberacao, [F]echado, [B]loqueado')
       table.timestamps()
     })
   }
