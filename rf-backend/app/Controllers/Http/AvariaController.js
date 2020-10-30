@@ -49,19 +49,27 @@ class AvariaController {
     }
 
     const condicoes = request.only([
+      "pedido_id",
       "financeiro_id",
       "fornecedor_id",
+      "motorista_id",
       "placa",
       "status",
     ])
 
     try {    
       const query = Avaria.query()
+      if (condicoes.pedido_id !== null){
+        query.andWhere('pedido_id','=',condicoes.pedido_id)
+      }
       if (condicoes.financeiro_id !== null){
         query.andWhere('financeiro_id','=',condicoes.financeiro_id)
       }
       if (condicoes.fornecedor_id !== null){
         query.andWhere('fornecedor_id','=',condicoes.fornecedor_id)
+      }
+      if (condicoes.motorista_id !== null){
+        query.andWhere('motorista_id','=',condicoes.motorista_id)
       }
       if (condicoes.placa !== null){
         query.andWhere('placa','=',condicoes.placa)
@@ -94,8 +102,10 @@ class AvariaController {
     }
   
     const data = request.only([
+      "pedido_id",
       "financeiro_id",
       "fornecedor_id",
+      "motorista_id",
       "placa",
       "descricao",
       "valor",
@@ -153,8 +163,10 @@ class AvariaController {
     try {
       const avarias = await Avaria.findOrFail(params.id)
       const data = request.only([
+        "pedido_id",
         "financeiro_id",
         "fornecedor_id",
+        "motorista_id",
         "placa",
         "descricao",
         "valor",
