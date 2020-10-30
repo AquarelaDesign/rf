@@ -14,7 +14,7 @@ import {
   Botao,
   Grid as GridModal,
   Blank,
-} from '../../Cadastro/CardUsuario/styles'
+} from './styles'
 
 import {
   Grid,
@@ -73,6 +73,9 @@ import useModalRotas from '../RotasModal/useModal'
 
 import HistoricoModal from '../../../components/HistoricoModal'
 import useModalHistorico from '../../../components/HistoricoModal/useModal'
+
+import AvariasModal from '../../Financeiro/AvariasModal'
+import useModalAvarias from '../../Financeiro/AvariasModal/useModal'
 
 import moment from 'moment'
 import Map from '../../../components/Map'
@@ -311,6 +314,10 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
   const [clienteID, setClienteID] = useState(null)
   const [operadorID, setOperadorID] = useState(null)
   const [cliente, setCliente] = useState([])
+
+  const [avariaID, setAvariaID] = useState(null)
+  const [placa, setPlaca] = useState([])
+  const { isShowAvarias, toggleAvarias } = useModalAvarias()
 
   const [confTexto, setConfTexto] = useState('')
   const [confTexto1, setConfTexto1] = useState('')
@@ -1371,7 +1378,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
     e.preventDefault()
     const selectedData = props.api.getSelectedRows()
 
-    console.log('**** PedidoModal.deleteRowRota', selectedData)
+    // console.log('**** PedidoModal.deleteRowRota', selectedData)
 
     setRotaExclui(selectedData[0].id)
     setRotaProps(props)
@@ -1382,12 +1389,6 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
     setModulo('R')
 
     toggleConfirma()
-  }
-
-  const editaAvaria = async (props, e) => {
-    e.preventDefault()
-    const selectedData = props.api.getSelectedRows()
-    console.log('**** PedidoModal.deleteRowRota', selectedData, props)
   }
 
   const excluiRota = async () => {
@@ -1504,6 +1505,73 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
           }
         })
     }
+  }
+
+
+  const editaAvaria = async (props, e) => {
+    e.preventDefault()
+    // const selectedData = props.api.getSelectedRows()
+
+    // setPlaca(props.data.placachassi)
+    // setRotaData(selectedData)
+    // console.log('**** PedidoModal.editaAvaria', props.data.placachassi)
+
+    const buscaAvaria = async (placa) => {
+      if (typeof pedidoID !== 'number') { return }
+      
+      // console.log('**** PedidosModal.buscaAvaria', pedidoID, placa)
+      
+      await api
+        .post(`/buscaavaria`, {
+          "pedido_id": pedidoID,
+          "financeiro_id": null,
+          "motorista_id": null,
+          "fornecedor_id": null,
+          "placa": placa,
+          "status": null
+        })
+        .then(response => {
+          const { data } = response
+
+          const setaAva = async (dataId) => {
+            setTipoCadVei('E')
+            setAvariaID(dataId)
+            await sleep(300)
+            toggleAvarias()
+          }
+          setaAva(data[0].id)
+          
+        }).catch((error) => {
+          if (error.response) {
+            const { data, status } = error.response
+            // console.log('**** PedidosModal.buscaAvaria.error.status', status)
+            if (status === 404) {
+              buscaFinanceiro()
+            } else {
+              try {
+                data.map(mensagem => {
+                  toast(mensagem.message, { type: 'error' })
+                })
+              }
+              catch (e) {
+                console.log('**** PedidosModal.buscaAvaria.error.data', data)
+              }
+            }
+          } else if (error.request) {
+            console.log('**** PedidosModal.buscaAvaria.error', error)
+            // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+          } else {
+            // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          }
+        })
+    }
+
+    buscaAvaria(props.data.placachassi)
+   
+  }
+
+  const callBackAvarias = (e) => {
+    console.log('**** PedidoModal.callBackAvarias', e)
   }
 
 
@@ -1695,7 +1763,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
 
           }) // rtSeg.forEach
 
-          console.table('**** PedidosModal.calculaValorPedido.ValoresRotas', ValoresRotas)
+          // console.table('**** PedidosModal.calculaValorPedido.ValoresRotas', ValoresRotas)
 
           let valor_seguro_roubo_veiculo = (valor_veiculo * 0.03) / 100
           
@@ -1738,7 +1806,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
         })
 
         
-        console.table('**** PedidosModal.calculaValorPedido.valores', valores)
+        // console.table('**** PedidosModal.calculaValorPedido.valores', valores)
 
         // valor_total_pedido = (valor_rotas_pedido + valor_seguro_pedido + valor_seguro_roubo_pedido + valor_agregados_pedido + valor_imposto_pedido)
 
@@ -2093,9 +2161,121 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
     setValue(newValue)
   }
 
+
   const gerarPagamento  = () => {
+    buscaFinanceiro('Gerar')
+  }
+
+  const buscaFinanceiro = async (modo = null) => {
+    
+    if (typeof pedidoID !== 'number') { return }
+    
+    await api
+      .post(`/buscafin`, {
+        "tipo": "P",
+        "pedido_id": pedidoID,
+        "cliente_id": null,
+        "motorista_id": motoristaID,
+        "operador_id": null,
+        "fornecedor_id": null,
+        "status": null
+      })
+      .then(response => {
+        const { data, status } = response
+
+        if (modo === null) {
+          const setaAva = async () => {
+            setTipoCadVei('N')
+            await sleep(300)
+            toggleAvarias()
+          }
+          setaAva()
+        } else {
+          toast(`Já existe um lançamento no financeiro para esse Pedido/Motorista!`, { type: 'alert' })
+        }
+
+      }).catch((error) => {
+        if (error.response) {
+          const { data, status } = error.response
+
+          if (status === 404) {
+            geraFinanceiro()
+          } else {
+            try {
+              data.map(mensagem => {
+                toast(mensagem.message, { type: 'error' })
+              })
+            }
+            catch (e) {
+              console.log('**** PedidosModal.buscaFinanceiro.error.data', data)
+            }
+          }
+        } else if (error.request) {
+          console.log('**** PedidosModal.buscaFinanceiro.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        } else {
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        }
+      })
+  }
+ 
+  const geraFinanceiro = async (modo = null) => {
+    // console.log('**** PedidosModal.buscaFinanceiro.pedidoID', pedidoID, stRetorno, typeof pedidoID)
+    
+    if (typeof pedidoID !== 'number') { return }
+    
+    await api
+      .post(`/financeiros`, {
+        "tipo": "P",
+        "pedido_id": pedidoID,
+        "cliente_id": clienteID,
+        "motorista_id": motoristaID,
+        "operador_id": operadorID,
+        "fornecedor_id": null,
+        "status": " "
+      })
+      .then(response => {
+        const { data, status } = response
+        
+        if (modo === null) {
+          const setaAva = async () => {
+            setTipoCadVei('N')
+            await sleep(300)
+            toggleAvarias()
+          }
+          setaAva()
+        } else {
+          toast(`Lançamento [${data.id}] gerado no financeiro!`, { type: 'alert' })
+        }
+
+      }).catch((error) => {
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('**** PedidosModal.buscaFinanceiro.error.data', data)
+          }
+        } else if (error.request) {
+          console.log('**** PedidosModal.buscaFinanceiro.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        } else {
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        }
+      })
+  }
+
+  const distinct = (value, index, self) => {
+    return self.indexOf(value) === index
+  }
+
+  const bloquearPagamento  = () => {
 
   }
+
 
   async function onSubmit(values) {
 
@@ -2317,7 +2497,13 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
                     </Texto>
                   </RLeft>
                   <RRight>
-                    {/* <Blank><FaIcon icon='blank' size={20} height={20} width={20} /></Blank> */}
+                    {disableEdit ?
+                      <Blank><FaIcon icon='blank' size={10} height={10} width={10} /> </Blank>
+                      :
+                      <Tooltip title="Bloquear Pagamento Motorista">
+                        <Botao onClick={bloquearPagamento}><FaIcon icon='Bloqueado' size={20} /></Botao>
+                      </Tooltip>
+                    }
                     {disableEdit ?
                       <Blank><FaIcon icon='blank' size={10} height={10} width={10} /> </Blank>
                       :
@@ -3166,6 +3352,18 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
               disableEdit={(tipoCadVei === 'N' ? false : tipoCadVei !== 'E' && tipoCadVei !== 'N' ? true : false) || disableEdit}
               callback={e => callBackRotas(e)}
               rotas={rotas}
+            />
+            <AvariasModal
+              isShowAvarias={isShowAvarias}
+              hide={toggleAvarias}
+              
+              pedidoID={pedidoID}
+              placa={placa}
+              avariaID={avariaID}
+              
+              tipoCad={tipoCadVei === 'N' ? tipoCadVei : tipoCadVei !== 'E' && tipoCadVei !== 'N' ? 'D' : tipoCadVei}
+              disableEdit={(tipoCadVei === 'N' ? false : tipoCadVei !== 'E' && tipoCadVei !== 'N' ? true : false) || disableEdit}
+              callback={e => callBackAvarias(e)}
             />
             <HistoricoModal
               isShowHistorico={isShowHistorico}

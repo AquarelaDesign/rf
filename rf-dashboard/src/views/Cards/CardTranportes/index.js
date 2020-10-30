@@ -543,7 +543,7 @@ export default function CardTransportes({ data, index }) {
 
         <div onDoubleClick={abrePedido} >
           <RLeft>
-            <img src={motorista.foto !== null ? `${dev}images/${motorista.foto}` : semImagem} alt="" />
+            <img src={motorista.foto !== null && motorista.foto !== undefined ? `${dev}images/${motorista.foto}` : semImagem} alt="" />
           </RLeft>
           <RRight>
             <Texto bgcolor='#E7E6E6' size={16} bold={true}>

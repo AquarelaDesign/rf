@@ -1,16 +1,16 @@
 import { useState } from 'react'
 
-const useModalRotas = () => {
-  const [isShowRotas, setIsShowRotas] = useState(false)
+const useModalAvarias = () => {
+  const [isShowAvarias, setIsShowAvarias] = useState(false)
 
-  function toggleRotas() {
-    setIsShowRotas(!isShowRotas)
+  function toggleAvarias() {
+    setIsShowAvarias(!isShowAvarias)
   }
 
   return {
-    isShowRotas,
-    toggleRotas,
+    isShowAvarias,
+    toggleAvarias,
   }
 }
 
-export default useModalRotas
+export default useModalAvarias
