@@ -18,7 +18,7 @@ export default function Filter() {
         id="pedido"
         type="input"
         value={pedido}
-        placeholder="Nº do Padido"
+        placeholder="Nº do Pedido"
         onChange={event => setPedido(event.target.value)}
       /> 
       
