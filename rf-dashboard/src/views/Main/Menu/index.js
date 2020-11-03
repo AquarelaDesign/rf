@@ -1,16 +1,70 @@
 /* eslint-disable array-callback-return */
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
+
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+
+import { makeStyles, withStyles } from '@material-ui/core/styles'
+import ToggleButton from '@material-ui/lab/ToggleButton'
+import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 
 import api from '../../../services/rf'
 
 import { Container, Botao, BotaoExit, RLeft, RRight } from './styles';
 import { FaIcon } from '../../../components/Icone'
 
+const StyledToggleButtonGroup = withStyles((theme) => ({
+  grouped: {
+    margin: theme.spacing(0.5),
+    height: '24px',
+    // border: 'none',
+    border: 0,
+    borderRadius: '3px',
+    width: '120px',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    fontStyle: 'italic',
+    color: '#FFFFFF',
+    
+    '&:not(:first-child)': {
+      borderRadius: theme.shape.borderRadius,
+    },
+    '&:first-child': {
+      borderRadius: theme.shape.borderRadius,
+    },
+    '&:hover': {
+      background: '#225378',
+      color: '#FFFFFF',
+    }
+  
+  },
+}))(ToggleButtonGroup)
+
+const StyledToggleButton = withStyles((theme) => ({
+  // border: 0,
+  // borderRadius: '3px',
+  // width: '120px',
+  // height: '22px',
+  // fontSize: '14px',
+  // fontWeight: 'bold',
+  // fontStyle: 'italic',
+  // background: 'none',
+  // color: '#FFFFFF',
+  // cursor: 'pointer',
+  // marginRight: '15px',
+
+  // '&:hover': {
+  //   background: '#225378',
+  //   color: '#FFFFFF',
+  // }
+
+}))(ToggleButton)
+
 export default function Menu({backMenu}) {
   const history = useHistory()
+  const [menu, setMenu] = useState('LOG')
+
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   useEffect(() => {
@@ -87,16 +141,24 @@ export default function Menu({backMenu}) {
   }
 
   const mudaPainel = async (e, opcao) => {
+    setMenu(opcao)
     backMenu(opcao)
   }
 
   return (
     <Container>
       <RLeft>
-        <Botao onClick={e => mudaPainel(e, 'LOG')}>LOGÍSTICA</Botao>
-        <Botao onClick={e => mudaPainel(e, 'FIS')}>FISCAL</Botao>
-        <Botao onClick={e => mudaPainel(e, 'FIN')}>FINANCEIRO</Botao>
-        <Botao onClick={e => mudaPainel(e, 'HIS')}>HISTÓRICO</Botao>
+        <StyledToggleButtonGroup
+          value={menu}
+          exclusive
+          onChange={mudaPainel}
+          aria-label="menu"
+        >
+          <ToggleButton value="LOG">LOGÍSTICA</ToggleButton>
+          <ToggleButton value="FIS">FISCAL</ToggleButton>
+          <ToggleButton value="FIN">FINANCEIRO</ToggleButton>
+          <ToggleButton value="HIS">HISTÓRICO</ToggleButton>
+        </StyledToggleButtonGroup>
       </RLeft>
       <RRight>
         <BotaoExit onClick={handleExit}>
