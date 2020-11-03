@@ -189,16 +189,15 @@ const Financeiro = () => {
         console.log('**** Financeiro.verificaStatus.error', error)
       })
 
-      // console.log('**** Avarias')
+      // console.log('**** Avarias') <-
       await sleep(500)
-      await api.post('/buscafin', {
-        tipo: "A",
+      await api.post('/buscaavaria', {
         pedido_id: null,
-        cliente_id: null,
+        financeiro_id: null,
         motorista_id: null,
-        operador_id: null,
         fornecedor_id: null,
-        status: null
+        placa: null,
+        status: "A"
       })
       .then(response => {
         const { data } = response
@@ -206,7 +205,7 @@ const Financeiro = () => {
         // console.log('**** Financeiro.verificaStatus.data.X', data)
         cardsAva = []
         data.map(p => {
-          buscaPedido(p.id, p.pedido_id, 'A', p.status)
+          buscaAvaria(p.id)
         })
 
         carregaCards('A')
@@ -218,6 +217,7 @@ const Financeiro = () => {
 
       // console.log('**** Historico de Pagamentos')
       await sleep(500)
+      cardsHis = []
       await api.post('/buscafin', {
         tipo: "H",
         pedido_id: null,
@@ -231,19 +231,40 @@ const Financeiro = () => {
         const { data } = response
         
         // console.log('**** Financeiro.verificaStatus.data.Y', data)
-        cardsHis = []
         data.map(p => {
           buscaPedido(p.id, p.pedido_id, 'H', p.status)
         })
 
-        carregaCards('H')
+        // carregaCards('H')
 
       })
       .catch(error => {
         console.log('**** Financeiro.verificaStatus.error', error)
       })
+      await sleep(500)
+      await api.post('/buscaavaria', {
+        pedido_id: null,
+        financeiro_id: null,
+        motorista_id: null,
+        fornecedor_id: null,
+        placa: null,
+        status: "F"
+      })
+      .then(response => {
+        const { data } = response
+        
+        // console.log('**** Financeiro.verificaStatus.data.Y', data)
+        // cardsHis = []
+        data.map(p => {
+          buscaAvaria(p.id)
+        })
 
+        // carregaCards('H')
 
+      })
+      .catch(error => {
+        console.log('**** Financeiro.verificaStatus.error', error)
+      })
     } catch (error) {
       const { response } = error
       if (response !== undefined) {
@@ -254,6 +275,8 @@ const Financeiro = () => {
         toast(error, { type: 'error' })
       }
     }
+    carregaCards('H')
+
   }
 
   const buscaPedido = async (FinanceiroId, pedidoId, modo, FinanceiroStatus = '') => {
@@ -295,9 +318,43 @@ const Financeiro = () => {
     }
   }
 
+  const buscaAvaria = async (avariaID) => {
+    await api
+      .get(`/avarias/${avariaID}`)
+      .then(response => {
+        const { data } = response
+        if (data.status === 'F') {
+          data.tipo = 'H'
+          cardsHis.push(data)
+        } else {
+          data.tipo = 'A'
+          cardsAva.push(data)
+        }
+      })
+      .catch((error) => {
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('**** Financeiro.buscaAvaria.error.data', data)
+          }
+        } else if (error.request) {
+          console.log('**** Financeiro.buscaAvaria.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        } else {
+        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        }
+      })
+  }
+
   const carregaCards = async (modo) => {
     await sleep(300)
     if (modo === 'A') {
+      // console.log('**** Financeiro.carregaCards.cardsAva', cardsAva)
       setAvarias({
         title: "AVARIAS", 
         icon: "Avarias",
@@ -306,6 +363,7 @@ const Financeiro = () => {
         cards: cardsAva
       })
     } else if (modo === 'H') {
+      // console.log('**** Financeiro.carregaCards.cardsHis', cardsHis)
       setHistoricoPagar({
         title: "HISTÓRICO DE PAGAMENTOS", 
         icon: "HistoricoPagamentos",

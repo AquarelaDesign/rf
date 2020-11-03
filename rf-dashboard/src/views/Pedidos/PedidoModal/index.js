@@ -371,11 +371,14 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   useEffect(() => {
+    carregaDados()
+  }, [pedidoID, tipoCad, atualiza]) // , disableEdit, isShowPedido
+
+  useEffect(() => {
     try {
       // console.log('**** PedidosModal.useEffect.pedidoID', pedidoID)
       setValue(0)
       buscaPedido(pedidoID)
-      carregaDados()
     } catch (error) {
       if (error.response) {
         const { data } = error.response

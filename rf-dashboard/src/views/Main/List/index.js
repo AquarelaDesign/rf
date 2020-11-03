@@ -10,6 +10,7 @@ import CardCarga from '../../Cards/CardCargas'
 import CardTransporte from '../../Cards/CardTranportes'
 import CardEmitirCTe from '../../Cards/CardEmitirCTe'
 import CardFinanceiro from '../../Cards/CardFinanceiro'
+import CardAvaria from '../../Cards/CardAvaria'
 
 import GridUsuariosModal from '../../Cadastro/GridUsuariosModal'
 import useModal from '../../Cadastro/GridUsuariosModal/useModal'
@@ -53,9 +54,22 @@ const List = ({ data }) => {
           data={card}
         />
       case 'P':
-      case 'A':
       case 'H':
-        return <CardFinanceiro
+        if (card.status === 'F') {
+          return <CardAvaria
+            key={card.id}
+            index={id}
+            data={card}
+          />
+        } else {
+          return <CardFinanceiro
+            key={card.id}
+            index={id}
+            data={card}
+          />
+        }
+      case 'A':
+        return <CardAvaria
           key={card.id}
           index={id}
           data={card}
