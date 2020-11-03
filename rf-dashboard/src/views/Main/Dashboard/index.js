@@ -12,14 +12,20 @@ import Financeiro from '../Financeiro'
 
 export default function Dashboard() {
   const [opcao, setOpcao] = useState('LOG')
+  const [filtros, setFiltros] = useState({})
 
   const backHeader = (e) => {
     setOpcao(e)
   }
 
+  const backFilter = (e) => {
+    // console.log('**** DashBoard.backFilter', e)
+    setFiltros(e)
+  }
+
   const SelBoard = () => {
     switch (opcao) {
-      case 'LOG': return <Board />
+      case 'LOG': return <Board filtro={filtros} />
       case 'FIS': return <Fiscal />
       case 'FIN': return <Financeiro />
       default: return <></>
@@ -28,7 +34,7 @@ export default function Dashboard() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <Header backHeader={(e) => backHeader(e)} />
+      <Header backHeader={(e) => backHeader(e)} backFilter={backFilter} />
       <SelBoard />
       <GlobalStyle />
     </DndProvider>

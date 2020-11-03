@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Image } from 'react-bootstrap'
 
 import { Container, Titulo, Usuario } from './styles'
-import Filter from '../../../components/Filter'
+import Filter from '../Filter'
 import Menu from '../Menu'
 import { FaIcon } from '../../../components/Icone'
 import logo from '../../../assets/arenaLog.png'
@@ -11,7 +11,7 @@ import api from '../../../services/rf'
 
 const nomeEmpresa = "Arena Transautos"
 
-export default function Header({backHeader}) {
+export default function Header({backHeader, backFilter}) {
   const [userID, setUserID] = useState(localStorage.getItem('@rf/userID'))
   const [userDados, setUserDados] = useState({})
 
@@ -46,6 +46,10 @@ export default function Header({backHeader}) {
     backHeader(e)
   }
 
+  const backFiltro = (e) => {
+    backFilter(e)
+  }
+
   return (
     <>
       <Container>
@@ -56,7 +60,7 @@ export default function Header({backHeader}) {
         <FaIcon icon='FaBell' size={30} /> 
         <Image id="logo" src={logo} alt="" style={{marginTop: 0, height: 30}} />
       </Container>
-      <Filter />
+      <Filter backFilter={(e) => backFiltro(e)} />
       <Menu backMenu={(e) => backMenu(e)} />
     </>
   )

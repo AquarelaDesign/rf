@@ -60,7 +60,7 @@ export const Input = styled.input`
   border: none;
   border-radius: 3px;
   margin-right: 20px;
-  width: 100px;
+  width: ${props => props.width ? `${props.width}px` : '100px'};
   height: 25px;
   margin-top: 2px;
 `;

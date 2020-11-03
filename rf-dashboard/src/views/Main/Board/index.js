@@ -35,7 +35,7 @@ const prot = window.location.protocol === 'http' ? 'ws' : 'wss'
 const ws = Ws(`${prot}://www.retornofacil.com.br:3333`)
 ws.connect()
 
-const Board = () => {
+const Board = ({filtro}) => {
   const history = useHistory()
 
   const [isConnected, setIsConnected] = useState(false)
@@ -290,6 +290,8 @@ const Board = () => {
     if (!token) {
       history.push('/rf')
     }
+    
+    console.log('**** Board.verificaStatus.filtro', filtro)
 
     try {
       // console.log('**** Motoristas')
