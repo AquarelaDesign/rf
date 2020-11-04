@@ -68,6 +68,8 @@ class HistoricoController {
       if (condicoes.titulo_receber_id !== null){
         query.andWhere('titulo_receber_id','=',condicoes.titulo_receber_id)
       }
+      query.orderBy('updated_at', 'desc')
+
       const historicos = await query.fetch()
       return historicos
 

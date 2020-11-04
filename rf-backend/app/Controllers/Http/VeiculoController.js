@@ -29,9 +29,9 @@ class VeiculoController {
 
   /**
    * Show a list of veiculo with status.
-   * GET veiculos/:id
+   * POST veiculos
    */
-  async busca({auth, params, request, response}) {
+  async busca({auth, request, response}) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
     if (usuarios.tipo !== 'O') {
       return response.status(401).send({ 
@@ -39,14 +39,24 @@ class VeiculoController {
       })
     }
 
+    const condicoes = request.only([
+      "pedido_id",
+      "placachassi",
+    ])
+
     try {    
       const query = Veiculo.query()
-      if (params.id !== null){
-        query.andWhere('pedido_id','=', params.id)
+      
+      if (condicoes.pedido_id !== null && condicoes.pedido_id !== undefined) {
+        query.where('pedido_id', condicoes.pedido_id)
       }
+      
+      if (condicoes.placachassi !== null && condicoes.placachassi !== undefined) {
+        query.where('placachassi', condicoes.placachassi)
+      }
+      
       const veiculo = await query.fetch()
       return veiculo
-
     }
     catch(e) {
       return response.status(404).send({

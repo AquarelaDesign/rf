@@ -69,6 +69,8 @@ const Login = ({ history }) => {
   const buscaUsuario = async (email) => {
     await api
       .post('/buscausuarios', { 
+        cpfcnpj: "",
+        nome: "",
         email: email,
         tipo: "", 
     	  status: "",

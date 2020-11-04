@@ -1,8 +1,39 @@
 import React, { useState } from 'react'
 
+import ToggleButton from '@material-ui/lab/ToggleButton'
+import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
+import { Tooltip, withStyles } from '@material-ui/core'
+
 import { Container, Label, Botao, Input } from './styles'
 
 import { FaIcon } from '../../../components/Icone'
+
+const StyledToggleButtonGroup = withStyles((theme) => ({
+  grouped: {
+    margin: theme.spacing(0.5),
+    height: '32px',
+    // border: 'none',
+    border: 0,
+    borderRadius: '3px',
+    width: '44px',
+    // fontSize: '14px',
+    // fontWeight: 'bold',
+    // fontStyle: 'italic',
+    color: '#FFFFFF',
+    
+    '&:not(:first-child)': {
+      borderRadius: theme.shape.borderRadius,
+    },
+    '&:first-child': {
+      borderRadius: theme.shape.borderRadius,
+    },
+    '&:hover': {
+      background: '#225378',
+      color: '#FFFFFF',
+    }
+  
+  },
+}))(ToggleButtonGroup)
 
 export default function Filter({backFilter}) {
   const [pedido, setPedido] = useState('')
@@ -13,18 +44,56 @@ export default function Filter({backFilter}) {
   const [destinoUF, setDestinoUF] = useState('')
   const [motoristaCPF, setMotoristaCPF] = useState('')
   const [motoristaNome, setMotoristaNome] = useState('')
+  const [filtro, setFiltro] = useState(false)
+
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
   
-  const mudaFiltro = async (e) => {
-    backFilter({
-      pedido,
-      placa,
-      origemCidade,
-      origemUF,
-      destinoCidade,
-      destinoUF,
-      motoristaCPF,
-      motoristaNome,
-    })
+  const mudaFiltro = async (e, stFiltro) => {
+    if (
+      pedido !== "" && placa !== "" &&
+      origemCidade !== "" && origemUF !== "" &&
+      destinoCidade !== "" && destinoUF !== "" &&
+      motoristaCPF !== "" && motoristaNome !== ""
+    ) {
+      setFiltro(false)
+    } else {
+      setFiltro(true)
+    }
+
+    // console.log('**** Filter.mudaFiltro.stFiltro', stFiltro)
+    if (stFiltro === false) {
+      setPedido('')
+      setPlaca('')
+      setOrigemCidade('')
+      setOrigemUF('')
+      setDestinoCidade('')
+      setDestinoUF('')
+      setMotoristaCPF('')
+      setMotoristaNome('')
+
+      backFilter({
+        pedido: '',
+        placa: '',
+        origemCidade: '',
+        origemUF: '',
+        destinoCidade: '',
+        destinoUF: '',
+        motoristaCPF: '',
+        motoristaNome: '',
+      })
+  
+    } else {
+      backFilter({
+        pedido,
+        placa,
+        origemCidade,
+        origemUF,
+        destinoCidade,
+        destinoUF,
+        motoristaCPF,
+        motoristaNome,
+      })
+    }
   }
 
   return (
@@ -98,10 +167,20 @@ export default function Filter({backFilter}) {
         width={200}
       /> 
 
-      <Botao onClick={mudaFiltro} >
-        <FaIcon icon='FaFilter' size={16} />
-        FILTRAR
-      </Botao>
+      <StyledToggleButtonGroup
+        value={filtro}
+        exclusive
+        onChange={mudaFiltro}
+        aria-label="menu"
+      >
+        <ToggleButton value={true}>
+          <FaIcon icon='btFiltro' size={22} />
+        </ToggleButton>
+
+        <ToggleButton value={false}>
+          <FaIcon icon='btLimpaFiltro' size={22} />
+        </ToggleButton>
+      </StyledToggleButtonGroup>
 
     </Container>
   )

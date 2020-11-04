@@ -31,7 +31,7 @@ class RotaController {
    * Show a list of rota with pedido.
    * GET rotas/:id
    */
-  async busca({auth, params, request, response}) {
+  async busca({auth, request, response}) {
     const usuarios = await Usuario.findOrFail(auth.user.id)
     if (usuarios.tipo !== 'O') {
       return response.status(401).send({ 
@@ -39,11 +39,27 @@ class RotaController {
       })
     }
 
+    const condicoes = request.only([
+      "pedido_id",
+      "cidade",
+      "uf",
+    ])
+
     try {    
       const query = Rota.query()
-      if (params.id !== null){
-        query.andWhere('pedido_id','=', params.id)
+
+      if (condicoes.pedido_id !== null && condicoes.pedido_id !== undefined) {
+        query.where('pedido_id', condicoes.pedido_id)
       }
+
+      if (condicoes.cidade !== null && condicoes.cidade !== undefined) {
+        query.where('cidade', condicoes.cidade)
+      }
+
+      if (condicoes.uf !== null && condicoes.uf !== undefined) {
+        query.where('uf', condicoes.uf)
+      }
+
       query.orderBy('rota_relacionada', 'asc')
       const rota = await query.fetch()
       return rota

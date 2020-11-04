@@ -33,7 +33,7 @@ import { RiSearchLine } from 'react-icons/ri'
 import { IoIosDocument } from 'react-icons/io'
 import { ImCloudCheck } from 'react-icons/im'
 import { TiArrowBack } from 'react-icons/ti'
-import { FcPlus, FcCancel, FcDocument, FcInTransit } from 'react-icons/fc'
+import { FcPlus, FcCancel, FcDocument, FcInTransit, FcFilledFilter, FcClearFilters } from 'react-icons/fc'
 import { FiAlertOctagon, FiAlertTriangle, FiSend } from 'react-icons/fi'
 import { MdDeleteForever, MdAddCircle, MdBlock, MdCheckCircle, MdCancel, MdZoomOutMap } from 'react-icons/md'
 
@@ -64,7 +64,8 @@ export const FaIcon = ({ icon, size, height, width }) => {
     case 'FaDiscourse': return <FaDiscourse size={size} style={{ marginLeft: 10, marginRight: 5 }} />
     case 'FaBell': return <FaBell size={size} style={{ marginLeft: 5, marginRight: 10 }} />
     case 'Usuario': return <FaHeadphonesAlt size={size} style={{ marginRight: 10 }} />
-    case 'FaFilter': return <FaFilter size={size} style={{ marginLeft: 0, marginRight: 5 }} />
+    case 'btFiltro': return <FcFilledFilter size={size} style={{ marginLeft: 0, marginRight: 5 }} />
+    case 'btLimpaFiltro': return <FcClearFilters size={size} style={{ marginLeft: 0, marginRight: 5 }} />
     case 'GiExitDoor': return <GiExitDoor size={size} style={{ marginLeft: 0, marginRight: 10 }} />
     case 'RiSearchLine': return <RiSearchLine size={size} style={{ marginTop: '1px' }} />
     case 'FaRegEdit': return <FaRegEdit size={size} style={{ color: 'blue', marginTop: '1px' }} />

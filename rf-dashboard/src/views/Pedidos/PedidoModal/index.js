@@ -796,6 +796,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
   const buscaUsuarios = async () => {
     await api
       .post(`/buscausuarios`, {
+        "cpfcnpj": "",
+        "nome": "",
         "email": "",
         "tipo": "",
         "status": "",
@@ -1152,7 +1154,9 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
     await sleep(500)
     if (stRetorno && pedidoID) {
       await api
-        .post(`/buscaveiculos/${pedidoID}`)
+        .post('/buscaveiculos', {
+          pedido_id: pedidoID,
+        })
         .then(response => {
           const { data } = response
           setVeiculos(data)
@@ -1467,7 +1471,9 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
 
     if (stRetorno && pedidoID) {
       await api
-        .post(`/buscarotas/${pedidoID}`)
+        .post('/buscarotas', {
+          pedido_id: pedidoID,
+        })
         .then(response => {
           const { data } = response
           setRotas(data)

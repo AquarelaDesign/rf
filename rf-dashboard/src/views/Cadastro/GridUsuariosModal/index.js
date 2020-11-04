@@ -106,6 +106,8 @@ const GridUsuarioModal = ({
     await sleep(1000)
     
     await api.post(`/buscausuarios`, {
+      cpfcnpj: "",
+      nome: "",
       email: "",
       tipo: tipoConsulta,
       status: "",

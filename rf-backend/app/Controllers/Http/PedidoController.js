@@ -57,22 +57,32 @@ class PedidoController {
       "tipo",
       "cliente_id",
       "motorista_id",
+      "id",
     ])
 
     try {    
       const query = Pedido.query()
-      if (condicoes.status !== null){
-        query.andWhere('status','=',condicoes.status)
+
+      if (condicoes.status !== null && condicoes.status !== undefined) {
+        query.where('status', condicoes.status)
       }
-      if (condicoes.tipo !== null){
-        query.andWhere('tipo','=',condicoes.tipo)
+
+      if (condicoes.tipo !== null && condicoes.tipo !== undefined) {
+        query.where('tipo', condicoes.tipo)
       }
-      if (condicoes.cliente_id !== null){
-        query.andWhere('cliente_id','=',condicoes.cliente_id)
+
+      if (condicoes.cliente_id !== null && condicoes.cliente_id !== undefined) {
+        query.where('cliente_id', condicoes.cliente_id)
       }
-      if (condicoes.motorista_id !== null){
-        query.andWhere('motorista_id','=',condicoes.motorista_id)
+
+      if (condicoes.motorista_id !== null && condicoes.motorista_id !== undefined) {
+        query.where('motorista_id', condicoes.motorista_id)
       }
+
+      if (condicoes.id !== null && condicoes.id !== undefined) {
+        query.where('id', condicoes.id)
+      }
+
       query
         .with('veiculos')
         .with('rotas')

@@ -294,8 +294,79 @@ const Board = ({filtro}) => {
     console.log('**** Board.verificaStatus.filtro', filtro)
 
     try {
-      // console.log('**** Motoristas')
-      await api.get('/status', {})
+      /*
+      if (
+        filtro.origemCidade !== undefined && filtro.origemCidade !== "" ||
+        filtro.origemUF !== undefined && filtro.origemUF !== "" ||
+        filtro.destinoCidade !== undefined && filtro.destinoCidade !== "" ||
+        filtro.destinoUF !== undefined && filtro.destinoUF !== ""
+      ) {
+        await api
+        .post('/buscaveiculos', {
+          placachassi: filtro.placa,
+        })
+        .then(response => {
+          const { data } = response
+          filtro.pedido = data[0].pedido_id
+
+          console.log('**** Board.verificaStatus.buscaveiculos.data', filtro.pedido, data)
+        })
+        .catch((error) => {
+          if (error.response) {
+            const { data } = error.response
+            try {
+              data.map(mensagem => {
+                toast(mensagem.message, { type: 'error' })
+              })
+            }
+            catch (e) {
+              console.log('**** Board.verificaStatus.buscaveiculos.error.data', data)
+            }
+          } else if (error.request) {
+            console.log('**** Board.verificaStatus.buscaveiculos.error', error)
+          } else {
+          }
+        })
+      }
+      */
+     
+      if (filtro.placa !== undefined && filtro.placa !== "") {
+        await api
+        .post('/buscaveiculos', {
+          placachassi: filtro.placa,
+        })
+        .then(response => {
+          const { data } = response
+          filtro.pedido = data[0].pedido_id
+
+          console.log('**** Board.verificaStatus.buscaveiculos.data', filtro.pedido, data)
+        })
+        .catch((error) => {
+          if (error.response) {
+            const { data } = error.response
+            try {
+              data.map(mensagem => {
+                toast(mensagem.message, { type: 'error' })
+              })
+            }
+            catch (e) {
+              console.log('**** Board.verificaStatus.buscaveiculos.error.data', data)
+            }
+          } else if (error.request) {
+            console.log('**** Board.verificaStatus.buscaveiculos.error', error)
+          } else {
+          }
+        })
+      }
+
+      await api.post('/buscausuarios', {
+        cpfcnpj: filtro.motoristaCPF === undefined ? "" : filtro.motoristaCPF,
+        nome: filtro.motoristaNome === undefined ? "" : filtro.motoristaNome,
+        email: "",
+        tipo: "M", 
+    	  status: "A",
+	      estado: " ",
+      })
         .then(res => {
           const loadMotorista = {
             title: "MOTORISTAS ONLINE",
@@ -320,7 +391,11 @@ const Board = ({filtro}) => {
         })
 
       // console.log('**** Pedidos')
-      await api.get('/statuspedidos', {})
+      await api.post('/buscapedidos', {
+        status: "D",
+        tipo: "C",
+        id: filtro.pedido === undefined ? "" : filtro.pedido,
+      })
         .then(res => {
           const loadPedidos = {
             title: "CARGAS DISPONÍVEIS",
@@ -351,6 +426,7 @@ const Board = ({filtro}) => {
         estado: "P",
         cliente_id: "",
         motorista_id: "", 
+        id: filtro.pedido === undefined ? "" : filtro.pedido,
       })
         .then(res => {
           const loadTransportes = {

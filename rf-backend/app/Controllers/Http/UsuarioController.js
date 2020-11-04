@@ -62,10 +62,12 @@ class UsuarioController {
     }
     */
     const condicoes = request.only([
-      "email",
+      "tipo",
       "status",
       "estado",
-      "tipo",
+      "cpfcnpj",
+      "nome",
+      "email",
     ])
 
     try {    
@@ -75,27 +77,46 @@ class UsuarioController {
         .with('veiculos')
         .fetch()
       */
+
       const query = Usuario.query()
-      if (condicoes.email !== null){
-        query.andWhere('email','=',condicoes.email)
-      }
-      if (condicoes.tipo !== null){
-        query.andWhere('tipo','=',condicoes.tipo)
-        
+
+      if (condicoes.tipo !== null && condicoes.tipo !== undefined) {
+        query.where('tipo', condicoes.tipo)
+
         if (condicoes.tipo === 'M' || condicoes.tipo === 'C') {
-          query.orWhere('user_id','=',1)
+          // query.orWhere('user_id', 1)
+        }
+  
+      }
+
+      if (condicoes.status !== null && condicoes.status !== undefined) {
+        query.where('status', condicoes.status)
+      } 
+
+      if (condicoes.estado !== null && condicoes.estado !== undefined){
+        query.where('estado', condicoes.estado)
+      } 
+      
+      if (condicoes.cpfcnpj !== null && condicoes.cpfcnpj !== undefined){
+        query.where('cpfcnpj', condicoes.cpfcnpj)
+      }
+
+      if (condicoes.nome !== null && condicoes.nome !== undefined) {
+        if (condicoes.nome !== "") {
+          // query.andWhere('nome', '>=', condicoes.nome)
+          query.where('nome', 'like', '%' + condicoes.nome + '%')
         }
       }
-      if (condicoes.status !== null){
-        query.andWhere('status','=',condicoes.status)
+
+      if (condicoes.email !== null && condicoes.email !== undefined) {
+        query.where('email', condicoes.email)
       }
-      if (condicoes.estado !== null){
-        query.andWhere('estado','=',condicoes.estado)
-      }
+
       query.with('veiculos')
       const usuario = await query.fetch()
 
       return usuario
+      // return condicoes
     }
     catch(e) {
       return response.status(404).send({
@@ -114,8 +135,10 @@ class UsuarioController {
     // console.log(request.input('query'))
     let query = request.input('query')
 
-    let usuarios = await Usuario.query().where('nome', 'like', '%' + query + '%')
-      .orWhere('cpfcnpj', 'like', '%' + query + '%').fetch()
+    let usuarios = await Usuario.query()
+      .where('nome', 'like', '%' + query + '%')
+      .orWhere('cpfcnpj', 'like', '%' + query + '%')
+      .fetch()
 
     Event.fire('search::results', usuarios.toJSON())
 

@@ -489,8 +489,17 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
     let newValues = {}
 
     for (var [key, value] of Object.entries(values)) {
-      newValues[key] = value
+      if (key === 'placachassi') {
+        let val = value
+            val = val.trim()
+            val = val.replace('-','')
+            val = val.toLocaleUpperCase()
+        newValues[key] = value
+      } else {
+        newValues[key] = value
+      }
     }
+
 
     // let val = values['valor'].replace('.', '')
     //     val = val.replace(',', '.')

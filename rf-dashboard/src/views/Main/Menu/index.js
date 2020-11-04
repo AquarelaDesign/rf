@@ -5,13 +5,18 @@ import { useHistory } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
-import { makeStyles, withStyles } from '@material-ui/core/styles'
+import clsx from 'clsx'
+import { withStyles, makeStyles } from '@material-ui/core/styles'
+import Drawer from '@material-ui/core/Drawer'
+import Button from '@material-ui/core/Button'
+import Divider from '@material-ui/core/Divider'
+
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 
 import api from '../../../services/rf'
 
-import { Container, Botao, BotaoExit, RLeft, RRight } from './styles';
+import { Container, BotaoExit, RLeft, RRight, Input, Label, Titulo } from './styles'
 import { FaIcon } from '../../../components/Icone'
 
 const StyledToggleButtonGroup = withStyles((theme) => ({
@@ -41,29 +46,33 @@ const StyledToggleButtonGroup = withStyles((theme) => ({
   },
 }))(ToggleButtonGroup)
 
-const StyledToggleButton = withStyles((theme) => ({
-  // border: 0,
-  // borderRadius: '3px',
-  // width: '120px',
-  // height: '22px',
-  // fontSize: '14px',
-  // fontWeight: 'bold',
-  // fontStyle: 'italic',
-  // background: 'none',
-  // color: '#FFFFFF',
-  // cursor: 'pointer',
-  // marginRight: '15px',
+const useStyles = makeStyles({
+  list: {
+    width: 380,
+    height: '100%',
+    padding: 20,
+    background: '#75b9f0',
+  },
+})
 
-  // '&:hover': {
-  //   background: '#225378',
-  //   color: '#FFFFFF',
-  // }
-
-}))(ToggleButton)
-
-export default function Menu({backMenu}) {
+export default function Menu({backMenu, backFilter}) {
   const history = useHistory()
+  const classes = useStyles()
+
   const [menu, setMenu] = useState('LOG')
+  const [state, setState] = useState({
+    right: false,
+  })
+
+  const [pedido, setPedido] = useState('')
+  const [placa, setPlaca] = useState('')
+  const [origemCidade, setOrigemCidade] = useState('')
+  const [origemUF, setOrigemUF] = useState('')
+  const [destinoCidade, setDestinoCidade] = useState('')
+  const [destinoUF, setDestinoUF] = useState('')
+  const [motoristaCPF, setMotoristaCPF] = useState('')
+  const [motoristaNome, setMotoristaNome] = useState('')
+  const [filtro, setFiltro] = useState(false)
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -145,6 +154,165 @@ export default function Menu({backMenu}) {
     backMenu(opcao)
   }
 
+  const mudaFiltro = async (e, stFiltro) => {
+    if (
+      pedido !== "" && placa !== "" &&
+      origemCidade !== "" && origemUF !== "" &&
+      destinoCidade !== "" && destinoUF !== "" &&
+      motoristaCPF !== "" && motoristaNome !== ""
+    ) {
+      setFiltro(false)
+    } else {
+      setFiltro(true)
+    }
+
+    // console.log('**** Filter.mudaFiltro.stFiltro', stFiltro)
+    if (stFiltro === false) {
+      setPedido('')
+      setPlaca('')
+      setOrigemCidade('')
+      setOrigemUF('')
+      setDestinoCidade('')
+      setDestinoUF('')
+      setMotoristaCPF('')
+      setMotoristaNome('')
+
+      backFilter({
+        pedido: '',
+        placa: '',
+        origemCidade: '',
+        origemUF: '',
+        destinoCidade: '',
+        destinoUF: '',
+        motoristaCPF: '',
+        motoristaNome: '',
+      })
+  
+    } else {
+      backFilter({
+        pedido,
+        placa,
+        origemCidade,
+        origemUF,
+        destinoCidade,
+        destinoUF,
+        motoristaCPF,
+        motoristaNome,
+      })
+    }
+  }
+
+  const toggleDrawer = (anchor, open) => (event) => {
+    if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+      return
+    }
+
+    setState({ ...state, [anchor]: open })
+  }
+
+  const list = (anchor) => (
+    <div
+      className={classes.list}
+      role="presentation"
+      // onClick={toggleDrawer('right', false)}
+      // onKeyDown={toggleDrawer('right', false)}
+    >
+      <Titulo>Filtros</Titulo>
+
+      <Divider variant="middle" />
+
+      <Label>Pedido</Label>
+      <Input
+        id="pedido"
+        type="input"
+        value={pedido}
+        placeholder="Nº do Pedido"
+        onChange={event => setPedido(event.target.value)}
+        width={100}
+      /> 
+      
+      <Label>Placa</Label> 
+      <Input
+        id="placa"
+        type="input"
+        value={placa}
+        placeholder="Placa"
+        onChange={event => setPlaca(event.target.value)}
+        width={100}
+      /> 
+      
+      <Label>Origem</Label>
+      <Input
+        id="origemCidade"
+        type="input"
+        value={origemCidade}
+        placeholder="Cidade"
+        onChange={event => setOrigemCidade(event.target.value)}
+        width={250}
+      /> 
+      <Input
+        id="origemUF"
+        type="input"
+        value={origemUF}
+        placeholder="UF"
+        onChange={event => setOrigemUF(event.target.value)}
+        width={50}
+      /> 
+      
+      <Label>Destino</Label> 
+      <Input
+        id="destinoCidade"
+        type="input"
+        value={destinoCidade}
+        placeholder="Cidade"
+        onChange={event => setDestinoCidade(event.target.value)}
+        width={250}
+      /> 
+      <Input
+        id="destinoUF"
+        type="input"
+        value={destinoUF}
+        placeholder="UF"
+        onChange={event => setDestinoUF(event.target.value)}
+        width={50}
+      /> 
+      
+      <Label>Motorista</Label> 
+      <Input
+        id="motoristaCPF"
+        type="input"
+        value={motoristaCPF}
+        placeholder="CPF/CNPJ"
+        onChange={event => setMotoristaCPF(event.target.value)}
+        width={100}
+      /> 
+      <Input
+        id="motoristaNome"
+        type="input"
+        value={motoristaNome}
+        placeholder="Nome"
+        onChange={event => setMotoristaNome(event.target.value)}
+        width={200}
+      /> 
+
+      <StyledToggleButtonGroup
+        value={filtro}
+        exclusive
+        onChange={mudaFiltro}
+        aria-label="menu"
+      >
+        <ToggleButton value={true}>
+          <FaIcon icon='btFiltro' size={22} />
+        </ToggleButton>
+
+        <ToggleButton value={false}>
+          <FaIcon icon='btLimpaFiltro' size={22} />
+        </ToggleButton>
+      </StyledToggleButtonGroup>
+
+    </div>
+  )
+
   return (
     <Container>
       <RLeft>
@@ -165,7 +333,18 @@ export default function Menu({backMenu}) {
           <FaIcon icon='GiExitDoor' size={16} />
           SAIR
         </BotaoExit>
+        <BotaoExit onClick={toggleDrawer('right', true)}>
+          <FaIcon icon='btFiltro' size={16} />
+          Filtrar
+        </BotaoExit>
       </RRight>
+      <div>
+        <React.Fragment key={'right'}>
+          <Drawer anchor={'right'} open={state['right']} onClose={toggleDrawer('right', false)}>
+            {list('right')}
+          </Drawer>
+        </React.Fragment>
+      </div>
     </Container>
   )
 }

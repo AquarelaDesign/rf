@@ -20,7 +20,9 @@ export const Label = styled.div`
   font-weight: 300;
   text-align: left;
   display: inline-block;
-  margin-right: 10px;
+  margin-right: 5px;
+  margin-top: 15px;
+  width: ${props => props.width ? `${props.width}px` : '100%'};
 `;
 
 export const RLeft = styled.div`
@@ -73,4 +75,27 @@ export const BotaoExit = styled.button`
   }
 `;
 
+export const Input = styled.input`
+  padding: 0.5em;
+  /* margin: 0.5em; */
+  color: #0078D7;
+  background: #FFFFFF;
+  /* border: none; */
+  border: '1px solid #2699F8';
+  border-radius: 3px;
+  margin-right: 20px;
+  width: ${props => props.width ? `${props.width}px` : '100%'};
+  height: 25px;
+  margin-top: 15px;
+`;
+
+export const Titulo = styled.div`
+  font-size: 20px;
+  font-weight: 500;
+  text-align: center;
+  display: flex;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  width: ${props => props.width ? `${props.width}px` : '100%'};
+`;
 

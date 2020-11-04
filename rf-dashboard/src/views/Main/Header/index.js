@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Image } from 'react-bootstrap'
 
 import { Container, Titulo, Usuario } from './styles'
-import Filter from '../Filter'
+// import Filter from '../Filter'
 import Menu from '../Menu'
 import { FaIcon } from '../../../components/Icone'
 import logo from '../../../assets/arenaLog.png'
@@ -60,8 +60,8 @@ export default function Header({backHeader, backFilter}) {
         <FaIcon icon='FaBell' size={30} /> 
         <Image id="logo" src={logo} alt="" style={{marginTop: 0, height: 30}} />
       </Container>
-      <Filter backFilter={(e) => backFiltro(e)} />
-      <Menu backMenu={(e) => backMenu(e)} />
+      {/* <Filter backFilter={(e) => backFiltro(e)} /> */}
+      <Menu backMenu={(e) => backMenu(e)} backFilter={(e) => backFiltro(e)} />
     </>
   )
 }
