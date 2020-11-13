@@ -67,11 +67,17 @@ Route.group(() => {
   Route.post("/buscarotas", "RotaController.busca")
 
   Route.resource('metropoles', 'MetropoleController').apiOnly()
+
   Route.resource('rotastabela', 'RotasTabelaController').apiOnly()
   Route.post("/rotastabela/:id", "RotasTabelaController.busca")
+
   Route.resource('seguros', 'SeguroController').apiOnly()
+  Route.post("/buscaseguro", "SeguroController.busca")
+
   Route.resource('tiposdeveiculos', 'TiposDeVeiculoController').apiOnly()
+
   Route.resource('valoresadicionais', 'ValoresAdicionaiController').apiOnly()
+  Route.post("/buscavaloresadicionais", "ValoresAdicionaiController.busca")
 
   Route
     .resource('rotaspedidos', 'RotasPedidoController')
@@ -89,6 +95,7 @@ Route.group(() => {
     .resource('pedidosvalores', 'PedidosValoreController')
     .apiOnly()
   Route.post("/buscavalped/:id", "PedidosValoreController.busca")
+  Route.post("/calculavalor/:id", "PedidosValoreController.calculaValor")
 
   Route.post("/buscafiscal", "FiscalController.busca")
   Route.resource('fiscal', 'FiscalController')

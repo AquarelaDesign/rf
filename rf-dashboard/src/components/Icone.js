@@ -44,6 +44,7 @@ import whats from '../assets/whatsApp.png'
 import pb_whats from '../assets/pb_whats.png'
 import pb_email from '../assets/pb_email.png'
 import pb_fone from '../assets/pb_fone.png'
+import emitir_cte from '../assets/emitir_cte_256.png'
 
 export const FaIcon = ({ icon, size, height, width }) => {
   switch (icon) {
@@ -109,6 +110,7 @@ export const FaIcon = ({ icon, size, height, width }) => {
     case 'pbWhats': return <Image src={pb_whats} alt="" style={{ height: 16, width: 16 }} />
     case 'pbEmail': return <Image src={pb_email} alt="" style={{ height: 16, width: 16 }} />
     case 'pbFone': return <Image src={pb_fone} alt="" style={{ height: 16, width: 16 }} />
+    case 'emitirCTe': return <Image src={emitir_cte} alt="" style={{ height: 20, width: 20 }} />
     default: return null
   }
 }

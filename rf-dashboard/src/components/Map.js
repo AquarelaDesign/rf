@@ -68,7 +68,7 @@ function Map({ markers, origem, destino, paradas, defaultCenter, defaultZoom }) 
     }
 
     directionsService.route(request, function (response, status) {
-      if (status == window.google.maps.DirectionsStatus.OK) {
+      if (status == 'OK') {
         directionsRenderer.setDirections(response)
 
         console.log('**** Maps.directionsService', response)
@@ -79,7 +79,7 @@ function Map({ markers, origem, destino, paradas, defaultCenter, defaultZoom }) 
         for (i = 0; i < markers.length; i++) {  
           marker = new window.google.maps.Marker({
             position: new window.google.maps.LatLng(markers[i].lat, markers[i].lng),
-            animation: window.google.maps.Animation.DROP,
+            animation: 'DROP',
             icon: mapMarker,
             map: map
           });

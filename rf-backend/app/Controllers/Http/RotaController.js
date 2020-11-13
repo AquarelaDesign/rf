@@ -29,7 +29,7 @@ class RotaController {
 
   /**
    * Show a list of rota with pedido.
-   * GET rotas/:id
+   * POST buscarotas
    */
   async busca({auth, request, response}) {
     const usuarios = await Usuario.findOrFail(auth.user.id)

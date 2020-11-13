@@ -39,7 +39,8 @@ import {
 import { makeStyles } from '@material-ui/core/styles'
 
 import { Form, Field } from 'react-final-form'
-import DatePicker from '../../../components/datepicker'
+// import DatePicker from '../../../components/datepicker'
+import DatePicker from '../../../components/Grid/Editors/DateEditor'
 
 import { AiOutlineSearch } from 'react-icons/ai'
 import { RiMoneyDollarBoxLine } from 'react-icons/ri'
@@ -370,15 +371,27 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-  useEffect(() => {
-    carregaDados()
-  }, [pedidoID, tipoCad, atualiza]) // , disableEdit, isShowPedido
+  // useEffect(() => {
+  //   carregaDados()
+  // }, [pedidoID, tipoCad, atualiza]) // , disableEdit, isShowPedido
 
   useEffect(() => {
     try {
       // console.log('**** PedidosModal.useEffect.pedidoID', pedidoID)
       setValue(0)
-      buscaPedido(pedidoID)
+
+      const inicio = async () => {
+        if (tipoCad === 'N') {
+          // window.setFormValue('limitecoleta', moment().format('YYYY-MM-DD'))
+          // window.setFormValue('limiteentrega', moment().add(15, 'days').format('YYYY-MM-DD'))
+        }
+        
+        await carregaDados()
+        await buscaPedido(pedidoID)
+
+      }
+      inicio()
+
     } catch (error) {
       if (error.response) {
         const { data } = error.response
@@ -393,15 +406,18 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
     }
 
     return () => {
-      // console.log('**** PedidosModal.useEffect.return')
+      if (window.setFormValue) {
+      }
     }
   }, [pedidoID, tipoCad, atualiza]) // , disableEdit, isShowPedido
 
-  const carregaDados = () => {
-    buscaValoresAgregados() // <-- Adicionar busca direta no banco
-    buscaSeguros() // <-- Adicionar busca direta no banco
-    buscaTabRotas() // <-- Adicionar busca direta no banco
-    buscaUsuarios()
+  const carregaDados = async () => {
+    await buscaValoresAgregados() // <-- Adicionar busca direta no banco
+    await buscaSeguros() // <-- Adicionar busca direta no banco
+    await buscaTabRotas() // <-- Adicionar busca direta no banco
+    await buscaUsuarios()
+    await novoPedido()
+
     setOperadorID(localStorage.getItem('@rf/userID'))
   }
 
@@ -416,13 +432,19 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
           data[0].limiteentrega = data[0].limiteentrega ? data[0].limiteentrega.substring(0, 10) : undefined
 
           setInitialValuesPed(data[0])
+          console.log('**** PedidosModal.buscaPedido.setInitialValuesPed', data[0])
+
+          // if (window.setFormValue) {
+          //   window.setFormValue('limitecoleta', moment(data[0].limitecoleta).format('YYYY-MM-DD'))
+          //   window.setFormValue('limiteentrega', moment(data[0].limiteentrega).format('YYYY-MM-DD'))
+          // }
+          
           setVeiculos(data[0].veiculos)
           setRotas(data[0].rotas)
+          setMotoristaID(data[0].motorista_id)
+          
           updateMap(data[0].rotas, data[0].localcoleta, data[0].localentrega)
           buscaHistorico(data[0].id)
-          setMotoristaID(data[0].motorista_id)
-
-          // console.log('**** PedidosModal.buscaPedido.data', data[0].cliente_id)
 
           if (data[0].cliente_id !== null) {
             setClienteID(data[0].cliente_id)
@@ -466,33 +488,47 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
             // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
           }
         })
+      
     } else {
-      // novoPedido()
+      novoPedido()
     }
   }
 
   const novoPedido = () => {
     setValue(0)
-    // setInitialValuesPed({
-    //   cliente_id: null,
-    //   limitecoleta: undefined,
-    //   limiteentrega: undefined,
-    //   localcoleta: null,
-    //   localentrega: null,
-    //   motorista_id: null,
-    //   status: "",
-    //   tipo: "C",
-    // })
-    window.setFormValue('cliente_id', null)
-    window.setFormValue('limitecoleta', undefined)
-    window.setFormValue('limiteentrega', undefined)
-    window.setFormValue('localcoleta', null)
-    window.setFormValue('localentrega', null)
-    window.setFormValue('motorista_id', null)
-    window.setFormValue('status', "")
-    window.setFormValue('tipo', "C")
+    
+    setInitialValuesPed({
+      id: pedidoID,
+      cliente_id: null,
+      limitecoleta: moment().format('YYYY-MM-DD'),
+      limiteentrega: moment().add(15, 'days').format('YYYY-MM-DD'),
+      localcoleta: null,
+      localentrega: null,
+      motorista_id: null,
+      status: "",
+      tipo: "C",
+    })
 
-    semCliente()
+    // console.log('**** PedidosModal.novoPedido.window', window.setFormValue)
+    
+    // if (window.setFormValue) {
+    //   window.setFormValue('limitecoleta', moment().format('YYYY-MM-DD'))
+    //   window.setFormValue('limiteentrega', moment().add(15, 'days').format('YYYY-MM-DD'))
+    // }
+
+
+    // window.setFormValue('cliente_id', null)
+    // window.setFormValue('localcoleta', null)
+    // window.setFormValue('localentrega', null)
+    // window.setFormValue('motorista_id', null)
+    // window.setFormValue('status', "")
+    // window.setFormValue('tipo', "C")
+
+    // await semCliente()
+    setClienteID(null)
+    setCliente([])
+
+
     setVeiculos([])
     setRotas([])
 
@@ -547,6 +583,9 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
           window.setFormValue('cidade', data.cidade)
           window.setFormValue('uf', data.uf)
           window.setFormValue('cep', data.cep)
+
+          // window.setFormValue('limitecoleta', moment(initialValuesPed.limitecoleta).format('YYYY-MM-DD'))
+          // window.setFormValue('limiteentrega', moment(initialValuesPed.limiteentrega).format('YYYY-MM-DD'))
 
         }).catch((error) => {
           if (error.response) {
@@ -2421,60 +2460,6 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
       })
   }
 
-  /*
-  const onMapLoad = (map) => {
-    // mapRef.current = map;
-
-    // console.log('**** Map.onMapLoad', origem, destino, paradas)
-
-    let w = []
-    paradas.map(way => {
-      w.push({
-        location: way
-      })
-    })
-
-    const uniqueW = Array.from(new Set(w.map(a => a.lat)))
-      .map(lat => {
-        return w.find(a => a.lat === lat)
-      })
-
-    setWaypoints(uniqueW)
-
-    // console.log('**** Map.montaRotas', uniqueW, waypoints)
-
-  }
-
-  const directionsCallback = (resp) => {
-    console.log('**** Maps.directionsCallback', resp)
-    
-    if (resp !== null) {
-      try {
-        if (resp.status === 'OK') {
-          // console.log('**** Maps.directionsCallback', resp.routes[0].legs[0].distance)
-          if (dadosInfo === null) {
-            setResponseMap(resp)
-            const lgs = resp.routes[0].legs
-            let dist = 0
-            lgs.map(d => {
-              dist += d.distance.value
-            })
-
-            setDadosInfo({
-              distancia: `${Math.round(dist / 1000)} km`,
-              tempo: `${Math.round((dist / 1000) / 500)} dias`,
-            })
-          }
-        } else {
-          // console.log('resp: ', resp)
-        }
-      }
-      catch (e) {}
-    }
-    
-  }
-  */
-
   const Condition = ({ when, is, children }) => (
     <Field name={when} subscription={{ value: true }}>
       {({ input: { value } }) => (value === is ? children : null)}
@@ -2483,7 +2468,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
 
   const required = value => (value ? undefined : '* Obrigatório!')
 
-  const fechaJanela = () => {
+  const fechaJanela = async () => {
+    await novoPedido()
     setAtualiza(!atualiza)
     hide()
   }

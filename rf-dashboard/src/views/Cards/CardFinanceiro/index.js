@@ -299,10 +299,10 @@ export default function CardFinanceiro({ data, index }) {
           })
         }
         catch (e) {
-          console.log('**** CardFinanceiro.atualizaPedido.error.data', data)
+          console.log('**** CardFinanceiro.atualizaStatus.error.data', data)
         }
       } else if (error.request) {
-        console.log('**** CardFinanceiro.atualizaPedido.error', error)
+        console.log('**** CardFinanceiro.atualizaStatus.error', error)
         // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
       } else {
       // toast(`Ocorreu um erro no processamento!`, { type: 'error' })

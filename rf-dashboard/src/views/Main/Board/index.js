@@ -14,22 +14,10 @@ import moment from 'moment'
 // import CountDown from '../CountDown'
 import formatDate from '../../../components/CountDown/format-date'
 
-import {
-  // loadMotoristas,
-  // loadCargas,
-  // loadTransportes,
-  loadEntregas
-} from '../../../services/api'
-
 import api from '../../../services/rf'
 import BoardContext from './context'
 import List from '../List'
 import { Container } from './styles'
-
-// const dataM = loadMotoristas()
-// const dataC = loadCargas()
-// const dataT = loadTransportes()
-const dataE = loadEntregas()
 
 const prot = window.location.protocol === 'http' ? 'ws' : 'wss'
 const ws = Ws(`${prot}://www.retornofacil.com.br:3333`)
@@ -67,7 +55,14 @@ const Board = ({filtro}) => {
     cards: []
   })
 
-  const [entrega, setEntrega] = useState(dataE)
+  const [entrega, setEntrega] = useState({ 
+    title: "ENTREGAS", 
+    icon: "FaBox",
+    tipo: "E",
+    creatable: false,
+    done: true,
+    cards: []
+  })
   // Logistica <-------------------------------
 
   // Fiscal ---------------------------------->
@@ -230,6 +225,18 @@ const Board = ({filtro}) => {
       setTransporte(loadTransportes)
     })
 
+    const channele = pusher.subscribe('statuse-channel')
+    channele.bind('results', res => {
+      const loadEntregas = {
+        title: "ENTREGAS", 
+        icon: "FaBox",
+        tipo: "E",
+        creatable: false,
+        cards: res.data
+      }
+      setEntrega(loadEntregas)
+    })
+
     return () => {
       ws.on('close', () => {
         // console.log('*** ws.close')
@@ -291,73 +298,9 @@ const Board = ({filtro}) => {
       history.push('/rf')
     }
     
-    console.log('**** Board.verificaStatus.filtro', filtro)
+    // console.log('**** Board.verificaStatus.filtro', filtro)
 
     try {
-      /*
-      if (
-        filtro.origemCidade !== undefined && filtro.origemCidade !== "" ||
-        filtro.origemUF !== undefined && filtro.origemUF !== "" ||
-        filtro.destinoCidade !== undefined && filtro.destinoCidade !== "" ||
-        filtro.destinoUF !== undefined && filtro.destinoUF !== ""
-      ) {
-        await api
-        .post('/buscaveiculos', {
-          placachassi: filtro.placa,
-        })
-        .then(response => {
-          const { data } = response
-          filtro.pedido = data[0].pedido_id
-
-          console.log('**** Board.verificaStatus.buscaveiculos.data', filtro.pedido, data)
-        })
-        .catch((error) => {
-          if (error.response) {
-            const { data } = error.response
-            try {
-              data.map(mensagem => {
-                toast(mensagem.message, { type: 'error' })
-              })
-            }
-            catch (e) {
-              console.log('**** Board.verificaStatus.buscaveiculos.error.data', data)
-            }
-          } else if (error.request) {
-            console.log('**** Board.verificaStatus.buscaveiculos.error', error)
-          } else {
-          }
-        })
-      }
-      */
-     
-      if (filtro.placa !== undefined && filtro.placa !== "") {
-        await api
-        .post('/buscaveiculos', {
-          placachassi: filtro.placa,
-        })
-        .then(response => {
-          const { data } = response
-          filtro.pedido = data[0].pedido_id
-
-          console.log('**** Board.verificaStatus.buscaveiculos.data', filtro.pedido, data)
-        })
-        .catch((error) => {
-          if (error.response) {
-            const { data } = error.response
-            try {
-              data.map(mensagem => {
-                toast(mensagem.message, { type: 'error' })
-              })
-            }
-            catch (e) {
-              console.log('**** Board.verificaStatus.buscaveiculos.error.data', data)
-            }
-          } else if (error.request) {
-            console.log('**** Board.verificaStatus.buscaveiculos.error', error)
-          } else {
-          }
-        })
-      }
 
       await api.post('/buscausuarios', {
         cpfcnpj: filtro.motoristaCPF === undefined ? "" : filtro.motoristaCPF,
@@ -451,6 +394,41 @@ const Board = ({filtro}) => {
           }, delay)
           */
         })
+
+      // console.log('**** Entregas')
+      await api.post('/buscapedidos', {
+        status: "O",
+        tipo: "E",
+        estado: "",
+        cliente_id: "",
+        motorista_id: "", 
+        id: filtro.pedido === undefined ? "" : filtro.pedido,
+      })
+        .then(res => {
+          const loadEntregas = {
+            title: "ENTREGAS", 
+            icon: "FaBox",
+            tipo: "E",
+            creatable: false,
+            done: true,
+            cards: res.data
+          }
+
+          // console.log('**** Board.verificaStatus.Entregas.data', loadEntregas)
+          setEntrega(loadEntregas)
+        })
+        .catch(error => {
+          console.log('**** Board.verificaStatus.Entregas.error')
+          /*
+          let timerId = setTimeout(function request() {
+            if (request) {
+              delay *= 2
+            }
+            timerId = setTimeout(request, delay)
+          }, delay)
+          */
+        })
+
     } catch (error) {
       const { response } = error
       if (response !== undefined) {

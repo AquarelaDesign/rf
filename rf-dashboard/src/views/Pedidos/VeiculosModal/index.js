@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
 
@@ -45,7 +45,13 @@ import moment from "moment"
 
 import estadoVeiculo from '../../../services/json/estadoVeiculo.json'
 
-const fipeapi = 'https://fipeapi.appspot.com/api/1/'
+const fipeapi = 'https://fipeapi.appspot.com/api/1'
+
+/*
+"insert into `veiculos` 
+(`ano`, `created_at`, `estado`, `fipe`, `modelo`, `pedido_id`, `placachassi`, `updated_at`, `valor`) values 
+('2005', '2020-11-09 21:49:16', 'Funcionando', NULL, 'meu carro velho', 29, 'vbf', '2020-11-09 21:49:16', '5.000,') - WARN_DATA_TRUNCATED: Data truncated for column 'valor' at row 1"
+*/
 
 const CssTextField = withStyles({
   root: {
@@ -157,7 +163,6 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
   const [marcaFipe, setMarcaFipe] = useState(null)
   const [modeloFipe, setModeloFipe] = useState(null)
   const [anoFipe, setAnoFipe] = useState(null)
-
   
   let submit
 
@@ -199,7 +204,6 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
     }
 
     // console.log('**** VeiculosModal', veiculoID, tipoCad)
-
     if (veiculoID && veiculoID > 0 && tipoCad === 'E') {
       buscaVeiculo()
     } else if (tipoCad === 'N') {
@@ -257,6 +261,8 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
 
     setTipoFipe(dados)
     
+    // console.log('**** VeiculosModal.buscaMarcas.dados', `${fipeapi}/${dados}/marcas.json`)
+
     await Axios
       .get(`${fipeapi}/${dados}/marcas.json`)
       .then(response => {
@@ -367,7 +373,7 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
     setModeloFipe(dados)
 
     await Axios
-      .get(`${fipeapi}${tipoFipe}/veiculo/${marcaFipe}/${dados}.json`)
+      .get(`${fipeapi}/${tipoFipe}/veiculo/${marcaFipe}/${dados}.json`)
       .then(response => {
         const { data } = response
         // console.log('**** VeiculosModal.buscaAnos.data', data)
@@ -429,7 +435,7 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
       }
 
       await Axios
-        .get(`${fipeapi}${tipoFipe}/veiculo/${marcaFipe}/${modeloFipe}/${item.value}.json`)
+        .get(`${fipeapi}/${tipoFipe}/veiculo/${marcaFipe}/${modeloFipe}/${item.value}.json`)
         .then(response => {
           const { data } = response
 
@@ -494,18 +500,27 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
             val = val.trim()
             val = val.replace('-','')
             val = val.toLocaleUpperCase()
-        newValues[key] = value
+        newValues[key] = val
       } else {
-        newValues[key] = value
+        if (value !== null) {
+          let val = value.toString()
+          newValues[key] = val.toLocaleUpperCase()
+        } else {
+          newValues[key] = value
+        }
       }
     }
 
+    if (values['valor'] !== null) {
+      let val = values['valor'].toString()
+      if (val.indexOf(",") !== -1) {
+        val = values['valor'].replace('.', '')
+        val = val.replace(',', '.')
+        newValues['valor'] = val
+      }
+    } 
 
-    // let val = values['valor'].replace('.', '')
-    //     val = val.replace(',', '.')
-    // newValues['valor'] = val
-
-    //console.log('**** VeiculosModal.onSubmit-newValues', newValues)
+    console.log('**** VeiculosModal.onSubmit-newValues', newValues)
 
     let apiParams = {}
 
@@ -576,6 +591,8 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
 
     let val = value
     val = val.toString().replace('.', ',')
+
+    // console.log('**** VeiculosModal.formatCurrency', val)
 
     return (
       <MaskedInput
@@ -852,8 +869,7 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
                                     </InputAdornment>
                                   ),
                                 }}
-
-/>
+                              />
                             </Col>
                             <Col xs={6}>
                               <Field
@@ -867,10 +883,10 @@ const VeiculosModal = ({ isShowVeiculos, hide, pedidoID, veiculoID, tipoCad, dis
                                 size="small"
                                 margin="dense"
                                 // onChange={e => window.setFormValue('valor', e.target.value )}
-                                InputProps={{
-                                  inputComponent: formatCurrency,
-                                }}
-                                />
+                                // InputProps={{
+                                //   inputComponent: formatCurrency,
+                                // }}
+                              />
                             </Col>
                           </Row>
                         </Grid>

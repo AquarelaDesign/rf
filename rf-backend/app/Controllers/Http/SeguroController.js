@@ -28,6 +28,42 @@ class SeguroController {
   }
 
   /**
+   * Show a list of rota with pedido.
+   * POST buscaseguro
+   */
+  async busca({auth, request, response}) {
+    // const usuarios = await Usuario.findOrFail(auth.user.id)
+    // if (usuarios.tipo !== 'O') {
+    //   return response.status(401).send({ 
+    //     error: `Não autorizado [${usuarios.tipo}]`
+    //   })
+    // }
+
+    const condicoes = request.only([
+      "uf_origem",
+    ])
+
+    try {    
+      const query = Seguro.query()
+
+      if (condicoes.uf_origem !== null && condicoes.uf_origem !== undefined) {
+        query.where('uf', condicoes.uf_origem)
+      }
+
+      const seguro = await query.fetch()
+      return seguro
+
+    }
+    catch(e) {
+      return response.status(404).send({
+        status: 404,
+        message: `Seguro não encontrado - ${e}`
+      })
+    }
+
+  }
+
+  /**
    * Create/save a new seguro.
    * POST seguros
    */

@@ -40,6 +40,7 @@ const List = ({ data }) => {
           data={card}
         />
       case 'T':
+      case 'E':
         return <CardTransporte
           key={card.id}
           index={id}

@@ -28,6 +28,47 @@ class ValoresAdicionaiController {
   }
 
   /**
+   * Show a list of rota with pedido.
+   * POST buscavaloresadicionais
+   */
+  async busca({auth, request, response}) {
+    // const usuarios = await Usuario.findOrFail(auth.user.id)
+    // if (usuarios.tipo !== 'O') {
+    //   return response.status(401).send({ 
+    //     error: `Não autorizado [${usuarios.tipo}]`
+    //   })
+    // }
+
+    const condicoes = request.only([
+      "tipo_de_veiculo_id",
+      "imposto",
+    ])
+
+    try {    
+      const query = ValoresAdicionais.query()
+
+      if (condicoes.tipo_de_veiculo_id !== null && condicoes.tipo_de_veiculo_id !== undefined) {
+        query.where('tipo_de_veiculo_id', condicoes.tipo_de_veiculo_id)
+      }
+
+      if (condicoes.imposto !== null && condicoes.imposto !== undefined) {
+        query.where('imposto', condicoes.imposto)
+      }
+
+      const valoresadicionais = await query.fetch()
+      return valoresadicionais
+
+    }
+    catch(e) {
+      return response.status(404).send({
+        status: 404,
+        message: `Valores Adicionais não encontrados - ${e}`
+      })
+    }
+
+  }
+
+  /**
    * Create/save a new valoresadicionai.
    * POST valoresadicionais
    */

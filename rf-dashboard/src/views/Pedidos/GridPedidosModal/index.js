@@ -448,8 +448,12 @@ const GridPedidosModal = ({ isShowing, hide }) => {
         setPedidoId(data.id)
 
         if (response.status === 200) {
-          toast(`Pedido [${data.id}] gerado com sucesso!`, { type: 'success' })
-          togglePedido()
+          const abrePedido = async () => {
+            await sleep(500)
+            toast(`Pedido [${data.id}] gerado com sucesso!`, { type: 'success' })
+            togglePedido()
+          }
+          abrePedido()
         } else if (response.status === 400) {
           response.data.map(mensagem => {
             toast(mensagem.message, { type: 'error' })

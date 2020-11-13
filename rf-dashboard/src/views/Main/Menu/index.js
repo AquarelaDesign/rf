@@ -19,6 +19,15 @@ import api from '../../../services/rf'
 import { Container, BotaoExit, RLeft, RRight, Input, Label, Titulo } from './styles'
 import { FaIcon } from '../../../components/Icone'
 
+import GridPlaca from '../GridPlaca'
+import useModal from '../GridPlaca/useModal'
+
+import GridOriDest from '../GridOriDest'
+import useModalOD from '../GridOriDest/useModal'
+
+import TabelaDeRotas from '../../Parametros/TabelaDeRotas'
+import useModalTabelaDeRotas from '../../Parametros/TabelaDeRotas/useModal'
+
 const StyledToggleButtonGroup = withStyles((theme) => ({
   grouped: {
     margin: theme.spacing(0.5),
@@ -73,6 +82,14 @@ export default function Menu({backMenu, backFilter}) {
   const [motoristaCPF, setMotoristaCPF] = useState('')
   const [motoristaNome, setMotoristaNome] = useState('')
   const [filtro, setFiltro] = useState(false)
+  
+  const [veiculos, setVeiculos] = useState([])
+  const [rotas, setRotas] = useState([])
+  const [tipo, setTipo] = useState([])
+
+  const { isShowPlaca, togglePlaca } = useModal()
+  const { isShowOriDest, toggleOriDest } = useModalOD()
+  const { isShowTabelaDeRotas, toggleTabelaDeRotas } = useModalTabelaDeRotas()
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -150,6 +167,13 @@ export default function Menu({backMenu, backFilter}) {
   }
 
   const mudaPainel = async (e, opcao) => {
+    switch (opcao) {
+      case 'PAR': {
+        toggleTabelaDeRotas()
+        return
+      }
+    }
+
     setMenu(opcao)
     backMenu(opcao)
   }
@@ -189,6 +213,24 @@ export default function Menu({backMenu, backFilter}) {
       })
   
     } else {
+      if (placa !== "") {
+        setState({ ...state, right: false })
+        filtroPlaca(placa)
+        return
+      }
+
+      if (origemCidade !== "" || origemUF !== "") {
+        setState({ ...state, right: false })
+        filtroRotas('O', origemCidade, origemUF)
+        return
+      }
+
+      if (destinoCidade !== "" || destinoUF !== "") {
+        setState({ ...state, right: false })
+        filtroRotas('D', destinoCidade, destinoUF)
+        return
+      }
+
       backFilter({
         pedido,
         placa,
@@ -200,6 +242,84 @@ export default function Menu({backMenu, backFilter}) {
         motoristaNome,
       })
     }
+  }
+
+  const filtroPlaca = async (placa) => {
+    if (placa !== undefined && placa !== "") {
+      await api
+      .post('/buscaveiculos', {
+        placachassi: placa,
+      })
+      .then(response => {
+        const { data } = response
+        console.log('**** Menu.filtroPlaca.data', data)
+        setVeiculos(data)
+        togglePlaca()
+      })
+      .catch((error) => {
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('**** Menu.filtroPlaca.error.data', data)
+          }
+        } else if (error.request) {
+          console.log('**** Menu.filtroPlaca.error', error)
+        } else {
+        }
+      })
+    }
+  }
+
+  const filtroRotas = async (tipo, cidade, uf) => {
+    await api
+    .post('/buscarotas', {
+      cidade: cidade,
+      uf: uf,
+    })
+    .then(response => {
+      const { data } = response
+      
+      let rotasO = []
+      let rotasD = []
+      data.forEach(r => {
+        if (r.rota_relacionada % 2 === 0) {
+          rotasO.push(r)
+        } else {
+          rotasD.push(r)
+        }
+      })
+
+      if (tipo === 'O') {
+        setTipo('Origem')
+        setRotas(rotasO)
+      } else {
+        setTipo('Destino')
+        setRotas(rotasD)
+      }
+      
+      toggleOriDest()
+    })
+    .catch((error) => {
+      if (error.response) {
+        const { data } = error.response
+        try {
+          data.map(mensagem => {
+            toast(mensagem.message, { type: 'error' })
+          })
+        }
+        catch (e) {
+          console.log('**** Menu.filtroPlaca.error.data', data)
+        }
+      } else if (error.request) {
+        console.log('**** Menu.filtroPlaca.error', error)
+      } else {
+      }
+    })
   }
 
   const toggleDrawer = (anchor, open) => (event) => {
@@ -326,6 +446,7 @@ export default function Menu({backMenu, backFilter}) {
           <ToggleButton value="FIS">FISCAL</ToggleButton>
           <ToggleButton value="FIN">FINANCEIRO</ToggleButton>
           <ToggleButton value="HIS">HISTÓRICO</ToggleButton>
+          <ToggleButton value="PAR">PARÂMETROS</ToggleButton>
         </StyledToggleButtonGroup>
       </RLeft>
       <RRight>
@@ -345,6 +466,22 @@ export default function Menu({backMenu, backFilter}) {
           </Drawer>
         </React.Fragment>
       </div>
+      <GridPlaca
+        isShowPlaca={isShowPlaca}
+        hide={togglePlaca}
+        placa={placa}
+        veiculos={veiculos}
+      />
+      <GridOriDest
+        isShowRota={isShowOriDest}
+        hide={toggleOriDest}
+        rotas={rotas}
+        tipo={tipo}
+      />
+      <TabelaDeRotas
+        isShowTabelaDeRotas={isShowTabelaDeRotas}
+        hide={toggleTabelaDeRotas}
+      />
     </Container>
   )
 }

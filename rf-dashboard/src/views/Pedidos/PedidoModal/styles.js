@@ -114,13 +114,13 @@ export const Grid = styled.div`
 `;
 
 export const RLeft = styled.div`
-  width: 88%;
+  width: 86%;
   float: left;
 `;
 
 export const RRight = styled.div`
   display: flex;
-  width: 12%;
+  width: 14%;
   float: right;
   align-items: flex-end;
   align-self: flex-end;

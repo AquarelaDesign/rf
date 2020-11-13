@@ -561,7 +561,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
       values.valor_pago = val
     }
 
-    // console.log('**** RotasModal.onSubmit-values-1', values)
+    console.log('**** RotasModal.onSubmit-values-1', values)
     let apiParams = {}
     if (rotaID !== null && tipoCad === 'E') {
       apiParams = {
@@ -585,7 +585,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
       }
     }
     
-    // console.log('**** RotasModal.onSubmit-apiParams', apiParams)
+    console.log('**** RotasModal.onSubmit-apiParams', apiParams)
     const cidade = values.cidade
 
     await api(apiParams, {

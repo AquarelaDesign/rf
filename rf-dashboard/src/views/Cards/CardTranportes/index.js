@@ -218,7 +218,7 @@ export default function CardTransportes({ data, index }) {
         .then(response => {
           const { data } = response
 
-          console.log('**** CardTransportes.buscaCliente', data)
+          // console.log('**** CardTransportes.buscaCliente', data)
           setCliente(data)
         }).catch((error) => {
           if (error.response) {
@@ -439,6 +439,10 @@ export default function CardTransportes({ data, index }) {
     togglePedido()
   }
 
+  const encerrarEntrega = (e) => {
+
+  }
+
   const aprovaMotorista = (e) => {
     // alert('Motorista Aprovado !!!')
     /*
@@ -588,10 +592,77 @@ export default function CardTransportes({ data, index }) {
           <Texto bgcolor='#E7E6E6' size={12} mb={5}>Veículos: {data.veiculos.length} unidades</Texto>
         </div>
         
+        {data.tipo === 'T' ? 
+          <div style={{ 
+            padding: 5, 
+            fontSize: '14px', 
+            backgroundColor: `${ statusMotorista === 'P' ? '#ef898d' : statusMotorista === 'A' ? '#F9D36B' : statusMotorista === 'T' ? '#90D284' : '#0078D7' }`,
+            width: '100%',
+            height: '45px',
+            borderRadius: 5,
+            fontWeight: 'bold', 
+            }}
+          >
+            Status: {
+              {
+                ' ': 'DISPONÍVEL',
+                'P': 'AGUARDANDO APROVAÇÃO',
+                'A': 'AGUARDANDO COLETA',
+                'T': 'EM TRANSPORTE',
+                'B': 'BLOQUEADO',
+                'R': 'RECUSADO',
+                '7': 'SUSPENÇÃO 7 DIAS',
+              }[statusMotorista]
+            }
+
+            { statusMotorista === 'P' ? 
+              <>
+                <br />
+                <span style={{ 
+                  display: 'flex',
+                  float: 'left',
+                  left: 10,
+                  bottom: 10,
+                  fontSize: 20,
+                }}>
+                  <MdTimer size={20} style={{ marginTop: 1 }} />
+                  <div style={{ width: 6 }} ></div>
+                  {` ${tempo.m}:${tempo.s}`}
+                </span>
+              </>
+            : <></>}
+
+            <div style={{
+              display: 'flex',
+              float: 'right',
+              right: 10,
+              bottom: 10,
+            }}>
+              <button onClick={aprovaMotorista}
+                style={{ backgroundColor: 'transparent' }}
+              >
+                <Tooltip title={`${statusMotorista === 'P' ? 'Aprovar' : 'Cancelar'} transporte`}>
+                  <span style={{
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    marginTop: '3px',
+                  }}>
+                    { statusMotorista === 'P' ? 
+                      <FaIcon icon='Aprovado' size={20} />
+                    : 
+                      <FaIcon icon='Cancelado' size={20} />
+                    }
+                  </span>
+                </Tooltip>
+              </button>
+            </div>
+
+          </div>
+        : 
         <div style={{ 
           padding: 5, 
           fontSize: '14px', 
-          backgroundColor: `${ statusMotorista === 'P' ? '#ef898d' : statusMotorista === 'A' ? '#F9D36B' : statusMotorista === 'T' ? '#90D284' : '#0078D7' }`,
+          backgroundColor: '#0078D7',
           width: '100%',
           height: '45px',
           borderRadius: 5,
@@ -600,32 +671,16 @@ export default function CardTransportes({ data, index }) {
         >
           Status: {
             {
-              ' ': 'DISPONÍVEL',
-              'P': 'AGUARDANDO APROVAÇÃO',
-              'A': 'AGUARDANDO COLETA',
+              ' ': 'EM MANUTENÇÃO',
+              'D': 'DISPONÍVEL',
+              'A': 'AGUARDANDO',
+              'C': 'EM COLETA',
               'T': 'EM TRANSPORTE',
-              'B': 'BLOQUEADO',
-              'R': 'RECUSADO',
-              '7': 'SUSPENÇÃO 7 DIAS',
-            }[statusMotorista]
+              'O': 'CONFERIR ENTREGA',
+              'E': 'ENTREGUE',
+              'X': 'CANCELADO',
+            }[data.status]
           }
-
-          { statusMotorista === 'P' ? 
-            <>
-              <br />
-              <span style={{ 
-                display: 'flex',
-                float: 'left',
-                left: 10,
-                bottom: 10,
-                fontSize: 20,
-              }}>
-                <MdTimer size={20} style={{ marginTop: 1 }} />
-                <div style={{ width: 6 }} ></div>
-                {` ${tempo.m}:${tempo.s}`}
-              </span>
-            </>
-          : <></>}
 
           <div style={{
             display: 'flex',
@@ -633,26 +688,23 @@ export default function CardTransportes({ data, index }) {
             right: 10,
             bottom: 10,
           }}>
-            <button onClick={aprovaMotorista}
+            <button onClick={encerrarEntrega}
               style={{ backgroundColor: 'transparent' }}
             >
-              <Tooltip title={`${statusMotorista === 'P' ? 'Aprovar' : 'Cancelar'} transporte`}>
+              <Tooltip title='Encerrar'>
                 <span style={{
                   alignItems: 'center',
                   cursor: 'pointer',
                   marginTop: '3px',
                 }}>
-                  { statusMotorista === 'P' ? 
-                    <FaIcon icon='Aprovado' size={20} />
-                  : 
-                    <FaIcon icon='Cancelado' size={20} />
-                  }
+                  <FaIcon icon='Aprovado' size={20} />
                 </span>
               </Tooltip>
             </button>
           </div>
 
         </div>
+      }
       </Container>
       <Email 
         isShowEmail={isShowEmail}
