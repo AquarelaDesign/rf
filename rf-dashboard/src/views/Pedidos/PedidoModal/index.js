@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
 
@@ -82,32 +82,6 @@ import moment from 'moment'
 import Map from '../../../components/Map'
 
 import cadStatus from '../../../services/json/statusPedido.json'
-
-function TabPanel(props) {
-  const { children, value, index, ...other } = props
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <BoxTitulo mt={5} bgcolor='#2699F8'>
-          {children}
-        </BoxTitulo>
-      )}
-    </div>
-  )
-}
-
-TabPanel.propTypes = {
-  children: PropTypes.node,
-  index: PropTypes.any.isRequired,
-  value: PropTypes.any.isRequired,
-}
 
 function a11yProps(index) {
   return {
@@ -355,6 +329,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
   const [seguros, setSeguros] = useState([])
   const [tabelaDeRotas, setTabelaDeRotas] = useState([])
 
+  const [, updateState] = useState()
+
   const { isShowConfirma, toggleConfirma } = useModalConfirma()
   const { isShowing, toggleGridUsuarios } = useModalUsuarios()
   const { isShowHistorico, toggleHistorico } = useModalHistorico()
@@ -371,6 +347,34 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
+  const forceUpdate = useCallback((dados) => setInitialValuesPed(dados), [])
+
+  const TabPanel = useCallback((props)  => {
+    const { children, value, index, ...other } = props
+  
+    return (
+      <div
+        role="tabpanel"
+        hidden={value !== index}
+        id={`simple-tabpanel-${index}`}
+        aria-labelledby={`simple-tab-${index}`}
+        {...other}
+      >
+        {value === index && (
+          <BoxTitulo mt={5} bgcolor='#2699F8'>
+            {children}
+          </BoxTitulo>
+        )}
+      </div>
+    )
+  }, [])
+  
+  TabPanel.propTypes = {
+    children: PropTypes.node,
+    index: PropTypes.any.isRequired,
+    value: PropTypes.any.isRequired,
+  }
+
   // useEffect(() => {
   //   carregaDados()
   // }, [pedidoID, tipoCad, atualiza]) // , disableEdit, isShowPedido
@@ -381,11 +385,6 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
       setValue(0)
 
       const inicio = async () => {
-        if (tipoCad === 'N') {
-          // window.setFormValue('limitecoleta', moment().format('YYYY-MM-DD'))
-          // window.setFormValue('limiteentrega', moment().add(15, 'days').format('YYYY-MM-DD'))
-        }
-        
         await carregaDados()
         await buscaPedido(pedidoID)
 
@@ -417,6 +416,17 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
     await buscaTabRotas() // <-- Adicionar busca direta no banco
     await buscaUsuarios()
     await novoPedido()
+    await sleep(100)
+    setValue(1)
+    // await sleep(300)
+    // setValue(2)
+    // await sleep(100)
+    // setValue(3)
+    // await sleep(100)
+    // setValue(4)
+    await sleep(500)
+    setValue(0)
+
 
     setOperadorID(localStorage.getItem('@rf/userID'))
   }
@@ -431,6 +441,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
           data[0].limitecoleta = data[0].limitecoleta ? data[0].limitecoleta.substring(0, 10) : undefined
           data[0].limiteentrega = data[0].limiteentrega ? data[0].limiteentrega.substring(0, 10) : undefined
 
+          forceUpdate(data[0])
           setInitialValuesPed(data[0])
           console.log('**** PedidosModal.buscaPedido.setInitialValuesPed', data[0])
 
@@ -445,6 +456,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
           
           updateMap(data[0].rotas, data[0].localcoleta, data[0].localentrega)
           buscaHistorico(data[0].id)
+
+          forceUpdate(data[0])
 
           if (data[0].cliente_id !== null) {
             setClienteID(data[0].cliente_id)

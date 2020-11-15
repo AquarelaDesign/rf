@@ -48,6 +48,7 @@ const CssTextField = withStyles({
 
 export default forwardRef((props, ref) => {
   const [selectedDate, setSelectedDate] = useState(null);
+  const [dataID, setDataID] = useState(props.input.value ? props.input.value.substring(0, 10) : undefined)
 
   useEffect(() => {
     if (selectedDate === null || selectedDate === undefined) {
@@ -65,6 +66,7 @@ export default forwardRef((props, ref) => {
         console.log('**** DateEditor',selectedDate, today, format(today, 'dd/MM/yyyy'))
         setSelectedDate(format(today, 'dd/MM/yyyy'))
       }
+      setDataID(`dataTxt_${props.input.name}`)
     }
   },[selectedDate, props])
 
@@ -106,7 +108,7 @@ export default forwardRef((props, ref) => {
       <KeyboardDatePicker
         style={{ width: '100%', margin: 0, }}
         margin="none"
-        id="date-picker-dialog"
+        id={dataID}
         format="dd/MM/yyyy"
         value={selectedDate}
         inputValue={selectedDate}
@@ -124,7 +126,7 @@ export default forwardRef((props, ref) => {
         inputProps={{
           disabled: props.disabled,
         }}
-        forwardedRef={ref}
+        ref={ref}
       />
     </MuiPickersUtilsProvider>
   )
