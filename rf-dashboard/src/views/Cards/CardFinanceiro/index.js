@@ -51,7 +51,7 @@ export default function CardFinanceiro({ data, index }) {
   // const [statusPagamento, setStatusPagamento] = useState('')
   // const [statusPedido, setStatusPedido] = useState(false)
   // const [confirmado, setConfirmado] = useState(false)
-  const [mostra, setMostra] = useState(false)
+  const [mostra, setMostra] = useState(null)
   const [mostraFecha, setMostraFecha] = useState(false)
   // const [rotas, setRotas] = useState([])
   const [tempo, setTempo] = useState({
@@ -312,8 +312,12 @@ export default function CardFinanceiro({ data, index }) {
   }
 
   const abrePedido = (e) => {
-    setMostra(!mostra)
+    setMostra(true)
     togglePedido()
+  }
+
+  const callBackPedido = (e) => {
+    setMostra(null)
   }
 
   return (
@@ -503,14 +507,18 @@ export default function CardFinanceiro({ data, index }) {
         isShowEmail={isShowEmail}
         hide={toggleEmail}
       />
-      <PedidoModal
-        isShowPedido={isShowPedido}
-        hide={togglePedido}
-        tipoCad={'V'}
-        pedidoID={data.id}
-        disableEdit={true}
-        mostra={mostra}
-      />
+
+      {mostra && 
+        <PedidoModal
+          isShowPedido={isShowPedido}
+          hide={togglePedido}
+          tipoCad={'V'}
+          pedidoID={data.id}
+          disableEdit={true}
+          mostra={mostra}
+          callBack={callBackPedido}
+        />
+      }
     </>
   )
 }

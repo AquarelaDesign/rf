@@ -78,6 +78,10 @@ const GridPlaca = ({ isShowPlaca, hide, placa, veiculos }) => {
     hide()
   }
 
+  const callBackPedido = (e) => {
+    setPedidoId(null)
+  }
+
   if (isShowPlaca) {
     return ReactDOM.createPortal(
       <React.Fragment>
@@ -131,14 +135,16 @@ const GridPlaca = ({ isShowPlaca, hide, placa, veiculos }) => {
                 </div>
               </BoxTitulo>
 
-              <PedidoModal
-                isShowPedido={isShowPedido}
-                hide={togglePedido}
-                tipoCad='D'
-                pedidoID={pedidoId}
-                disableEdit={true}
-              />
-
+              {pedidoId && 
+                <PedidoModal
+                  isShowPedido={isShowPedido}
+                  hide={togglePedido}
+                  tipoCad='D'
+                  pedidoID={pedidoId}
+                  disableEdit={true}
+                  callBack={callBackPedido}
+                />
+              }
             </Container>
           </div>
         </div>

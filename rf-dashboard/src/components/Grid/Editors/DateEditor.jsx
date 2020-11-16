@@ -53,21 +53,24 @@ export default forwardRef((props, ref) => {
   useEffect(() => {
     if (selectedDate === null || selectedDate === undefined) {
 
-      console.log('**** DateEditor.props.input.value', props)
-
+      // console.log('**** DateEditor.props.input.value', props.input.value)
+      
       if (props.input.value !== null && props.input.value !== undefined && props.input.value !== "") {
         let year = props.input.value.substring(0, 4)
         let month = props.input.value.substring(5, 7)
         let day = props.input.value.substring(8)
-        let selectedDate = new Date(year, month - 1, day);
+        let selectedDate = new Date(year, month - 1, day)
         setSelectedDate(format(selectedDate, 'dd/MM/yyyy'))
-      } else {
+      }
+      /*
+      else {
         let today = new Date();
         console.log('**** DateEditor',selectedDate, today, format(today, 'dd/MM/yyyy'))
         setSelectedDate(format(today, 'dd/MM/yyyy'))
       }
-      setDataID(`dataTxt_${props.input.name}`)
+      */
     }
+    setDataID(`dataTxt_${props.input.name}`)
   },[selectedDate, props])
 
   function handleDateChange(d) {
@@ -75,6 +78,7 @@ export default forwardRef((props, ref) => {
     //   d.setHours(0, 0, 0, 0);
     // }
     // console.log('**** DateEditor.handleDateChange.d', format(d, 'dd/MM/yyyy'))
+    props.input.onChange(format(d, 'yyyy-MM-dd'))
     setSelectedDate(format(d, 'dd/MM/yyyy'));
   }
 
@@ -117,7 +121,7 @@ export default forwardRef((props, ref) => {
         inputVariant="outlined"
         label={props.label}
         size='small'
-        // disableToolbar
+        disableToolbar
         invalidDateMessage="Formato inválido."
         TextFieldComponent={CssTextField}
         InputLabelProps={{
@@ -126,7 +130,7 @@ export default forwardRef((props, ref) => {
         inputProps={{
           disabled: props.disabled,
         }}
-        ref={ref}
+        // ref={ref}
       />
     </MuiPickersUtilsProvider>
   )

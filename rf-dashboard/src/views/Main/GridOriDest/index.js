@@ -73,6 +73,10 @@ const GridOriDest = ({ isShowRota, hide, rotas, tipo=''}) => {
     hide()
   }
 
+  const callBackPedido = (e) => {
+    setPedidoId(null)
+  }
+
   if (isShowRota) {
     return ReactDOM.createPortal(
       <React.Fragment>
@@ -126,14 +130,16 @@ const GridOriDest = ({ isShowRota, hide, rotas, tipo=''}) => {
                 </div>
               </BoxTitulo>
 
-              <PedidoModal
-                isShowPedido={isShowPedido}
-                hide={togglePedido}
-                tipoCad='D'
-                pedidoID={pedidoId}
-                disableEdit={true}
-              />
-
+              {pedidoId && 
+                <PedidoModal
+                  isShowPedido={isShowPedido}
+                  hide={togglePedido}
+                  tipoCad='D'
+                  pedidoID={pedidoId}
+                  disableEdit={true}
+                  callBack={callBackPedido}
+                />
+              }
             </Container>
           </div>
         </div>

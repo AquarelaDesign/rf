@@ -22,7 +22,7 @@ import { Container } from './styles'
 
 const List = ({ data }) => {
   const { isShowing, toggleGridUsuarios } = useModal()
-  const { isShowPedido, toggleGridPedidos } = useModalPedidos()
+  const { isShowGridPedido, toggleGridPedidos } = useModalPedidos()
 
   const Card = useCallback((card, id) => {
     // console.log('**** List.Card.tipo', card.tipo)
@@ -121,7 +121,7 @@ const List = ({ data }) => {
       />
 
       <GridPedidosModal
-        isShowing={isShowPedido}
+        isShowing={isShowGridPedido}
         hide={toggleGridPedidos}
       />
     </>

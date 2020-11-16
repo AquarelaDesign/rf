@@ -47,7 +47,7 @@ import { RiMoneyDollarBoxLine } from 'react-icons/ri'
 
 import MaskedInput from 'react-text-mask'
 import createNumberMask from 'text-mask-addons/dist/createNumberMask'
-import CurrencyTextField from '@unicef/material-ui-currency-textfield'
+// import CurrencyTextField from '@unicef/material-ui-currency-textfield'
 import { formatToPhone } from 'brazilian-values'
 
 
@@ -257,7 +257,15 @@ const numberMask = createNumberMask({
   requireDecimal: true, 
 })
 
-const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostra = false }) => {
+const PedidoModal = ({ 
+  isShowPedido, 
+  hide, 
+  tipoCad, 
+  disableEdit, 
+  pedidoID, 
+  mostra = false,
+  callBack
+}) => {
   const classes = useStyles()
 
   const [initialValuesPed, setInitialValuesPed] = useState({})
@@ -375,9 +383,9 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
     value: PropTypes.any.isRequired,
   }
 
-  // useEffect(() => {
-  //   carregaDados()
-  // }, [pedidoID, tipoCad, atualiza]) // , disableEdit, isShowPedido
+  useEffect(() => {
+    carregaDados()
+  }, [pedidoID, tipoCad, atualiza]) // , disableEdit, isShowPedido
 
   useEffect(() => {
     try {
@@ -385,7 +393,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
       setValue(0)
 
       const inicio = async () => {
-        await carregaDados()
+        // await novoPedido()
+        // await carregaDados()
         await buscaPedido(pedidoID)
 
       }
@@ -405,8 +414,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
     }
 
     return () => {
-      if (window.setFormValue) {
-      }
+      novoPedido()
     }
   }, [pedidoID, tipoCad, atualiza]) // , disableEdit, isShowPedido
 
@@ -415,16 +423,16 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
     await buscaSeguros() // <-- Adicionar busca direta no banco
     await buscaTabRotas() // <-- Adicionar busca direta no banco
     await buscaUsuarios()
-    await novoPedido()
-    await sleep(100)
-    setValue(1)
+    // await novoPedido()
+    // await sleep(100)
+    // setValue(1)
     // await sleep(300)
     // setValue(2)
     // await sleep(100)
     // setValue(3)
     // await sleep(100)
     // setValue(4)
-    await sleep(500)
+    // await sleep(500)
     setValue(0)
 
 
@@ -446,8 +454,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
           console.log('**** PedidosModal.buscaPedido.setInitialValuesPed', data[0])
 
           // if (window.setFormValue) {
-          //   window.setFormValue('limitecoleta', moment(data[0].limitecoleta).format('YYYY-MM-DD'))
-          //   window.setFormValue('limiteentrega', moment(data[0].limiteentrega).format('YYYY-MM-DD'))
+            window.setFormValue('limitecoleta', data[0].limitecoleta)
+            window.setFormValue('limiteentrega', data[0].limiteentrega)
           // }
           
           setVeiculos(data[0].veiculos)
@@ -1899,8 +1907,8 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
         } 
 
         let val = valor_total_pedido.toFixed(2)
-        val = val.replace(',', '.')
-        val = val.replace('.', ',')
+        // val = val.replace(',', '.')
+        // val = val.replace('.', ',')
         window.setFormValue('valor', val)
 
         // console.table('**** PedidosModal.calculaValorPedido.percentual_desconto_pedido', percentual_desconto_pedido > 0, valor_total_desconto_pedido.toFixed(2))
@@ -2128,7 +2136,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
     }
   }
 
-  const callBack = (e) => {
+  const callBackConfirma = (e) => {
     if (e) {
       if (e === 'V') {
         excluiVeiculo()
@@ -2355,36 +2363,28 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
     newValues['valor_desconto'] = parseFloat(values['valor_desconto']).toFixed(2)
     // console.log('****', newValues)
 
-    
-    if (values['valor']) {
+    if (values['valor'] !== null) {
       let val = values['valor'].toString()
-          val = val.replace('.', '')
-          val = val.replace(',', '.')
-      newValues['valor'] = parseFloat(val).toFixed(2)
-      // newValues['valor'] = Math.round(val).toFixed(2)
+      if (val.indexOf(",") !== -1) {
+        val = values['valor'].replace('.', '')
+        val = val.replace(',', '.')
+        newValues['valor'] = parseFloat(val).toFixed(2)
+      }
     } else {
       newValues['valor'] = parseFloat(values['valor']).toFixed(2)
-      // newValues['valor'] = Math.round(values['valor']).toFixed(2)
     }
     
-    if (values['valor_desconto']) {
+    if (values['valor_desconto'] !== null) {
       let val = values['valor_desconto'].toString()
-          val = val.replace('.', '')
-          val = val.replace(',', '.')
-
-      newValues['valor_desconto'] = parseFloat(val).toFixed(2)
-      // newValues['valor_desconto'] = Math.round(val).toFixed(2)
-      console.log('**** PedidoModal.onSubmit-values.valor_desconto-0', values['valor_desconto'], val, newValues['valor_desconto'])
+      if (val.indexOf(",") !== -1) {
+        val = values['valor'].replace('.', '')
+        val = val.replace(',', '.')
+        newValues['valor_desconto'] = parseFloat(val).toFixed(2)
+      }
     } else {
       newValues['valor_desconto'] = parseFloat(values['valor_desconto']).toFixed(2)
-      // newValues['valor_desconto'] = Math.round(values['valor_desconto']).toFixed(2)
-      console.log('**** PedidoModal.onSubmit-values.valor_desconto-1', values['valor_desconto'])
     }
 
-    // if (newValues['valor_desconto'] === "NaN") {
-    //   newValues['valor_desconto'] = 0
-    // }
-    
     // if (values['percentual_desconto']) {
     //   let val = values['percentual_desconto'].replace('.', '')
     //   val = val.replace(',', '.')
@@ -2482,8 +2482,11 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
   const required = value => (value ? undefined : '* Obrigatório!')
 
   const fechaJanela = async () => {
-    await novoPedido()
-    setAtualiza(!atualiza)
+    if (callBack) {
+      await novoPedido()
+      setAtualiza(!atualiza)
+      callBack(true)
+    }
     hide()
   }
 
@@ -3393,7 +3396,7 @@ const PedidoModal = ({ isShowPedido, hide, tipoCad, disableEdit, pedidoID, mostr
               texto={confTexto}
               texto1={confTexto1}
               modulo={modulo}
-              callback={callBack}
+              callback={callBackConfirma}
             />
           </div>
         </div>

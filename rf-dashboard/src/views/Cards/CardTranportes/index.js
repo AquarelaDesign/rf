@@ -50,7 +50,7 @@ export default function CardTransportes({ data, index }) {
   const [statusMotorista, setStatusMotorista] = useState('')
   const [statusPedido, setStatusPedido] = useState(false)
   const [confirmado, setConfirmado] = useState(false)
-  const [mostra, setMostra] = useState(false)
+  const [mostra, setMostra] = useState(null)
   // const [rotas, setRotas] = useState([])
   const [counter, setCounter] = useState(3 * 60) // <-- Tempo de espera para aceite
   const [tempo, setTempo] = useState({
@@ -435,8 +435,12 @@ export default function CardTransportes({ data, index }) {
   }
 
   const abrePedido = (e) => {
-    setMostra(!mostra)
+    setMostra(true)
     togglePedido()
+  }
+
+  const callBackPedido = (e) => {
+    setMostra(null)
   }
 
   const encerrarEntrega = (e) => {
@@ -710,14 +714,18 @@ export default function CardTransportes({ data, index }) {
         isShowEmail={isShowEmail}
         hide={toggleEmail}
       />
-      <PedidoModal
-        isShowPedido={isShowPedido}
-        hide={togglePedido}
-        tipoCad={'V'}
-        pedidoID={data.id}
-        disableEdit={true}
-        mostra={mostra}
-      />
+
+      {mostra && 
+        <PedidoModal
+          isShowPedido={isShowPedido}
+          hide={togglePedido}
+          tipoCad={'V'}
+          pedidoID={data.id}
+          disableEdit={true}
+          mostra={mostra}
+          callBack={callBackPedido}
+        />
+      }
     </>
   )
 }

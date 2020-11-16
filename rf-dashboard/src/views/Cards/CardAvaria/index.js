@@ -49,7 +49,7 @@ export default function CardAvaria({ data, index }) {
   const [localEntrega, setLocalEntrega] = useState([])
   const [rota, setRota] = useState('')
   const [statusAvaria, setStatusAvaria] = useState('')
-  const [mostra, setMostra] = useState(false)
+  const [mostra, setMostra] = useState(null)
 
   const [tempo, setTempo] = useState({
     "h": 0,
@@ -323,7 +323,7 @@ export default function CardAvaria({ data, index }) {
   }
 
   const abrePedido = (e) => {
-    setMostra(!mostra)
+    setMostra(true)
     togglePedido()
   }
 
@@ -355,6 +355,10 @@ export default function CardAvaria({ data, index }) {
     return <span>
             {`${legenda} ${val}`} 
            </span>
+  }
+
+  const callBackPedido = (e) => {
+    setMostra(null)
   }
 
   const [{ isDragging }, dragRef] = useDrag({
@@ -564,14 +568,18 @@ export default function CardAvaria({ data, index }) {
         isShowEmail={isShowEmail}
         hide={toggleEmail}
       />
-      <PedidoModal
-        isShowPedido={isShowPedido}
-        hide={togglePedido}
-        tipoCad={'V'}
-        pedidoID={data.id}
-        disableEdit={true}
-        mostra={mostra}
-      />
+
+      {mostra && 
+        <PedidoModal
+          isShowPedido={isShowPedido}
+          hide={togglePedido}
+          tipoCad={'V'}
+          pedidoID={data.id}
+          disableEdit={true}
+          mostra={mostra}
+          callBack={callBackPedido}
+        />
+      }
     </>
   )
 }

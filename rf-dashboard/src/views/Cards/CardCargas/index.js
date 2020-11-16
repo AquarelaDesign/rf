@@ -20,7 +20,7 @@ export default function CardCargas({ data, index }) {
   const ref = useRef()
   // const { removeM } = useContext(BoardContext)
   const [pedido, setPedido] = useState([])
-  const [motorista, setMotorista] = useState(null)
+  const [, setMotorista] = useState(null)
   const [veiculos, setVeiculos] = useState([])
   const [enderecoc, setEnderecoc] = useState('')
   const [contatoc, setContatoc] = useState('')
@@ -31,7 +31,7 @@ export default function CardCargas({ data, index }) {
   const [rotas, setRotas] = useState([])
   const [localColeta, setLocalColeta] = useState([])
   const [localEntrega, setLocalEntrega] = useState([])
-  const [mostra, setMostra] = useState(false)
+  const [mostra, setMostra] = useState(null)
 
   const { isShowPedido, togglePedido } = useModalPedido()
 
@@ -41,6 +41,10 @@ export default function CardCargas({ data, index }) {
 
   useEffect(() => {
     carrega()
+
+    return () => {
+
+    }
   }, [data, index])
 
   const carrega = async () => {
@@ -175,7 +179,16 @@ export default function CardCargas({ data, index }) {
   }
 
   function FormataData(value) {
-    const data = moment(value).format('DD/MM/YYYY')
+    let data = undefined
+    if (value !== undefined) {
+      let year = value.substring(0, 4)
+      let month = value.substring(5, 7)
+      let day = value.substring(8, 10)
+      let selDate = new Date(year, month - 1, day)
+      data = moment(selDate).format('DD/MM/YYYY')
+    } else {
+      data = moment(value).format('DD/MM/YYYY')
+    }
     return data
   }
 
@@ -424,8 +437,12 @@ export default function CardCargas({ data, index }) {
   }
 
   const abrePedido = (e) => {
-    setMostra(!mostra)
+    setMostra(true)
     togglePedido()
+  }
+
+  const callBackPedido = (e) => {
+    setMostra(null)
   }
 
   dragRef(dropRef(ref))
@@ -489,14 +506,17 @@ export default function CardCargas({ data, index }) {
         </Container>
       </div>
 
-      <PedidoModal
-        isShowPedido={isShowPedido}
-        hide={togglePedido}
-        tipoCad={'V'}
-        pedidoID={data.id}
-        disableEdit={true}
-        mostra={mostra}
-      />
+      {mostra && 
+        <PedidoModal
+          isShowPedido={isShowPedido}
+          hide={togglePedido}
+          tipoCad={'V'}
+          pedidoID={data.id}
+          disableEdit={true}
+          mostra={mostra}
+          callBack={callBackPedido}
+        />
+      }
     </>
   )
 }

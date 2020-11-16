@@ -1,14 +1,14 @@
 import { useState } from 'react'
 
 const useModal = () => {
-  const [isShowPedido, setIsShowPedido] = useState(false)
+  const [isShowGridPedido, setIsShowPedido] = useState(false)
 
   function toggleGridPedidos() {
-    setIsShowPedido(!isShowPedido)
+    setIsShowPedido(!isShowGridPedido)
   }
 
   return {
-    isShowPedido,
+    isShowGridPedido,
     toggleGridPedidos,
   }
 }

@@ -48,7 +48,7 @@ const GridPedidosModal = ({ isShowing, hide }) => {
   const [vgridApi, setVgridApi] = useState(gridApi)
   const [usuarios, setUsuarios] = useState([])
   const [tipoCad, setTipoCad] = useState('')
-  const [pedidoId, setPedidoId] = useState([])
+  const [pedidoId, setPedidoId] = useState(null)
   const { isShowPedido, togglePedido } = useModal()
 
   useEffect(() => {
@@ -486,6 +486,10 @@ const GridPedidosModal = ({ isShowing, hide }) => {
 
   }
 
+  const callBackPedido = (e) => {
+    setPedidoId(null)
+  }
+
   if (isShowing) {
     return ReactDOM.createPortal(
       <React.Fragment>
@@ -556,15 +560,25 @@ const GridPedidosModal = ({ isShowing, hide }) => {
               </BoxTitulo>
             </Container>
             {/* {console.log('**** GridPedidosModal.onButtonClick', tipo, pedidoId)} */}
-            <PedidoModal
+            {/* <PedidoModal
               isShowPedido={isShowPedido}
               hide={togglePedido}
               tipoCad={tipoCad !== 'E' && tipoCad !== 'N' ? 'D' : tipoCad}
               pedidoID={pedidoId}
               disableEdit={tipoCad !== 'E' && tipoCad !== 'N' ? true : false}
-            />
+            /> */}
           </div>
         </div>
+        {pedidoId !== null && 
+          <PedidoModal
+            isShowPedido={isShowPedido}
+            hide={togglePedido}
+            tipoCad={tipoCad !== 'E' && tipoCad !== 'N' ? 'D' : tipoCad}
+            pedidoID={pedidoId}
+            disableEdit={tipoCad !== 'E' && tipoCad !== 'N' ? true : false}
+            callBack={callBackPedido}
+          />
+        }
       </React.Fragment>
       , document.body)
   }
