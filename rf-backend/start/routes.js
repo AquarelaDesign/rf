@@ -109,4 +109,8 @@ Route.group(() => {
   Route.resource('avarias', 'AvariaController')
     .apiOnly()
 
+  Route.post("/buscanumerador", "NumeradorController.busca")
+  Route.resource('numerador', 'NumeradorController')
+    .apiOnly()
+
 }).middleware('auth')
