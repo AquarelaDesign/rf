@@ -419,6 +419,14 @@ const GridPedidosModal = ({ isShowing, hide }) => {
   }
 
   const novoPedido = async () => {
+    console.log('**** GridPedidoModal.novoPedido')
+    setTipoCad('N')
+    setPedidoId(0)
+    console.log('**** GridPedidoModal.novoPedido')
+    togglePedido()
+  }
+
+  const novoPedido_ant = async () => {
     const newValues = {
       cliente_id: null,
       limitecoleta: undefined,

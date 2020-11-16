@@ -268,6 +268,7 @@ const PedidoModal = ({
 }) => {
   const classes = useStyles()
 
+  const [pedido_id, setPedido_id] = useState(pedidoID)
   const [initialValuesPed, setInitialValuesPed] = useState({})
   const [value, setValue] = useState(0)
   const [tipoCadVei, setTipoCadVei] = useState('')
@@ -385,17 +386,17 @@ const PedidoModal = ({
 
   useEffect(() => {
     carregaDados()
-  }, [pedidoID, tipoCad, atualiza]) // , disableEdit, isShowPedido
+  }, [pedido_id, tipoCad, atualiza]) // , disableEdit, isShowPedido
 
   useEffect(() => {
     try {
-      // console.log('**** PedidosModal.useEffect.pedidoID', pedidoID)
+      // console.log('**** PedidosModal.useEffect.pedido_id', pedido_id)
       setValue(0)
 
       const inicio = async () => {
         // await novoPedido()
         // await carregaDados()
-        await buscaPedido(pedidoID)
+        await buscaPedido(pedido_id)
 
       }
       inicio()
@@ -416,7 +417,7 @@ const PedidoModal = ({
     return () => {
       novoPedido()
     }
-  }, [pedidoID, tipoCad, atualiza]) // , disableEdit, isShowPedido
+  }, [pedido_id, tipoCad, atualiza]) // , disableEdit, isShowPedido
 
   const carregaDados = async () => {
     await buscaValoresAgregados() // <-- Adicionar busca direta no banco
@@ -519,15 +520,20 @@ const PedidoModal = ({
     setValue(0)
     
     setInitialValuesPed({
-      id: pedidoID,
+      id: pedido_id,
+      local: "",
       cliente_id: null,
       limitecoleta: moment().format('YYYY-MM-DD'),
       limiteentrega: moment().add(15, 'days').format('YYYY-MM-DD'),
       localcoleta: null,
       localentrega: null,
       motorista_id: null,
+      rota: "",
       status: "",
       tipo: "C",
+      valor: 0,
+      valor_desconto: 0,
+      percentual_desconto: 0,
     })
 
     // console.log('**** PedidosModal.novoPedido.window', window.setFormValue)
@@ -963,7 +969,7 @@ const PedidoModal = ({
   }
 
   const callBackHistorico = (e) => {
-    buscaHistorico(pedidoID)
+    buscaHistorico(pedido_id)
   }
 
   const colDefsHistorico = [
@@ -1209,13 +1215,13 @@ const PedidoModal = ({
   
   const buscaVeiculos = async (stRetorno) => {
 
-    if (typeof pedidoID !== 'number') { return }
+    if (typeof pedido_id !== 'number') { return }
     
     await sleep(500)
-    if (stRetorno && pedidoID) {
+    if (stRetorno && pedido_id) {
       await api
         .post('/buscaveiculos', {
-          pedido_id: pedidoID,
+          pedido_id: pedido_id,
         })
         .then(response => {
           const { data } = response
@@ -1525,14 +1531,14 @@ const PedidoModal = ({
   }
 
   const buscaRotas = async (stRetorno) => {
-    // console.log('**** PedidosModal.buscaRotas.pedidoID', pedidoID, stRetorno, typeof pedidoID)
+    // console.log('**** PedidosModal.buscaRotas.pedido_id', pedido_id, stRetorno, typeof pedido_id)
     
-    if (typeof pedidoID !== 'number') { return }
+    if (typeof pedido_id !== 'number') { return }
 
-    if (stRetorno && pedidoID) {
+    if (stRetorno && pedido_id) {
       await api
         .post('/buscarotas', {
-          pedido_id: pedidoID,
+          pedido_id: pedido_id,
         })
         .then(response => {
           const { data } = response
@@ -1586,13 +1592,13 @@ const PedidoModal = ({
     // console.log('**** PedidoModal.editaAvaria', props.data.placachassi)
 
     const buscaAvaria = async (placa) => {
-      if (typeof pedidoID !== 'number') { return }
+      if (typeof pedido_id !== 'number') { return }
       
-      // console.log('**** PedidosModal.buscaAvaria', pedidoID, placa)
+      // console.log('**** PedidosModal.buscaAvaria', pedido_id, placa)
       
       await api
         .post(`/buscaavaria`, {
-          "pedido_id": pedidoID,
+          "pedido_id": pedido_id,
           "financeiro_id": null,
           "motorista_id": null,
           "fornecedor_id": null,
@@ -2237,12 +2243,12 @@ const PedidoModal = ({
 
   const buscaFinanceiro = async (modo = null) => {
     
-    if (typeof pedidoID !== 'number') { return }
+    if (typeof pedido_id !== 'number') { return }
     
     await api
       .post(`/buscafin`, {
         "tipo": "P",
-        "pedido_id": pedidoID,
+        "pedido_id": pedido_id,
         "cliente_id": null,
         "motorista_id": motoristaID,
         "operador_id": null,
@@ -2289,14 +2295,14 @@ const PedidoModal = ({
   }
  
   const geraFinanceiro = async (modo = null) => {
-    // console.log('**** PedidosModal.buscaFinanceiro.pedidoID', pedidoID, stRetorno, typeof pedidoID)
+    // console.log('**** PedidosModal.buscaFinanceiro.pedido_id', pedido_id, stRetorno, typeof pedido_id)
     
-    if (typeof pedidoID !== 'number') { return }
+    if (typeof pedido_id !== 'number') { return }
     
     await api
       .post(`/financeiros`, {
         "tipo": "P",
-        "pedido_id": pedidoID,
+        "pedido_id": pedido_id,
         "cliente_id": clienteID,
         "motorista_id": motoristaID,
         "operador_id": operadorID,
@@ -2398,10 +2404,10 @@ const PedidoModal = ({
 
     let apiParams = {}
 
-    if (pedidoID !== null && tipoCad === 'E') {
+    if (pedido_id !== null && pedido_id !== 0 && tipoCad === 'E') {
       apiParams = {
         method: 'put',
-        url: `/pedidos/${pedidoID}`,
+        url: `/pedidos/${pedido_id}`,
         data: JSON.stringify(newValues),
         headers: {
           'Content-Type': 'application/json',
@@ -2427,6 +2433,8 @@ const PedidoModal = ({
     await api(apiParams)
       .then(response => {
         const { data } = response
+
+        setPedido_id(data.id)
 
         setInitialValuesPed(data)
         buscaCliente(data.cliente_id)
@@ -2572,10 +2580,10 @@ const PedidoModal = ({
                       <div className={classes.demo1}>
                         <AntTabs value={value} onChange={handleChange} aria-label="Dados do Pedido">
                           <AntTab label="Pedido" {...a11yProps(0)} />
-                          <AntTab label="Veiculos" {...a11yProps(1)} />
-                          <AntTab label="Rotas" {...a11yProps(2)} />
-                          <AntTab label="Mapa" {...a11yProps(3)} />
-                          <AntTab label="Histórico" {...a11yProps(4)} />
+                          {pedido_id !== null && pedido_id !== 0 ? <AntTab label="Veiculos" {...a11yProps(1)} /> : null}
+                          {pedido_id !== null && pedido_id !== 0 ? <AntTab label="Rotas" {...a11yProps(2)} /> : null}
+                          {pedido_id !== null && pedido_id !== 0 ? <AntTab label="Mapa" {...a11yProps(3)} /> : null}
+                          {pedido_id !== null && pedido_id !== 0 ? <AntTab label="Histórico" {...a11yProps(4)} /> : null}
                         </AntTabs>
                       </div>
 
@@ -3079,7 +3087,8 @@ const PedidoModal = ({
 
                         </Grid>
                       </TabPanel>
-
+                      
+                      {pedido_id !== null && pedido_id !== 0 ? 
                       <TabPanel value={value} index={1} style={{ width: '100%', height: '455px' }}>
                         <BoxTitulo
                             size={465}
@@ -3163,7 +3172,9 @@ const PedidoModal = ({
                           </Grid>
                         </BoxTitulo>
                       </TabPanel>
-
+                      : null}
+                      
+                      {pedido_id !== null && pedido_id !== 0 ? 
                       <TabPanel value={value} index={2} style={{ width: '100%', height: '455px' }}>
                         <BoxTitulo
                           size={465}
@@ -3254,7 +3265,9 @@ const PedidoModal = ({
 
                         </BoxTitulo>
                       </TabPanel>
+                      : null}
 
+                      {pedido_id !== null && pedido_id !== 0 ? 
                       <TabPanel value={value} index={3} style={{ width: '100%', height: '455px' }}>
                         <BoxTitulo
                           size={465}
@@ -3284,7 +3297,9 @@ const PedidoModal = ({
 
                         </BoxTitulo>
                       </TabPanel>
+                      : null}
 
+                      {pedido_id !== null && pedido_id !== 0 ? 
                       <TabPanel value={value} index={4} style={{ width: '100%', height: '455px' }}>
                         <BoxTitulo
                           size={465}
@@ -3327,6 +3342,7 @@ const PedidoModal = ({
                           </Grid>
                         </BoxTitulo>
                       </TabPanel>
+                      : null}
 
                     </form>
                   )
@@ -3348,7 +3364,7 @@ const PedidoModal = ({
             <VeiculosModal
               isShowVeiculos={isShowVeiculos}
               hide={toggleVeiculos}
-              pedidoID={pedidoID}
+              pedidoID={pedido_id}
               veiculoID={veiculoID}
               tipoCad={tipoCadVei !== 'E' && tipoCadVei !== 'N' ? 'D' : tipoCadVei}
               disableEdit={(tipoCadVei !== 'E' && tipoCadVei !== 'N' ? true : false) || disableEdit}
@@ -3357,7 +3373,7 @@ const PedidoModal = ({
             <RotasModal
               isShowRotas={isShowRotas}
               hide={toggleRotas}
-              pedidoID={pedidoID}
+              pedidoID={pedido_id}
               rotaID={rotaID}
               tipoCad={tipoCadVei === 'N' ? tipoCadVei : tipoCadVei !== 'E' && tipoCadVei !== 'N' ? 'D' : tipoCadVei}
               disableEdit={(tipoCadVei === 'N' ? false : tipoCadVei !== 'E' && tipoCadVei !== 'N' ? true : false) || disableEdit}
@@ -3368,7 +3384,7 @@ const PedidoModal = ({
               isShowAvarias={isShowAvarias}
               hide={toggleAvarias}
               
-              pedidoID={pedidoID}
+              pedidoID={pedido_id}
               placa={placa}
               avariaID={avariaID}
               
@@ -3384,7 +3400,7 @@ const PedidoModal = ({
               motoristaID={motoristaID}
               clienteID={clienteID}
               operadorID={operadorID}
-              pedidoID={pedidoID}
+              pedidoID={pedido_id}
 
               tipoCad={tipoCadVei !== 'E' && tipoCadVei !== 'N' ? 'D' : tipoCadVei}
               disableEdit={(tipoCadVei !== 'E' && tipoCadVei !== 'N' ? true : false) || disableEdit}
