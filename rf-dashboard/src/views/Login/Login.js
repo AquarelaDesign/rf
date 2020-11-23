@@ -7,6 +7,8 @@ import { Container, Form, Image } from 'react-bootstrap'
 
 import { AccountCircle, Lock } from '@material-ui/icons'
 
+  import Axios from 'axios'
+
 import api from '../../services/rf'
 import logo from '../../assets/logo.png'
 
@@ -189,20 +191,22 @@ const Login = ({ history }) => {
       })
   }
   
-  const getUserGeolocationDetails = (UserID) => {
-    fetch(
-      "https://geolocation-db.com/jsonp"
-    )
-    .then(response => response.json())
-    .then(data => {
+  const getUserGeolocationDetails = async (UserID) => {
+    await Axios
+    .get("https://geolocation-db.com/json/1a811210-241d-11eb-b7a9-293dae7a95e1", {})
+    .then(response => {
+      const { data } = response
+
       salvaHistorico(
         null, 
         null, 
         null, 
         UserID,
         `Usuário logado no sistema admistrativo com login e senha, ` +
-        `com ip ${data.IPv4} em ${data.city}, ${data.country_name}(${data.country_code})`
+        `IP: ${data.IPv4} - ${data.city}, ${data.country_name}(${data.country_code})`
       )
+    }).catch((error) => {
+      console.log('**** Login.getUserGeolocationDetails.error', error)
     })
   }
 

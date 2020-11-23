@@ -327,6 +327,16 @@ export default function CardTransportes({ data, index }) {
         userID,
         `O Motorista não aceitou o transporte`
       )
+    } else if (status === 'E') {
+      atualizaRotas()
+      atualizaMotorista(motoristaID, ' ')
+      salvaHistorico(
+        pedidoID, 
+        motoristaID, 
+        null, 
+        userID,
+        `O Motorista entregou o veículo encerrando o transporte`
+      )
     } else {
       atualizaMotorista(motoristaID, 'A')
       buscaMotorista(motoristaID)
@@ -335,11 +345,11 @@ export default function CardTransportes({ data, index }) {
     await api.put(`/pedidos/${pedidoID}`, {
       motorista_id: status === 'D' ? null : motoristaID,
       status: status, // Disponivel/Em coleta
-      tipo: status === 'D' ? "C" : 'T', // Cargas
+      tipo: status === 'D' || status === 'E' ? "C" : 'T', // Cargas
     })
     .then(response => {
       const { data } = response
-      if (status !== 'D') {
+      if (status !== 'D' && status !== 'E') {
         salvaHistorico(
           data[0].id, 
           data[0].motorista_id, 
@@ -444,7 +454,7 @@ export default function CardTransportes({ data, index }) {
   }
 
   const encerrarEntrega = (e) => {
-
+    atualizaPedido(data.id, data.motorista_id, 'E')
   }
 
   const aprovaMotorista = (e) => {

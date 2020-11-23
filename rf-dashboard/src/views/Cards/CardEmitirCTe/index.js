@@ -65,7 +65,7 @@ export default function CardEmitirCTe({ data, index }) {
   const userID = localStorage.getItem('@rf/userID')
 
   useEffect(() => {
-    // console.log('**** CardTransportes.data', data)
+    console.log('**** CardEmitirCTe.data', data)
     // setRotas(data.rotas)
     if (data.tipo === 'F') {
       setMostraDesfaz('hidden')
@@ -86,7 +86,7 @@ export default function CardEmitirCTe({ data, index }) {
       const resEntrega = await BuscaRota(data.localentrega, data.rotas)
       setLocalEntrega(resEntrega[0])
 
-      // console.log('**** CardTransportes.resColeta', data.localcoleta, resColeta)
+      // console.log('**** CardEmitirCTe.resColeta', data.localcoleta, resColeta)
 
       if (resColeta[0]) {
         let _rota = ''
@@ -165,7 +165,7 @@ export default function CardEmitirCTe({ data, index }) {
         .then(response => {
           const { data } = response
 
-          // console.log('**** CardTransportes.buscaMotorista', data.veiculos)
+          // console.log('**** CardEmitirCTe.buscaMotorista', data.veiculos)
           setMotorista(data)
           setStatusMotorista(data.estado)
 
@@ -178,10 +178,10 @@ export default function CardEmitirCTe({ data, index }) {
               })
             }
             catch (e) {
-              console.log('**** CardTransportes.buscaMotorista.error.data', data)
+              console.log('**** CardEmitirCTe.buscaMotorista.error.data', data)
             }
           } else if (error.request) {
-            console.log('**** CardTransportes.buscaMotorista.error', error)
+            console.log('**** CardEmitirCTe.buscaMotorista.error', error)
             // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
             // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
@@ -245,7 +245,7 @@ export default function CardEmitirCTe({ data, index }) {
       par_hist = 'CT-e e Manifesto arquivados no Fiscal'
     }
     
-    // console.log('**** CardTransportes.atualizaStatus', data.fiscal, par_pedido)
+    // console.log('**** CardEmitirCTe.atualizaStatus', data.fiscal, par_pedido)
     await api.put(`/fiscal/${data.fiscal}`, {
       tipo: par_tipo,
       status: par_status,
@@ -270,10 +270,10 @@ export default function CardEmitirCTe({ data, index }) {
           })
         }
         catch (e) {
-          console.log('**** CardTransportes.atualizaPedido.error.data', data)
+          console.log('**** CardEmitirCTe.atualizaPedido.error.data', data)
         }
       } else if (error.request) {
-        console.log('**** CardTransportes.atualizaPedido.error', error)
+        console.log('**** CardEmitirCTe.atualizaPedido.error', error)
         // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
       } else {
       // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
@@ -302,7 +302,7 @@ export default function CardEmitirCTe({ data, index }) {
       par_hist = 'Processo desfeito no Fiscal'
     }
     
-    // console.log('**** CardTransportes.atualizaStatus', data.fiscal, par_pedido)
+    // console.log('**** CardEmitirCTe.atualizaStatus', data.fiscal, par_pedido)
     await api.put(`/fiscal/${data.fiscal}`, {
       tipo: par_tipo,
       status: par_status,
@@ -327,10 +327,10 @@ export default function CardEmitirCTe({ data, index }) {
           })
         }
         catch (e) {
-          console.log('**** CardTransportes.atualizaPedido.error.data', data)
+          console.log('**** CardEmitirCTe.atualizaPedido.error.data', data)
         }
       } else if (error.request) {
-        console.log('**** CardTransportes.atualizaPedido.error', error)
+        console.log('**** CardEmitirCTe.atualizaPedido.error', error)
         // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
       } else {
       // toast(`Ocorreu um erro no processamento!`, { type: 'error' })

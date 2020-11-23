@@ -330,8 +330,8 @@ const TabelaDespesas = ({ isShowTabelaDespesas, hide }) => {
   }
 
   const salvaDespesa = async (dados) => {
-    console.log('**** TabelaDespesas.salvaDespesa.dados', dados)
-    return
+    // console.log('**** TabelaDespesas.salvaDespesa.dados', dados)
+    // return
     if (dados) {
       let apiParams = {}
       if (dados.id) {

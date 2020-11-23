@@ -946,7 +946,7 @@ export default function CardUsuario({ tipo, usuarioId }) {
       }
     }
 
-    console.log('**** CardUsuario.onSubmit.newValues', newValues)
+    // console.log('**** CardUsuario.onSubmit.newValues', newValues)
 
     let apiParams = {}
 

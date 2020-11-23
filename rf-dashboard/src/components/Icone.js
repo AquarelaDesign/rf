@@ -23,6 +23,7 @@ import {
   FaCalendarCheck,
 } from 'react-icons/fa'
 
+import { BiListPlus } from 'react-icons/bi'
 import { SiCashapp } from 'react-icons/si'
 import { BsBackspaceFill } from 'react-icons/bs'
 import { AiOutlineCloseCircle, AiTwotoneLike } from 'react-icons/ai'
@@ -33,7 +34,7 @@ import { RiSearchLine } from 'react-icons/ri'
 import { IoIosDocument } from 'react-icons/io'
 import { ImCloudCheck } from 'react-icons/im'
 import { TiArrowBack } from 'react-icons/ti'
-import { FcPlus, FcCancel, FcDocument, FcInTransit, FcFilledFilter, FcClearFilters } from 'react-icons/fc'
+import { FcPlus, FcCancel, FcDocument, FcInTransit, FcFilledFilter, FcClearFilters, FcMoneyTransfer } from 'react-icons/fc'
 import { FiAlertOctagon, FiAlertTriangle, FiSend } from 'react-icons/fi'
 import { MdDeleteForever, MdAddCircle, MdBlock, MdCheckCircle, MdCancel, MdZoomOutMap } from 'react-icons/md'
 
@@ -89,11 +90,13 @@ export const FaIcon = ({ icon, size, height, width }) => {
     case 'supplier': return <Image src={supplier} alt="" style={{ height: 20, width: 20 }} />
     case 'Documentos': return <FcDocument size={size} />
     case 'Ampliar': return <MdZoomOutMap size={size} />
+    case 'addHistorico': return <BiListPlus size={size} />
     case 'Deletar': return <MdDeleteForever size={size} style={{ color: '#FF0000' }} />
     case 'Add': return <MdAddCircle size={size} />
     case 'Save': return <FaSave size={size} />
     case 'Seguranca': return <GrSecure size={size} />
     case 'Bloqueado': return <MdBlock size={size} />
+    case 'LiberarPgto': return <FcMoneyTransfer size={size} />
     case 'Recusado': return <FiAlertOctagon size={size} />
     case 'Suspenso': return <FiAlertTriangle size={size} />
     case 'Aguardando': return <GiStopwatch size={size} />
@@ -102,7 +105,7 @@ export const FaIcon = ({ icon, size, height, width }) => {
     case 'Confere': return <GoChecklist size={size} style={{ marginBottom: 2, color: '#FFFFFF' }} />
     case 'Cancelado': return <MdCancel size={size} />
     case 'Manutencao': return <GrHostMaintenance size={size} />
-    case 'Entregue': return <Image src={entregue} alt="" style={{ height: {size}, width: {size} }} />
+    case 'Entregue': return <Image src={entregue} alt="" style={{ height: 20, width: 20 }} />
     case 'Aprovado': return <AiTwotoneLike size={size} style={{ marginBottom: 2, color: '#90D284' }} />
     case 'Marcar': return <FaCheck size={size} style={{ marginBottom: 2, color: '#FFFFFF' }} />
     case 'MarcarArquivado': return <FaCalendarCheck size={size} style={{ marginBottom: 2, color: '#FFFFFF' }} />

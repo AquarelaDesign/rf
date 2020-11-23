@@ -307,6 +307,7 @@ const PedidoModal = ({
   const [confTexto1, setConfTexto1] = useState('')
   const [modulo, setModulo] = useState('')
   
+  const [bloqueado, setBloqueado] = useState(false)
   const [atualiza, setAtualiza] = useState(mostra)
 
   // const [responseMap, setResponseMap] = useState(null)
@@ -397,7 +398,7 @@ const PedidoModal = ({
         // await novoPedido()
         // await carregaDados()
         await buscaPedido(pedido_id)
-
+        await buscaFinanceiro()
       }
       inicio()
 
@@ -436,7 +437,6 @@ const PedidoModal = ({
     // await sleep(500)
     setValue(0)
 
-
     setOperadorID(localStorage.getItem('@rf/userID'))
   }
 
@@ -452,7 +452,7 @@ const PedidoModal = ({
 
           forceUpdate(data[0])
           setInitialValuesPed(data[0])
-          console.log('**** PedidosModal.buscaPedido.setInitialValuesPed', data[0])
+          // console.log('**** PedidosModal.buscaPedido.setInitialValuesPed', data[0])
 
           // if (window.setFormValue) {
             window.setFormValue('limitecoleta', data[0].limitecoleta)
@@ -1621,7 +1621,7 @@ const PedidoModal = ({
             const { data, status } = error.response
             // console.log('**** PedidosModal.buscaAvaria.error.status', status)
             if (status === 404) {
-              buscaFinanceiro()
+              buscaFinanceiro('Avarias')
             } else {
               try {
                 data.map(mensagem => {
@@ -2237,7 +2237,15 @@ const PedidoModal = ({
   }
 
 
-  const gerarPagamento  = () => {
+  const bloquearPagamento = () => {
+    buscaFinanceiro('Bolquear')
+  }
+
+  const liberarPagamento = () => {
+    buscaFinanceiro('Liberar')
+  }
+
+  const gerarPagamento = () => {
     buscaFinanceiro('Gerar')
   }
 
@@ -2259,6 +2267,13 @@ const PedidoModal = ({
         const { data, status } = response
 
         if (modo === null) {
+          console.log('**** PedidosModal.buscaFinanceiro.error.data', data)
+          if (data.status === 'B') {
+            setBloqueado(true)
+          } else {
+            setBloqueado(false)
+          }
+        } else if (modo === 'Avarias') {
           const setaAva = async () => {
             setTipoCadVei('N')
             await sleep(300)
@@ -2266,15 +2281,20 @@ const PedidoModal = ({
           }
           setaAva()
         } else {
-          toast(`Já existe um lançamento no financeiro para esse Pedido/Motorista!`, { type: 'alert' })
+          if (modo === 'Gerar') {
+            toast(`Já existe um lançamento no financeiro para esse Pedido/Motorista!`, { type: 'alert' })
+          } else {
+            geraFinanceiro(modo)
+          }
         }
 
       }).catch((error) => {
+        setBloqueado(false)
         if (error.response) {
           const { data, status } = error.response
 
           if (status === 404) {
-            geraFinanceiro()
+            geraFinanceiro(modo)
           } else {
             try {
               data.map(mensagem => {
@@ -2298,6 +2318,12 @@ const PedidoModal = ({
     // console.log('**** PedidosModal.buscaFinanceiro.pedido_id', pedido_id, stRetorno, typeof pedido_id)
     
     if (typeof pedido_id !== 'number') { return }
+
+    let status = " "
+
+    if (modo === 'Bloquear') {
+      status = "B"
+    } 
     
     await api
       .post(`/financeiros`, {
@@ -2307,12 +2333,18 @@ const PedidoModal = ({
         "motorista_id": motoristaID,
         "operador_id": operadorID,
         "fornecedor_id": null,
-        "status": " "
+        "status": status
       })
       .then(response => {
         const { data, status } = response
         
-        if (modo === null) {
+        if (data.status === 'B') {
+          setBloqueado(true)
+        } else {
+          setBloqueado(false)
+        }
+
+        if (modo === 'Avarias') {
           const setaAva = async () => {
             setTipoCadVei('N')
             await sleep(300)
@@ -2320,10 +2352,17 @@ const PedidoModal = ({
           }
           setaAva()
         } else {
-          toast(`Lançamento [${data.id}] gerado no financeiro!`, { type: 'alert' })
+          if (modo === 'Gerar') {
+            toast(`Lançamento [${data.id}] gerado no financeiro!`, { type: 'alert' })
+          } else if (modo === 'Bolquear') {
+            toast(`Lançamento [${data.id}] bloqueado no financeiro!`, { type: 'alert' })
+          } else if (modo === 'Liberar') {
+            toast(`Lançamento [${data.id}] liberado no financeiro!`, { type: 'alert' })
+          }
         }
 
       }).catch((error) => {
+        setBloqueado(false)
         if (error.response) {
           const { data } = error.response
           try {
@@ -2345,10 +2384,6 @@ const PedidoModal = ({
 
   const distinct = (value, index, self) => {
     return self.indexOf(value) === index
-  }
-
-  const bloquearPagamento  = () => {
-
   }
 
 
@@ -2519,9 +2554,14 @@ const PedidoModal = ({
                     {disableEdit ?
                       <Blank><FaIcon icon='blank' size={10} height={10} width={10} /> </Blank>
                       :
-                      <Tooltip title="Bloquear Pagamento Motorista">
-                        <Botao onClick={bloquearPagamento}><FaIcon icon='Bloqueado' size={20} /></Botao>
-                      </Tooltip>
+                      bloqueado === false ? 
+                        <Tooltip title="Bloquear Pagamento Motorista">
+                          <Botao onClick={bloquearPagamento}><FaIcon icon='Bloqueado' size={20} /></Botao>
+                        </Tooltip>
+                        :
+                        <Tooltip title="Liberar Pagamento Motorista">
+                          <Botao onClick={liberarPagamento}><FaIcon icon='LiberarPgto' size={20} /></Botao>
+                        </Tooltip>
                     }
                     {disableEdit ?
                       <Blank><FaIcon icon='blank' size={10} height={10} width={10} /> </Blank>

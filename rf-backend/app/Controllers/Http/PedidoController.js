@@ -28,6 +28,7 @@ class PedidoController {
       const pedidos = Pedido.query()
                             .with('veiculos')
                             .with('rotas')
+                            .orderBy('created_at', 'desc')
                             .fetch()
       return pedidos
     }

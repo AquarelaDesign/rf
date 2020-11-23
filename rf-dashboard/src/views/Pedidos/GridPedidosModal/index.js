@@ -23,6 +23,9 @@ import api from '../../../services/rf'
 import PedidoModal from '../PedidoModal'
 import useModal from '../PedidoModal/useModal'
 
+import HistoricoModal from '../../../components/HistoricoModal'
+import useModalHistorico from '../../../components/HistoricoModal/useModal'
+
 // import DatePicker from '../../datepicker'
 import PartialMatchFilter from './PartialMatchFilter'
 import StatusFilter from './StatusFilter'
@@ -49,11 +52,27 @@ const GridPedidosModal = ({ isShowing, hide }) => {
   const [usuarios, setUsuarios] = useState([])
   const [tipoCad, setTipoCad] = useState('')
   const [pedidoId, setPedidoId] = useState(null)
+  
+  const [historicoID, setHistoricoID] = useState(null)
+  const [motoristaID, setMotoristaID] = useState(null)
+  const [clienteID, setClienteID] = useState(null)
+  const [operadorID, setOperadorID] = useState(null)
+
   const { isShowPedido, togglePedido } = useModal()
+  const { isShowHistorico, toggleHistorico } = useModalHistorico()
+
+
+/*
+  historicoID={historicoID}
+  motoristaID={motoristaID}
+  clienteID={clienteID}
+  operadorID={operadorID}
+*/
 
   useEffect(() => {
     buscaUsuarios()
     buscaPedidos()
+    setOperadorID(localStorage.getItem('@rf/userID'))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isShowPedido])
 
@@ -275,8 +294,8 @@ const GridPedidosModal = ({ isShowing, hide }) => {
     {
       headerName: "Pedido",
       field: "id",
-      flex: 1,
-      width: 18,
+      // flex: 1,
+      width: 120,
       sortable: true,
       filter: 'agNumberColumnFilter',
       // menuTabs: ['filterMenuTab'],
@@ -300,8 +319,8 @@ const GridPedidosModal = ({ isShowing, hide }) => {
     {
       headerName: "Local",
       field: "local",
-      // flex: 1,
-      width: 300,
+      flex: 1,
+      // width: 300,
       sortable: true,
       filter: 'partialMatchFilter',
       menuTabs: ['filterMenuTab'],
@@ -324,7 +343,44 @@ const GridPedidosModal = ({ isShowing, hide }) => {
       // filter: 'partialMatchFilter',
       // menuTabs: ['filterMenuTab'],
     },
+    {
+      headerName: "",
+      width: 30,
+      sortable: false,
+      editable: false,
+      // hide: disableEdit,
+      cellRendererFramework: (props) => {
+        return (
+          <button onClick={(e) => addHistorico(props, e)}
+            // disabled={disableEdit}
+            style={{ backgroundColor: 'transparent' }}
+          >
+            <Tooltip title="Registrar Histórico">
+              <span style={{
+                alignItems: 'center',
+                color: '#0000FF',
+                marginLeft: '-18px',
+                marginTop: '3px',
+              }}>
+                <FaIcon icon='addHistorico' size={20} />
+              </span>
+            </Tooltip>
+          </button>
+        )
+      },
+    },
   ]
+
+  const addHistorico = async (props, e) => {
+    e.preventDefault()
+    console.log('**** GridPedidoModal.addHistorico', props.data)
+    setPedidoId(props.data.id)
+    setClienteID(props.data.cliente_id)
+    setMotoristaID(props.data.motorista_id)
+
+    await sleep(500)
+    toggleHistorico()
+  }
 
   const ToolRef = React.forwardRef((props, ref) => {
     const refIcon = React.createRef()
@@ -585,6 +641,22 @@ const GridPedidosModal = ({ isShowing, hide }) => {
             pedidoID={pedidoId}
             disableEdit={tipoCad !== 'E' && tipoCad !== 'N' ? true : false}
             callBack={callBackPedido}
+          />
+        }
+        {pedidoId !== null && 
+          <HistoricoModal
+            isShowHistorico={isShowHistorico}
+            hide={toggleHistorico}
+
+            historicoID={historicoID}
+            motoristaID={motoristaID}
+            clienteID={clienteID}
+            operadorID={operadorID}
+            pedidoID={pedidoId}
+
+            tipoCad='N'
+            disableEdit={false}
+            // callback={e => callBackHistorico(e)}
           />
         }
       </React.Fragment>

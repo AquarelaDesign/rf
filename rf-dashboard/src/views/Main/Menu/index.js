@@ -17,6 +17,7 @@ import ToggleButton from '@material-ui/lab/ToggleButton'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 
 import api from '../../../services/rf'
+import Axios from 'axios'
 
 import { Container, BotaoExit, RLeft, RRight, Input, Label, Titulo } from './styles'
 import { FaIcon } from '../../../components/Icone'
@@ -476,20 +477,22 @@ export default function Menu({ backMenu, backFilter }) {
     history.push('/rf')
   }
 
-  const getUserGeolocationDetails = (UserID) => {
-    fetch(
-      "https://geolocation-db.com/jsonp"
-    )
-    .then(response => response.json())
-    .then(data => {
+  const getUserGeolocationDetails = async (UserID) => {
+    await Axios
+    .get("https://geolocation-db.com/json/1a811210-241d-11eb-b7a9-293dae7a95e1", {})
+    .then(response => {
+      const { data } = response
+
       salvaHistorico(
         null, 
         null, 
         null, 
         UserID,
-        `Usuário logado no sistema admistrativo com login e senha, ` +
-        `com ip ${data.IPv4} em ${data.city}, ${data.country_name}(${data.country_code})`
+        `Usuário desconectado do sistema admistrativo, ` +
+        `IP: ${data.IPv4} - ${data.city}, ${data.country_name}(${data.country_code})`
       )
+    }).catch((error) => {
+      console.log('**** Login.getUserGeolocationDetails.error', error)
     })
   }
 

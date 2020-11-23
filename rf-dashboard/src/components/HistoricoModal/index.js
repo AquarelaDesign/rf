@@ -105,13 +105,13 @@ const HistoricoModal = ({
   let submit
 
   useEffect(() => {
-    // console.log('**** HistoricoModal.buscaVeiculo')
     limpaCampos()
+    console.log('**** HistoricoModal.useEffect', historicoID, tipoCad, clienteID, motoristaID, operadorID, disableEdit)
 
     if (historicoID && historicoID > 0 && tipoCad === 'E') {
       buscaHistorico()
     } else if (tipoCad === 'N') {
-      limpaCampos()
+      // limpaCampos()
     } else if (tipoCad === 'D') {
       if (historicoID && historicoID > 0) {
         buscaHistorico()
@@ -204,6 +204,8 @@ const HistoricoModal = ({
     if (callback) {
       // await sleep(1000)
       callback(typeof e === 'object' ? false : e)
+      hide()
+    } else {
       hide()
     }
   }
@@ -514,7 +516,7 @@ const HistoricoModal = ({
                           <Row style={{ height: '130px', marginTop: '15px' }}>
                             <Col xs={12}>
                               <Field
-                                disabled={true}
+                                disabled={disableEdit !== null ? disableEdit : true}
                                 name="observacao"
                                 component={CssTextField}
                                 type="text"
