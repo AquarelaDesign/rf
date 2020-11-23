@@ -15,6 +15,8 @@ import { Tooltip } from '@material-ui/core'
 import { Container, BoxTitulo, Texto, Grid, Botao, RLeft, RRight, Blank } from './styles'
 import { FaIcon } from '../../../components/Icone'
 
+import CheckBoxRender from './CheckBoxRender'
+
 import api from '../../../services/rf'
 
 import "./modal.css"
@@ -24,12 +26,19 @@ import useModalConfirma from '../../../components/ConfirmaModal/useModal'
 
 import TipoFilter from './TipoFilter'
 import TiposRenderer from './TiposRender'
+import TiposDespesaRender from './TiposDespesaRender'
 
-const TabelaDeRotas = ({ isShowTabelaDeRotas, hide }) => {
+const tipoDespesas = [
+  { id: 'margem', nome: 'MARGEM' },
+  { id: 'imposto', nome: 'IMPOSTO' },
+  { id: 'valorkm', nome: 'VALOR DO KM' },
+]
+
+const TabelaDespesas = ({ isShowTabelaDespesas, hide }) => {
 
   const [, setTiposCol] = useState([])
   const [tipos, setTipos] = useState([])
-  const [rotas, setRotas] = useState([])
+  const [despesas, setDespesas] = useState([])
 
   const [gridApi, setGridApi] = useState(null)
   const [, setColumnApi] = useState(null)
@@ -43,7 +52,7 @@ const TabelaDeRotas = ({ isShowTabelaDeRotas, hide }) => {
 
   useEffect(() => {
     carregaTipos()
-    carregaRotas()
+    carregaDespesas()
 
     return () => {
       try {
@@ -67,7 +76,7 @@ const TabelaDeRotas = ({ isShowTabelaDeRotas, hide }) => {
           tips.push(tp.nome)
         })
 
-        // console.log('**** TabelaDeRotas.carregaTipos.tips', tips)
+        // console.log('**** TabelaDespesas.carregaTipos.tips', tips)
         setTiposCol(tips)
       }).catch((error) => {
         if (error.response) {
@@ -78,22 +87,22 @@ const TabelaDeRotas = ({ isShowTabelaDeRotas, hide }) => {
             })
           }
           catch (e) {
-            console.log('**** TabelaDeRotas.carregaTipos.error.data', data)
+            console.log('**** TabelaDespesas.carregaTipos.error.data', data)
           }
         } else if (error.request) {
-          console.log('**** TabelaDeRotas.carregaTipos.error', error)
+          console.log('**** TabelaDespesas.carregaTipos.error', error)
         } else {
         }
       })
 
   }
 
-  const carregaRotas = async () => {
+  const carregaDespesas = async () => {
     await api
-      .get('/rotastabela')
+      .get('/valoresadicionais')
       .then(response => {
         const { data } = response
-        setRotas(data)
+        setDespesas(data)
       }).catch((error) => {
         if (error.response) {
           const { data } = error.response
@@ -103,10 +112,10 @@ const TabelaDeRotas = ({ isShowTabelaDeRotas, hide }) => {
             })
           }
           catch (e) {
-            console.log('**** TabelaDeRotas.carregaRotas.error.data', data)
+            console.log('**** TabelaDespesas.carregaDespesas.error.data', data)
           }
         } else if (error.request) {
-          console.log('**** TabelaDeRotas.carregaRotas.error', error)
+          console.log('**** TabelaDespesas.carregaDespesas.error', error)
         } else {
         }
       })
@@ -115,20 +124,16 @@ const TabelaDeRotas = ({ isShowTabelaDeRotas, hide }) => {
 
   const frameworkComponents = {
     buscaTipo: BuscaTipo,
-    simpleEditor: GridComponents.SimpleEditor,
-    asyncValidationEditor: GridComponents.AsyncValidationEditor,
-    autoCompleteEditor: GridComponents.AutoCompleteEditor,
-    agDateInput: GridComponents.MyDatePicker,
-    dateEditor: GridComponents.DateEditor,
-    actionsRenderer: GridComponents.ActionsRenderer,
-    addRowStatusBar: GridComponents.AddRowStatusBar,
+    buscaTipoDespesa: BuscaTipoDespesa,
+    checkBoxRender: CheckBoxRender,
     tipoFilter: TipoFilter,
     tiposRenderer: TiposRenderer,
+    tiposDespesaRender: TiposDespesaRender,
   }
 
   const columnDefs = [
     {
-      headerName: "Tipo",
+      headerName: "Tipo de Veículo",
       field: "tipo_de_veiculo_id",
       width: 200,
       cellRenderer: 'buscaTipo',
@@ -138,62 +143,65 @@ const TabelaDeRotas = ({ isShowTabelaDeRotas, hide }) => {
       }
     },
     {
-      headerName: "Cidade Origem",
-      field: "cidade_origem",
-      flex: 1,
-      width: 200,
-      // cellEditor: "autoCompleteEditor",
+      headerName: "Tipo",
+      field: "tipo",
+      width: 150,
+      cellRenderer: 'buscaTipoDespesa',
+      cellEditor: "tiposDespesaRender",
+      cellEditorParams: {
+        cellRenderer: 'buscaTipoDespesa',
+      }
     },
     {
-      headerName: "UF",
-      field: "uf_origem",
-      width: 80,
-      // cellEditor: "autoCompleteEditor",
-    },
-    {
-      headerName: "Cidade Destino",
-      field: "cidade_destino",
-      flex: 1,
-      width: 200,
-      // cellEditor: "autoCompleteEditor",
-    },
-    {
-      headerName: "UF",
-      field: "uf_destino",
-      width: 80,
-      // cellEditor: "autoCompleteEditor",
+      headerName: "Nome",
+      field: "nome",
+      width: 150,
     },
     {
       headerName: "Valor",
       field: "valor",
-      width: 100,
-      filter: false,
+      width: 200,
     },
-    // {
-    //   headerName: "",
-    //   width: 30,
-    //   sortable: false,
-    //   editable: false,
-    //   cellRendererFramework: (props) => {
-    //     return (
-    //       <button onClick={(e) => startEditing(props, e)}
-    //       color="primary"
-    //       disabled={disabled}
-    //       style={{ backgroundColor: 'transparent' }}
-    //       >
-    //         <Tooltip title="Editar rota">
-    //           <span style={{
-    //             alignItems: 'center',
-    //             marginLeft: '-18px',
-    //             marginTop: '3px',
-    //           }}>
-    //             <FaIcon icon='FaRegEdit' size={20} />
-    //           </span>
-    //         </Tooltip>
-    //       </button>
-    //     )
-    //   },
-    // },
+    {
+      headerName: "I",
+      field: "imposto",
+      width: 80,
+      cellRenderer: 'checkBoxRender',
+      cellEditor: "checkBoxRender",
+      // cellEditorParams: {
+      //   cellRenderer: 'checkBoxRender',
+      // }
+    },
+    {
+      headerName: "E",
+      field: "exclusivo",
+      width: 80,
+      cellRenderer: 'checkBoxRender',
+      cellEditor: "checkBoxRender",
+      // cellEditorParams: {
+      //   cellRenderer: 'checkBoxRender',
+      // }
+    },
+    {
+      headerName: "C",
+      field: "cortesia",
+      width: 80,
+      cellRenderer: 'checkBoxRender',
+      cellEditor: "checkBoxRender",
+      // cellEditorParams: {
+      //   cellRenderer: 'checkBoxRender',
+      // }
+    },
+    {
+      headerName: "M",
+      field: "mostra",
+      width: 80,
+      cellRenderer: 'checkBoxRender',
+      cellEditor: "checkBoxRender",
+      // cellEditorParams: {
+      //   cellRenderer: 'checkBoxRender',
+      // }
+    },
     {
       headerName: "",
       width: 30,
@@ -205,7 +213,7 @@ const TabelaDeRotas = ({ isShowTabelaDeRotas, hide }) => {
             disabled={disabled}
             style={{ backgroundColor: 'transparent' }}
           >
-            <Tooltip title="Excluir rota">
+            <Tooltip title="Excluir despesa">
               <span style={{
                 alignItems: 'center',
                 color: '#FF0000',
@@ -219,14 +227,6 @@ const TabelaDeRotas = ({ isShowTabelaDeRotas, hide }) => {
         )
       },
     },
-    // {
-    //   headerName: "",
-    //   colId: "actions",
-    //   cellRenderer: "actionsRenderer",
-    //   editable: false,
-    //   filter: false,
-    //   width: 80
-    // }
   ]
 
   const handleDeleteRow = async (props, e) => {
@@ -255,7 +255,15 @@ const TabelaDeRotas = ({ isShowTabelaDeRotas, hide }) => {
     )
   }
 
-  const novaRota = async () => {
+  function BuscaTipoDespesa(params) {
+    return tipoDespesas.filter(tipo => tipo.id === params.value).map(
+      ftipo => {
+        return ftipo['nome']
+      }
+    )
+  }
+
+  const novaDespesa = async () => {
     const newRow = {
       tipo_de_veiculo_id: 1,
       cidade_origem: "",
@@ -274,9 +282,9 @@ const TabelaDeRotas = ({ isShowTabelaDeRotas, hide }) => {
     })
   }
 
-  const excluiRota = async () => {
+  const excluiDespesa = async () => {
     if (excluiId) {
-      api.delete(`/rotastabela/${excluiId}`,
+      api.delete(`/valoresadicionais/${excluiId}`,
         {
           headers: {
             'Content-Type': 'application/json',
@@ -285,7 +293,7 @@ const TabelaDeRotas = ({ isShowTabelaDeRotas, hide }) => {
         }
       ).then(response => {
         if (response.status === 200) {
-          toast('Rota removida com sucesso!',
+          toast('Despesa removida com sucesso!',
             { type: 'success' })
           propsE.api.applyTransaction({ remove: sData })
 
@@ -311,24 +319,25 @@ const TabelaDeRotas = ({ isShowTabelaDeRotas, hide }) => {
             })
           }
           catch (e) {
-            console.log('**** TabelaDeRotas.excluirota.error.data', data)
+            console.log('**** TabelaDespesas.excluidespesa.error.data', data)
           }
         } else if (error.request) {
-          console.log('**** TabelaDeRotas.excluirota.error', error)
+          console.log('**** TabelaDespesas.excluidespesa.error', error)
         } else {
         }
       })
     }
   }
 
-  const salvaRota = async (dados) => {
+  const salvaDespesa = async (dados) => {
+    console.log('**** TabelaDespesas.salvaDespesa.dados', dados)
+    return
     if (dados) {
-      dados.nome = `${dados.cidade_origem}/${dados.uf_origem} X ${dados.cidade_destino}/${dados.uf_destino}`
       let apiParams = {}
       if (dados.id) {
         apiParams = {
           method: 'put',
-          url: `/rotastabela/${dados.id}`,
+          url: `/valoresadicionais/${dados.id}`,
           data: JSON.stringify(dados),
           headers: {
             'Content-Type': 'application/json',
@@ -338,7 +347,7 @@ const TabelaDeRotas = ({ isShowTabelaDeRotas, hide }) => {
       } else {
         apiParams = {
           method: 'post',
-          url: `/rotastabela`,
+          url: `/valoresadicionais`,
           data: JSON.stringify(dados),
           headers: {
             'Content-Type': 'application/json',
@@ -361,10 +370,10 @@ const TabelaDeRotas = ({ isShowTabelaDeRotas, hide }) => {
               })
             }
             catch (e) {
-              console.log('**** TabelaDeRotas.salvaRota.error.data', data)
+              console.log('**** TabelaDespesas.salvaDespesa.error.data', data)
             }
           } else if (error.request) {
-            console.log('**** TabelaDeRotas.salvaRota.error', error)
+            console.log('**** TabelaDespesas.salvaDespesa.error', error)
             // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
           } else {
             // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
@@ -381,16 +390,16 @@ const TabelaDeRotas = ({ isShowTabelaDeRotas, hide }) => {
   }
 
   function stopEditing(props) {
-    // console.log('**** TabelaDeRotas.stopEditing.props', props.data)
-    salvaRota(props.data)
+    // console.log('**** TabelaDespesas.stopEditing.props', props.data)
+    salvaDespesa(props.data)
   }
 
-  if (isShowTabelaDeRotas) {
+  if (isShowTabelaDespesas) {
     return ReactDOM.createPortal(
       <React.Fragment>
         <div className="modal-overlay" />
         <div className="modal-wrapper" aria-modal aria-hidden tabIndex={-1} role="dialog">
-          <div className="modal-tab-rotas" style={{ background: '#2699F8' }}>
+          <div className="modal-tab-despesas" style={{ background: '#2699F8' }}>
             <Container>
               <BoxTitulo height={32} bgcolor='#FFFFFF' border='1px solid #2699F8' mb={10}>
                 <Grid mb={5}>
@@ -399,14 +408,14 @@ const TabelaDeRotas = ({ isShowTabelaDeRotas, hide }) => {
                       size={22} height={24} italic={true} bold={700} font='Arial'
                       mt={3}
                       color='#2699FB' shadow={true}>
-                      CADASTRO DE ROTAS
+                      CADASTRO DE DESPESAS
                     </Texto>
                   </RLeft>
                   <RRight>
                     <Blank><FaIcon icon='blank' size={10} height={10} width={10} /> </Blank>
                     <Blank><FaIcon icon='blank' size={10} height={10} width={10} /> </Blank>
                     <Tooltip title="Adicionar um Novo">
-                      <Botao onClick={novaRota}><FaIcon icon='FcPlus' size={20} /> </Botao>
+                      <Botao onClick={novaDespesa}><FaIcon icon='FcPlus' size={20} /> </Botao>
                     </Tooltip>
                     <Tooltip title="Fechar Janela">
                       <Botao onClick={hide}><FaIcon icon='GiExitDoor' size={20} /> </Botao>
@@ -429,18 +438,12 @@ const TabelaDeRotas = ({ isShowTabelaDeRotas, hide }) => {
                     modules={AllCommunityModules}
                     columnDefs={columnDefs}
                     defaultColDef={defaultColDef}
-                    rowData={rotas}
+                    rowData={despesas}
                     getRowNodeId={data => data.id}
                     onGridReady={onGridReady}
                     frameworkComponents={frameworkComponents}
                     editType="fullRow"
                     stopEditingWhenGridLosesFocus={true}
-                    // suppressClickEdit
-                    // statusBar={{
-                    //   statusPanels: [{ statusPanel: "addRowStatusBar" }]
-                    // }}
-                    // rowSelection="single"
-                    // tooltipShowDelay={0}
                     pagination={true}
                     paginationPageSize={20}
                     localeText={agPtBr}
@@ -454,9 +457,9 @@ const TabelaDeRotas = ({ isShowTabelaDeRotas, hide }) => {
             <ConfirmaModal
               isShowConfirma={isShowConfirma}
               hide={toggleConfirma}
-              texto='Confirma a Exclusão da Rota?'
+              texto='Confirma a Exclusão da Despesa?'
               texto1={''}
-              callback={() => excluiRota(excluiId)}
+              callback={() => excluiDespesa(excluiId)}
             />
 
           </div>
@@ -467,4 +470,4 @@ const TabelaDeRotas = ({ isShowTabelaDeRotas, hide }) => {
   return null
 }
 
-export default TabelaDeRotas
+export default TabelaDespesas

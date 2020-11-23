@@ -1,15 +1,17 @@
 /* eslint-disable array-callback-return */
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, createRef } from 'react'
 import { useHistory } from 'react-router-dom'
 
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
-import clsx from 'clsx'
+// import clsx from 'clsx'
 import { withStyles, makeStyles } from '@material-ui/core/styles'
 import Drawer from '@material-ui/core/Drawer'
-import Button from '@material-ui/core/Button'
+// import Button from '@material-ui/core/Button'
 import Divider from '@material-ui/core/Divider'
+// import DropdownButton from 'react-bootstrap/DropdownButton'
+// import Dropdown from 'react-bootstrap/Dropdown'
 
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
@@ -28,6 +30,14 @@ import useModalOD from '../GridOriDest/useModal'
 import TabelaDeRotas from '../../Parametros/TabelaDeRotas'
 import useModalTabelaDeRotas from '../../Parametros/TabelaDeRotas/useModal'
 
+import TabelaDeSeguros from '../../Parametros/TabelaDeSeguros'
+import useModalTabelaDeSeguros from '../../Parametros/TabelaDeSeguros/useModal'
+
+import TabelaDespesas from '../../Parametros/TabelaDespesas'
+import useModalTabelaDespesas from '../../Parametros/TabelaDespesas/useModal'
+
+import './index.scss'
+
 const StyledToggleButtonGroup = withStyles((theme) => ({
   grouped: {
     margin: theme.spacing(0.5),
@@ -40,7 +50,7 @@ const StyledToggleButtonGroup = withStyles((theme) => ({
     fontWeight: 'bold',
     fontStyle: 'italic',
     color: '#FFFFFF',
-    
+
     '&:not(:first-child)': {
       borderRadius: theme.shape.borderRadius,
     },
@@ -51,7 +61,7 @@ const StyledToggleButtonGroup = withStyles((theme) => ({
       background: '#225378',
       color: '#FFFFFF',
     }
-  
+
   },
 }))(ToggleButtonGroup)
 
@@ -64,9 +74,10 @@ const useStyles = makeStyles({
   },
 })
 
-export default function Menu({backMenu, backFilter}) {
+export default function Menu({ backMenu, backFilter }) {
   const history = useHistory()
   const classes = useStyles()
+  const btnRef = createRef()
 
   const [menu, setMenu] = useState('LOG')
   const [state, setState] = useState({
@@ -82,27 +93,35 @@ export default function Menu({backMenu, backFilter}) {
   const [motoristaCPF, setMotoristaCPF] = useState('')
   const [motoristaNome, setMotoristaNome] = useState('')
   const [filtro, setFiltro] = useState(false)
-  
+
   const [veiculos, setVeiculos] = useState([])
   const [rotas, setRotas] = useState([])
   const [tipo, setTipo] = useState([])
+  const [btnOpen, setBtnOpen] = useState(false)
 
   const { isShowPlaca, togglePlaca } = useModal()
   const { isShowOriDest, toggleOriDest } = useModalOD()
   const { isShowTabelaDeRotas, toggleTabelaDeRotas } = useModalTabelaDeRotas()
+  const { isShowTabelaDeSeguros, toggleTabelaDeSeguros } = useModalTabelaDeSeguros()
+  const { isShowTabelaDespesas, toggleTabelaDespesas } = useModalTabelaDespesas()
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   useEffect(() => {
     window.onbeforeunload = (e) => confirmExit(e)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    document.addEventListener("mousedown", handleClickOutside)
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-  
+
   const atualizaStatus = async (userID) => {
     await api
-      .put(`/usuarios/${userID}`, { 
+      .put(`/usuarios/${userID}`, {
         status: "I",
-      },{
+      }, {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -112,9 +131,9 @@ export default function Menu({backMenu, backFilter}) {
         const { data } = response
 
         if (response.status === 200) {
-          toast(`Usuário ${data.nome} Offline!`, { 
-            type: 'warning', 
-            autoClose: 2000, 
+          toast(`Usuário ${data.nome} Offline!`, {
+            type: 'warning',
+            autoClose: 2000,
             closeOnClick: true,
             pauseOnHover: true,
           })
@@ -143,33 +162,25 @@ export default function Menu({backMenu, backFilter}) {
           console.log('**** Menu.atualizaStatus.error', error)
           // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
         } else {
-        // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
         }
       })
   }
 
-  const handleExit = async (e) => {
-    await confirmExit(e)
-  }
-
-  const confirmExit = async (e) => {
-    const userID = await localStorage.getItem('@rf/userID')
-    atualizaStatus(userID)
-
-    await sleep(1000) 
-    if (e) {  
-      delete e['returnValue']
-    }
-
-    localStorage.removeItem('@rf/token')
-    localStorage.removeItem('@rf/userID')
-    history.push('/rf')
-  }
-
   const mudaPainel = async (e, opcao) => {
+    // console.log('**** Menu.mudaPainel', opcao, e)
+    setBtnOpen(false)
     switch (opcao) {
-      case 'PAR': {
+      case 'ROT': {
         toggleTabelaDeRotas()
+        return
+      }
+      case 'SEG': {
+        toggleTabelaDeSeguros()
+        return
+      }
+      case 'DES': {
+        toggleTabelaDespesas()
         return
       }
     }
@@ -211,7 +222,7 @@ export default function Menu({backMenu, backFilter}) {
         motoristaCPF: '',
         motoristaNome: '',
       })
-  
+
     } else {
       if (placa !== "") {
         setState({ ...state, right: false })
@@ -247,14 +258,62 @@ export default function Menu({backMenu, backFilter}) {
   const filtroPlaca = async (placa) => {
     if (placa !== undefined && placa !== "") {
       await api
-      .post('/buscaveiculos', {
-        placachassi: placa,
+        .post('/buscaveiculos', {
+          placachassi: placa,
+        })
+        .then(response => {
+          const { data } = response
+          console.log('**** Menu.filtroPlaca.data', data)
+          setVeiculos(data)
+          togglePlaca()
+        })
+        .catch((error) => {
+          if (error.response) {
+            const { data } = error.response
+            try {
+              data.map(mensagem => {
+                toast(mensagem.message, { type: 'error' })
+              })
+            }
+            catch (e) {
+              console.log('**** Menu.filtroPlaca.error.data', data)
+            }
+          } else if (error.request) {
+            console.log('**** Menu.filtroPlaca.error', error)
+          } else {
+          }
+        })
+    }
+  }
+
+  const filtroRotas = async (tipo, cidade, uf) => {
+    await api
+      .post('/buscarotas', {
+        cidade: cidade,
+        uf: uf,
       })
       .then(response => {
         const { data } = response
-        console.log('**** Menu.filtroPlaca.data', data)
-        setVeiculos(data)
-        togglePlaca()
+
+        let rotasO = []
+        let rotasD = []
+        data.forEach(r => {
+          if (r.rota_relacionada % 2 === 0) {
+            rotasO.push(r)
+          } else {
+            rotasD.push(r)
+          }
+        })
+
+        if (tipo === 'O') {
+          setTipo('Origem')
+          setRotas(rotasO)
+        } else {
+          setTipo('Destino')
+          setRotas(rotasD)
+        }
+
+        toggleOriDest()
       })
       .catch((error) => {
         if (error.response) {
@@ -272,54 +331,6 @@ export default function Menu({backMenu, backFilter}) {
         } else {
         }
       })
-    }
-  }
-
-  const filtroRotas = async (tipo, cidade, uf) => {
-    await api
-    .post('/buscarotas', {
-      cidade: cidade,
-      uf: uf,
-    })
-    .then(response => {
-      const { data } = response
-      
-      let rotasO = []
-      let rotasD = []
-      data.forEach(r => {
-        if (r.rota_relacionada % 2 === 0) {
-          rotasO.push(r)
-        } else {
-          rotasD.push(r)
-        }
-      })
-
-      if (tipo === 'O') {
-        setTipo('Origem')
-        setRotas(rotasO)
-      } else {
-        setTipo('Destino')
-        setRotas(rotasD)
-      }
-      
-      toggleOriDest()
-    })
-    .catch((error) => {
-      if (error.response) {
-        const { data } = error.response
-        try {
-          data.map(mensagem => {
-            toast(mensagem.message, { type: 'error' })
-          })
-        }
-        catch (e) {
-          console.log('**** Menu.filtroPlaca.error.data', data)
-        }
-      } else if (error.request) {
-        console.log('**** Menu.filtroPlaca.error', error)
-      } else {
-      }
-    })
   }
 
   const toggleDrawer = (anchor, open) => (event) => {
@@ -330,12 +341,24 @@ export default function Menu({backMenu, backFilter}) {
     setState({ ...state, [anchor]: open })
   }
 
+  const handleButtonClick = () => {
+    setBtnOpen(!btnOpen)
+  }
+
+  const handleClickOutside = (event) => {
+    // console.log('**** Menu.handleClickOutside', event, btnRef, btnOpen)
+    if (btnRef.current  && !btnRef.current.contains(event.target) || btnOpen.current === null) {
+      setBtnOpen(false)
+    } 
+    // setBtnOpen(!btnOpen)
+  }
+
   const list = (anchor) => (
     <div
       className={classes.list}
       role="presentation"
-      // onClick={toggleDrawer('right', false)}
-      // onKeyDown={toggleDrawer('right', false)}
+    // onClick={toggleDrawer('right', false)}
+    // onKeyDown={toggleDrawer('right', false)}
     >
       <Titulo>Filtros</Titulo>
 
@@ -349,9 +372,9 @@ export default function Menu({backMenu, backFilter}) {
         placeholder="Nº do Pedido"
         onChange={event => setPedido(event.target.value)}
         width={100}
-      /> 
-      
-      <Label>Placa</Label> 
+      />
+
+      <Label>Placa</Label>
       <Input
         id="placa"
         type="input"
@@ -359,8 +382,8 @@ export default function Menu({backMenu, backFilter}) {
         placeholder="Placa"
         onChange={event => setPlaca(event.target.value)}
         width={100}
-      /> 
-      
+      />
+
       <Label>Origem</Label>
       <Input
         id="origemCidade"
@@ -369,7 +392,7 @@ export default function Menu({backMenu, backFilter}) {
         placeholder="Cidade"
         onChange={event => setOrigemCidade(event.target.value)}
         width={250}
-      /> 
+      />
       <Input
         id="origemUF"
         type="input"
@@ -377,9 +400,9 @@ export default function Menu({backMenu, backFilter}) {
         placeholder="UF"
         onChange={event => setOrigemUF(event.target.value)}
         width={50}
-      /> 
-      
-      <Label>Destino</Label> 
+      />
+
+      <Label>Destino</Label>
       <Input
         id="destinoCidade"
         type="input"
@@ -387,7 +410,7 @@ export default function Menu({backMenu, backFilter}) {
         placeholder="Cidade"
         onChange={event => setDestinoCidade(event.target.value)}
         width={250}
-      /> 
+      />
       <Input
         id="destinoUF"
         type="input"
@@ -395,9 +418,9 @@ export default function Menu({backMenu, backFilter}) {
         placeholder="UF"
         onChange={event => setDestinoUF(event.target.value)}
         width={50}
-      /> 
-      
-      <Label>Motorista</Label> 
+      />
+
+      <Label>Motorista</Label>
       <Input
         id="motoristaCPF"
         type="input"
@@ -405,7 +428,7 @@ export default function Menu({backMenu, backFilter}) {
         placeholder="CPF/CNPJ"
         onChange={event => setMotoristaCPF(event.target.value)}
         width={100}
-      /> 
+      />
       <Input
         id="motoristaNome"
         type="input"
@@ -413,7 +436,7 @@ export default function Menu({backMenu, backFilter}) {
         placeholder="Nome"
         onChange={event => setMotoristaNome(event.target.value)}
         width={200}
-      /> 
+      />
 
       <StyledToggleButtonGroup
         value={filtro}
@@ -433,6 +456,78 @@ export default function Menu({backMenu, backFilter}) {
     </div>
   )
 
+  const handleExit = async (e) => {
+    await confirmExit(e)
+  }
+
+  const confirmExit = async (e) => {
+    const userID = await localStorage.getItem('@rf/userID')
+    atualizaStatus(userID)
+
+    getUserGeolocationDetails(userID)
+
+    await sleep(1000)
+    if (e) {
+      delete e['returnValue']
+    }
+
+    localStorage.removeItem('@rf/token')
+    localStorage.removeItem('@rf/userID')
+    history.push('/rf')
+  }
+
+  const getUserGeolocationDetails = (UserID) => {
+    fetch(
+      "https://geolocation-db.com/jsonp"
+    )
+    .then(response => response.json())
+    .then(data => {
+      salvaHistorico(
+        null, 
+        null, 
+        null, 
+        UserID,
+        `Usuário logado no sistema admistrativo com login e senha, ` +
+        `com ip ${data.IPv4} em ${data.city}, ${data.country_name}(${data.country_code})`
+      )
+    })
+  }
+
+  const salvaHistorico = async (pedidoId, motoristaId, clienteId, operadorId, observacao) => {
+    // console.log('**** Login.salvaHistorico', pedidoId, motoristaId, clienteId, operadorId, observacao)
+    await api
+      .post(`/historicos`, {
+        "motorista_id": motoristaId,
+        "cliente_id": clienteId,
+        "operador_id": operadorId,
+        "pedido_id": pedidoId,
+        "titulo_pagar_id": null,
+        "titulo_receber_id": null,
+        "observacao": observacao, 
+        "valor": 0
+      })
+      .then(response => {
+        const { data } = response
+      }).catch((error) => {
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('**** Login.salvaHistorico.error.data', data)
+          }
+        } else if (error.request) {
+          console.log('**** Login.salvaHistorico.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        } else {
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        }
+      })
+  }
+
   return (
     <Container>
       <RLeft>
@@ -446,7 +541,7 @@ export default function Menu({backMenu, backFilter}) {
           <ToggleButton value="FIS">FISCAL</ToggleButton>
           <ToggleButton value="FIN">FINANCEIRO</ToggleButton>
           <ToggleButton value="HIS">HISTÓRICO</ToggleButton>
-          <ToggleButton value="PAR">PARÂMETROS</ToggleButton>
+          {/* <ToggleButton value="PAR">PARÂMETROS</ToggleButton> */}
         </StyledToggleButtonGroup>
       </RLeft>
       <RRight>
@@ -458,6 +553,20 @@ export default function Menu({backMenu, backFilter}) {
           <FaIcon icon='btFiltro' size={16} />
           Filtrar
         </BotaoExit>
+
+        <div className="btn-container" ref={btnRef}>
+          <BotaoExit onClick={handleButtonClick}>
+            <FaIcon icon='btConfig' size={16} />
+            Parâmetros
+          </BotaoExit>
+          { btnOpen && (
+          <div className="dropdown">
+            <button className="btn-item" onClick={(e) => mudaPainel(e, "ROT")}>Rotas</button>
+            <button className="btn-item" onClick={(e) => mudaPainel(e, "SEG")}>Seguros</button>
+            <button className="btn-item" onClick={(e) => mudaPainel(e, "DES")}>Despesas</button>
+          </div>
+          )}
+        </div>
       </RRight>
       <div>
         <React.Fragment key={'right'}>
@@ -481,6 +590,14 @@ export default function Menu({backMenu, backFilter}) {
       <TabelaDeRotas
         isShowTabelaDeRotas={isShowTabelaDeRotas}
         hide={toggleTabelaDeRotas}
+      />
+      <TabelaDeSeguros
+        isShowTabelaDeSeguros={isShowTabelaDeSeguros}
+        hide={toggleTabelaDeSeguros}
+      />
+      <TabelaDespesas
+        isShowTabelaDespesas={isShowTabelaDespesas}
+        hide={toggleTabelaDespesas}
       />
     </Container>
   )

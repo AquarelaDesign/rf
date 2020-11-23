@@ -26,12 +26,12 @@ export const Label = styled.div`
 `;
 
 export const RLeft = styled.div`
-  width: 80%;
+  width: 70%;
   float: left;
 `;
 
 export const RRight = styled.div`
-  width: 20%;
+  width: 30%;
   float: right;
   margin-right: 20px;
 `;

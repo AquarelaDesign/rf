@@ -1,0 +1,15 @@
+$theme-colors: (
+  "primary": #FFFFFF,
+  "secondary": teal
+);
+
+/* import bootstrap to set changes */
+// @import "node_modules/bootstrap/scss/bootstrap";
+@import "node_modules/bootstrap/scss/_functions";
+@import "node_modules/bootstrap/scss/_variables";
+@import "node_modules/bootstrap/scss/_mixins";
+// @import "node_modules/bootstrap/scss/_root";
+// @import "node_modules/bootstrap/scss/_reboot";
+@import "node_modules/bootstrap/scss/_type";
+@import "node_modules/bootstrap/scss/_buttons";
+@import "node_modules/bootstrap/scss/_dropdown";

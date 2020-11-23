@@ -1,0 +1,37 @@
+// @import "../../../styles/custom.scss";
+
+.btn-container {
+  position: relative;
+  // display: inline-block;
+  float: right;
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 124px;
+  z-index: 2;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14);
+}
+
+.btn-item {
+  border: 0;
+  border-radius: 3px;
+  width: 120px;
+  height: 26px;
+  font-size: 14px;
+  font-weight: bold;
+  font-style: italic;
+  background: #FFFFFF;
+  color: #225378;
+  cursor: pointer;
+  margin-left: 10px;
+  float: right;
+
+  &:hover {
+    background: #225378;
+    color: #FFFFFF;
+  }
+}

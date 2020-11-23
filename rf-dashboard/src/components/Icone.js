@@ -28,7 +28,7 @@ import { BsBackspaceFill } from 'react-icons/bs'
 import { AiOutlineCloseCircle, AiTwotoneLike } from 'react-icons/ai'
 import { GoChecklist } from 'react-icons/go'
 import { GrDeliver, GrUpdate, GrHostMaintenance, GrSecure } from 'react-icons/gr'
-import { GiExitDoor, GiStopwatch, GiReturnArrow } from 'react-icons/gi'
+import { GiExitDoor, GiStopwatch, GiReturnArrow, GiGears } from 'react-icons/gi'
 import { RiSearchLine } from 'react-icons/ri'
 import { IoIosDocument } from 'react-icons/io'
 import { ImCloudCheck } from 'react-icons/im'
@@ -65,6 +65,7 @@ export const FaIcon = ({ icon, size, height, width }) => {
     case 'FaDiscourse': return <FaDiscourse size={size} style={{ marginLeft: 10, marginRight: 5 }} />
     case 'FaBell': return <FaBell size={size} style={{ marginLeft: 5, marginRight: 10 }} />
     case 'Usuario': return <FaHeadphonesAlt size={size} style={{ marginRight: 10 }} />
+    case 'btConfig': return <GiGears size={size} style={{ marginLeft: 0, marginRight: 5 }} />
     case 'btFiltro': return <FcFilledFilter size={size} style={{ marginLeft: 0, marginRight: 5 }} />
     case 'btLimpaFiltro': return <FcClearFilters size={size} style={{ marginLeft: 0, marginRight: 5 }} />
     case 'GiExitDoor': return <GiExitDoor size={size} style={{ marginLeft: 0, marginRight: 10 }} />

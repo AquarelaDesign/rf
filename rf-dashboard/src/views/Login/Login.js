@@ -94,6 +94,9 @@ const Login = ({ history }) => {
         localStorage.setItem('@rf/email', email)
         localStorage.setItem('@rf/userID', data[0].id)
         atualizaStatus(data[0].id)
+
+        getUserGeolocationDetails(data[0].id)
+
         history.push('/rf/home')
 
       }).catch((error) => {
@@ -186,6 +189,58 @@ const Login = ({ history }) => {
       })
   }
   
+  const getUserGeolocationDetails = (UserID) => {
+    fetch(
+      "https://geolocation-db.com/jsonp"
+    )
+    .then(response => response.json())
+    .then(data => {
+      salvaHistorico(
+        null, 
+        null, 
+        null, 
+        UserID,
+        `Usuário logado no sistema admistrativo com login e senha, ` +
+        `com ip ${data.IPv4} em ${data.city}, ${data.country_name}(${data.country_code})`
+      )
+    })
+  }
+
+  const salvaHistorico = async (pedidoId, motoristaId, clienteId, operadorId, observacao) => {
+    // console.log('**** Login.salvaHistorico', pedidoId, motoristaId, clienteId, operadorId, observacao)
+    await api
+      .post(`/historicos`, {
+        "motorista_id": motoristaId,
+        "cliente_id": clienteId,
+        "operador_id": operadorId,
+        "pedido_id": pedidoId,
+        "titulo_pagar_id": null,
+        "titulo_receber_id": null,
+        "observacao": observacao, 
+        "valor": 0
+      })
+      .then(response => {
+        const { data } = response
+      }).catch((error) => {
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('**** Login.salvaHistorico.error.data', data)
+          }
+        } else if (error.request) {
+          console.log('**** Login.salvaHistorico.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        } else {
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        }
+      })
+  }
+
   return (
     <Container style={{
       height: '100%', 
