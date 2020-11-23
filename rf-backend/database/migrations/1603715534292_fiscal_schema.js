@@ -11,6 +11,7 @@ class FiscalSchema extends Schema {
       table.integer('pedido_id')
       table.integer('cliente_id')
       table.integer('motorista_id')
+      table.decimal('valor')
       table.string('status').defaultTo('')
         .comment('[]Emitir CTe, [X]Encerrar Manifesto, [T]arefas Realizadas')
       table.timestamps()

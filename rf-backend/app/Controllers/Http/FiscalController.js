@@ -98,6 +98,7 @@ class FiscalController {
       "pedido_id",
       "cliente_id", 
       "motorista_id",
+      "valor",
       "status",
     ])
     
@@ -156,6 +157,7 @@ class FiscalController {
         "pedido_id",
         "cliente_id",
         "motorista_id",
+        "valor",
         "status",
       ])
         

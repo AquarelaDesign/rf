@@ -17,11 +17,23 @@ import useModal from '../../../components/Email/useModal'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { MdTimer } from 'react-icons/md'
+import MaskedInput from 'react-text-mask'
+import createNumberMask from 'text-mask-addons/dist/createNumberMask'
 
 import api from '../../../services/rf'
 
 import PedidoModal from '../../Pedidos/PedidoModal'
 import useModalPedido from '../../Pedidos/PedidoModal/useModal'
+
+const numberMask = createNumberMask({
+  prefix: '',
+  suffix: '',
+  thousandsSeparatorSymbol: '.',
+  decimalSymbol: ',',
+  decimalScale: 2,
+  fixedDecimalScale: true,
+  requireDecimal: true, 
+})
 
 const useStyles = makeStyles((theme) => ({
   botoes: {
@@ -58,6 +70,8 @@ export default function CardEmitirCTe({ data, index }) {
     "m": 0,
     "s": 0
   })
+  const [valor, setValor] = useState(0)
+  const [mostraValor, setMostraValor] = useState(false)
 
   const { isShowEmail, toggleEmail } = useModal()
   const { isShowPedido, togglePedido } = useModalPedido()
@@ -65,7 +79,7 @@ export default function CardEmitirCTe({ data, index }) {
   const userID = localStorage.getItem('@rf/userID')
 
   useEffect(() => {
-    console.log('**** CardEmitirCTe.data', data)
+    // console.log('**** CardEmitirCTe.data', data)
     // setRotas(data.rotas)
     if (data.tipo === 'F') {
       setMostraDesfaz('hidden')
@@ -226,6 +240,10 @@ export default function CardEmitirCTe({ data, index }) {
   }
 
   const atualizaStatus = async () => {
+    setMostraValor(true)
+  }
+
+  const salvaStatus = async () => {
     let par_tipo = ''
     let par_status = ''
     let par_hist = ''
@@ -234,7 +252,7 @@ export default function CardEmitirCTe({ data, index }) {
     if (data.tipo === 'F') {
       par_tipo = 'X'
       par_status = ' '
-      par_hist = 'CT-e emitido'
+      par_hist = `CT-e emitido no valor de R$ ${valor}`
     } else if (data.tipo === 'X') {
       par_tipo = 'Y'
       par_status = ' '
@@ -245,10 +263,28 @@ export default function CardEmitirCTe({ data, index }) {
       par_hist = 'CT-e e Manifesto arquivados no Fiscal'
     }
     
-    // console.log('**** CardEmitirCTe.atualizaStatus', data.fiscal, par_pedido)
+    if (valor === 0 || valor === null || valor === undefined) {
+      toast(`Informe o valor do CT-e!`, { type: 'error' })
+      return
+    }
+
+    setMostraValor(false)
+
+    let value = 0
+
+    let val = valor.toString()
+    if (val.indexOf(",") !== -1) {
+      val = val.replace('.', '')
+      val = val.replace(',', '.')
+      value = parseFloat(val).toFixed(2)
+    } else {
+      value = parseFloat(valor).toFixed(2)
+    }
+
     await api.put(`/fiscal/${data.fiscal}`, {
       tipo: par_tipo,
       status: par_status,
+      valor: value,
     })
     .then(response => {
       const { data } = response
@@ -279,7 +315,6 @@ export default function CardEmitirCTe({ data, index }) {
       // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
       }
     })
-    
   }
 
   const desfazStatus = async () => {
@@ -371,11 +406,12 @@ export default function CardEmitirCTe({ data, index }) {
     }
   })
   
-  dragRef(dropRef(ref))
+  // dragRef(dropRef(ref))
   
   return (
     <>
-      <Container ref={ref} isDragging={isDragging}>
+      <Container ref={ref}> 
+      {/* isDragging={isDragging}> */}
         <div className={classes.botoes}>
           {motorista.whats && (
             <a target="_blank"
@@ -523,6 +559,21 @@ export default function CardEmitirCTe({ data, index }) {
             right: 10,
             bottom: 10,
           }}>
+            { mostraValor &&
+              <MaskedInput
+                value={valor}
+                mask={numberMask}
+                onChange={(e) => setValor(e.target.value)}
+                // displayType={'text'}
+                placeholderChar={'\u2000'}
+                showMask
+                style={{
+                  textAlign: "right",
+                  width: "100px",
+                }}
+              />
+            }
+
             <button onClick={desfazStatus}
               style={{ backgroundColor: 'transparent', visibility: mostraDesfaz }}
             >
@@ -543,33 +594,51 @@ export default function CardEmitirCTe({ data, index }) {
               </Tooltip>
             </button>
 
-            <button onClick={atualizaStatus}
-              style={{ backgroundColor: 'transparent' }}
-            >
-              <Tooltip 
-                title={
-                  data.tipo === 'F' 
-                    ? 'Marcar como CT-e Emitido' 
-                    : data.tipo === 'X' 
-                      ? 'Marcar Manifesto como Encerrado' 
-                      : 'Arquivar'
-                }
+            { mostraValor ?
+              <button onClick={salvaStatus}
+                style={{ backgroundColor: 'transparent' }}
               >
-                <span style={{
-                  alignItems: 'center',
-                  cursor: 'pointer',
-                  marginTop: '3px',
-                }}>
-                  <FaIcon icon={
-                  data.tipo === 'F' 
-                    ? 'Marcar' 
-                    : data.tipo === 'X' 
-                      ? 'Confere' 
-                      : 'MarcarArquivado'
-                } size={20} />
-                </span>
-              </Tooltip>
-            </button>
+                <Tooltip 
+                  title={
+                    data.tipo === 'F' 
+                      ? 'Marcar como CT-e Emitido' 
+                      : data.tipo === 'X' 
+                        ? 'Marcar Manifesto como Encerrado' 
+                        : 'Arquivar'
+                  }
+                >
+                  <span style={{
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    marginTop: '3px',
+                  }}>
+                    <FaIcon icon={
+                    data.tipo === 'F' 
+                      ? 'Marcar' 
+                      : data.tipo === 'X' 
+                        ? 'Confere' 
+                        : 'MarcarArquivado'
+                  } size={20} />
+                  </span>
+                </Tooltip>
+              </button>
+            :
+              <button onClick={atualizaStatus}
+                style={{ backgroundColor: 'transparent' }}
+              >
+                <Tooltip 
+                  title='Informar Valor CT-e'
+                >
+                  <span style={{
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    marginTop: '3px',
+                  }}>
+                    <FaIcon icon='Marcar' size={20} style={{ color: '#2699F8' }}/>
+                  </span>
+                </Tooltip>
+              </button>
+            }
           </div>
 
         </div>
