@@ -373,7 +373,7 @@ const GridPedidosModal = ({ isShowing, hide }) => {
 
   const addHistorico = async (props, e) => {
     e.preventDefault()
-    console.log('**** GridPedidoModal.addHistorico', props.data)
+    // console.log('**** GridPedidoModal.addHistorico', props.data)
     setPedidoId(props.data.id)
     setClienteID(props.data.cliente_id)
     setMotoristaID(props.data.motorista_id)

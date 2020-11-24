@@ -772,12 +772,12 @@ export default function CardUsuario({ tipo, usuarioId }) {
       const selectedData = vgridApi.getSelectedRows()
 
       if (!selectedData) {
-        toast('Você deve selecionar um veículo para editar!', { type: 'alert' })
+        toast('Você deve selecionar um veículo para editar!', { type: 'warning' })
         return
       }
 
       if (selectedData.length === 0) {
-        toast('Você deve selecionar um veículo para editar!', { type: 'alert' })
+        toast('Você deve selecionar um veículo para editar!', { type: 'warning' })
         return
       }
       setVeiculoId(selectedData[0].id)

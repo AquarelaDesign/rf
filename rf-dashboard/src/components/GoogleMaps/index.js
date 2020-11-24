@@ -109,7 +109,7 @@ class GoogleMaps extends Component {
       if (status == window.google.maps.DirectionsStatus.OK) {
         // $('#directionsPanel').empty(); // clear the directions panel before adding new directions
         directionsDisplay.setDirections(response)
-        console.log('**** Maps.directionsService', response)
+        // console.log('**** Maps.directionsService', response)
       } else {
         // alert an error message when the route could nog be calculated.
         if (status == 'ZERO_RESULTS') {

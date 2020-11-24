@@ -106,7 +106,7 @@ const HistoricoModal = ({
 
   useEffect(() => {
     limpaCampos()
-    console.log('**** HistoricoModal.useEffect', historicoID, tipoCad, clienteID, motoristaID, operadorID, disableEdit)
+    // console.log('**** HistoricoModal.useEffect', historicoID, tipoCad, clienteID, motoristaID, operadorID, disableEdit)
 
     if (historicoID && historicoID > 0 && tipoCad === 'E') {
       buscaHistorico()
