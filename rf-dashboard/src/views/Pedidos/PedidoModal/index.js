@@ -78,6 +78,9 @@ import useModalHistorico from '../../../components/HistoricoModal/useModal'
 import AvariasModal from '../../Financeiro/AvariasModal'
 import useModalAvarias from '../../Financeiro/AvariasModal/useModal'
 
+import AddRotaModal from '../../Parametros/addRotaModal'
+import useModalAddRota from '../../Parametros/addRotaModal/useModal'
+
 import moment from 'moment'
 import Map from '../../../components/Map'
 
@@ -292,6 +295,14 @@ const PedidoModal = ({
   const [RotaProps, setRotaProps] = useState(null)
   const [rotaData, setRotaData] = useState(null)
   const { isShowRotas, toggleRotas } = useModalRotas()
+
+  const { isShowAddRota, toggleAddRota } = useModalAddRota()
+
+  const [ufOrigem, setUfOrigem] = useState(null)
+  const [cidadeOrigem, setCidadeOrigem] = useState(null)
+  const [ufDestino, setUfDestino] = useState(null)
+  const [cidadeDestino, setCidadeDestino] = useState(null)
+  const [tipoCadVeiAdd, setTipoCadVeiAdd] = useState(null)
   
   const [historicoID, setHistoricoID] = useState(null)
   const [motoristaID, setMotoristaID] = useState(null)
@@ -1812,10 +1823,10 @@ const PedidoModal = ({
                 let cid_origem = r.origem.cidade.toLowerCase()
                 let cid_destino = r.destino.cidade.toLowerCase()
 
-                cidade_origem = cidade_origem.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
-                cidade_destino = cidade_destino.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
-                cid_origem = cid_origem.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
-                cid_destino = cid_destino.normalize("NFD").replace(/[^a-zA-Zs]/g, "")
+                cidade_origem = cidade_origem.normalize("NFD").replace(/[^a-zA-Z s]/g, "")
+                cidade_destino = cidade_destino.normalize("NFD").replace(/[^a-zA-Z s]/g, "")
+                cid_origem = cid_origem.normalize("NFD").replace(/[^a-zA-Z s]/g, "")
+                cid_destino = cid_destino.normalize("NFD").replace(/[^a-zA-Z s]/g, "")
 
                 if (
                   cidade_origem === cid_origem &&
@@ -1832,7 +1843,13 @@ const PedidoModal = ({
                   valor_rotas_veiculo += rot.valor
                   rotaOk = true
                   break
-                } 
+                } else {
+                  setUfOrigem(r.origem.uf.toUpperCase())
+                  setCidadeOrigem(r.origem.cidade.toUpperCase())
+                  setUfDestino(r.destino.uf.toUpperCase())
+                  setCidadeDestino(r.destino.cidade.toUpperCase())
+                  setTipoCadVeiAdd(tipoVei)
+                }
               }
             }
 
@@ -1902,13 +1919,14 @@ const PedidoModal = ({
 
         if (!rotaOk) {
           let msg = `A rota [${RotaDesc}] não foi localizada na tabela de rotas patio a patio, ` +
-                    `por favor verifique as rotas cadastradas para que possam ser efetuados os cálculos de valores`
+                    `por favor informe os dados para cadastrad da nova rota para que possam ser efetuados os cálculos de valores`
           toast(msg, { 
             type: 'info',
             autoClose: 7000, 
             closeOnClick: true,
             pauseOnHover: true,
           })
+          toggleAddRota()
           return
         } 
 
@@ -1929,7 +1947,7 @@ const PedidoModal = ({
           window.setFormValue('percentual_desconto', 0)
           // window.setFormValue('percentual_desconto', percentual_desconto_pedido)
         }
-
+        /*
         console.log('**** PedidosModal.calculaValorPedido', {
           valor_veiculos: valor_total_veiculos_pedido.toFixed(2),
           valor_transporte_rotas: valor_rotas_pedido.toFixed(2),
@@ -1942,10 +1960,113 @@ const PedidoModal = ({
           valor_total_pedido: valor_total_pedido.toFixed(2),
           valor_total_pedido_sem_desconto: valor_total_pedido_sem_desconto.toFixed(2),
         })
+        */
+        buscaValores({
+          pedido_id: pedidoID,
+          cliente_id: clienteID,
+          veiculos: valor_total_veiculos_pedido.toFixed(2),
+          transporte_rotas: valor_rotas_pedido.toFixed(2),
+          seguro: valor_seguro_pedido.toFixed(2),
+          seguro_roubo: valor_seguro_roubo_pedido.toFixed(2),
+          custo_operacional: valor_agregados_pedido.toFixed(2),
+          impostos: valor_imposto_pedido.toFixed(2),
+          percentual_desconto: percentual_desconto_pedido,
+          desconto: valor_total_desconto_pedido.toFixed(2),
+          total: valor_total_pedido.toFixed(2),
+          total_sem_desconto: valor_total_pedido_sem_desconto.toFixed(2)
+        })
       }
       catch(e) {}
 
     }
+
+  }
+
+  const buscaValores = async (dados) => {
+    console.log('**** PedidoModal.buscaValores.dados', dados)
+
+    if (pedido_id !== null && pedido_id !== 0 && tipoCad === 'E') {
+      await api('/buscavalped', {
+        pedido_id: pedido_id
+      })
+      .then(response => {
+        const { data } = response
+        salvaValores(data.id, dados)
+      })
+      .catch((error) => {
+        salvaValores(null, dados)
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('**** PedidoModal.buscaValores.error.data', data)
+          }
+        } else if (error.request) {
+          console.log('**** PedidoModal.buscaValores.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        } else {
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        }
+      })
+
+    } 
+  }
+
+  const salvaValores = async (valoresID, data) => {
+    console.log('**** PedidosModal.salvaValores', valoresID, data)
+
+    let apiParams = {}
+
+    if (valoresID !== null && valoresID !== 0) {
+      apiParams = {
+        method: 'put',
+        url: `/pedidosvalores/${valoresID}`,
+        data: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
+      }
+    } else {
+      // newValues['status'] = 'I'
+      apiParams = {
+        method: 'post',
+        url: `/pedidosvalores`,
+        data: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
+      }
+    }
+
+    // const userID = await localStorage.getItem('@rf/userID')
+    await api(apiParams)
+      .then(response => {
+        const { data } = response
+      })
+      .catch((error) => {
+        if (error.response) {
+          const { data } = error.response
+          try {
+            data.map(mensagem => {
+              toast(mensagem.message, { type: 'error' })
+            })
+          }
+          catch (e) {
+            console.log('**** PedidoModal.salvaValores.error.data', data)
+          }
+        } else if (error.request) {
+          console.log('**** PedidoModal.salvaValores.error', error)
+          // toast(`Ocorreu um erro no processamento! ${error}`, { type: 'error' })
+        } else {
+          // toast(`Ocorreu um erro no processamento!`, { type: 'error' })
+        }
+      })
 
   }
 
@@ -2267,7 +2388,7 @@ const PedidoModal = ({
         const { data, status } = response
 
         if (modo === null) {
-          console.log('**** PedidosModal.buscaFinanceiro.error.data', data)
+          // console.log('**** PedidosModal.buscaFinanceiro.error.data', data)
           if (data.status === 'B') {
             setBloqueado(true)
           } else {
@@ -2282,7 +2403,7 @@ const PedidoModal = ({
           setaAva()
         } else {
           if (modo === 'Gerar') {
-            toast(`Já existe um lançamento no financeiro para esse Pedido/Motorista!`, { type: 'alert' })
+            toast(`Já existe um lançamento no financeiro para esse Pedido/Motorista!`, { type: 'warning' })
           } else {
             geraFinanceiro(modo)
           }
@@ -2353,11 +2474,11 @@ const PedidoModal = ({
           setaAva()
         } else {
           if (modo === 'Gerar') {
-            toast(`Lançamento [${data.id}] gerado no financeiro!`, { type: 'alert' })
+            toast(`Lançamento [${data.id}] gerado no financeiro!`, { type: 'warning' })
           } else if (modo === 'Bolquear') {
-            toast(`Lançamento [${data.id}] bloqueado no financeiro!`, { type: 'alert' })
+            toast(`Lançamento [${data.id}] bloqueado no financeiro!`, { type: 'warning' })
           } else if (modo === 'Liberar') {
-            toast(`Lançamento [${data.id}] liberado no financeiro!`, { type: 'alert' })
+            toast(`Lançamento [${data.id}] liberado no financeiro!`, { type: 'warning' })
           }
         }
 
@@ -2386,10 +2507,15 @@ const PedidoModal = ({
     return self.indexOf(value) === index
   }
 
+  const callBackAddRota = (e) => {
+
+
+  }
+
 
   async function onSubmit(values) {
 
-    console.log('**** PedidoModal.onSubmit-values', values)
+    // console.log('**** PedidoModal.onSubmit-values', values)
     let newValues = {}
     newValues['limitecoleta'] = moment(values['limitecoleta']).format('YYYY-MM-DD')
     newValues['limiteentrega'] = moment(values['limiteentrega']).format('YYYY-MM-DD')
@@ -3445,6 +3571,17 @@ const PedidoModal = ({
               tipoCad={tipoCadVei !== 'E' && tipoCadVei !== 'N' ? 'D' : tipoCadVei}
               disableEdit={(tipoCadVei !== 'E' && tipoCadVei !== 'N' ? true : false) || disableEdit}
               callback={e => callBackHistorico(e)}
+            />
+            <AddRotaModal
+              isShowRota={isShowAddRota}
+              hide={toggleAddRota}
+              origemUF={ufOrigem}
+              origemCidade={cidadeOrigem}
+              destinoUF={ufDestino}
+              destinoCidade={cidadeDestino}
+              tipoCadVei={tipoCadVeiAdd}
+              callback={callBackAddRota}
+              tipoCad='N'
             />
             <ConfirmaModal
               isShowConfirma={isShowConfirma}
