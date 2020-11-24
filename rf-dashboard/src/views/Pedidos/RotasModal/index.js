@@ -451,7 +451,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
     onChange: PropTypes.func.isRequired,
   }
 
-  const validaCEP = async (value) => {
+  const validaCEP = async (value, modo=null) => {
     setAtualizaCEP(true)
 
     // console.log('**** RotasModal.validaCEP.values', value, values.logradouro)
@@ -499,10 +499,14 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
         if (values.logradouro === '' ||
           values.logradouro === null ||
           values.logradouro === undefined) {
-          window.setFormValue('logradouro', Logradouro.toUpperCase())
-          window.setFormValue('bairro', Bairro.toUpperCase())
-          window.setFormValue('cidade', Cidade.toUpperCase())
-          window.setFormValue('uf', UF.toUpperCase())
+          
+          if (modo !== 'latlng') {
+            window.setFormValue('logradouro', Logradouro.toUpperCase())
+            window.setFormValue('bairro', Bairro.toUpperCase())
+            window.setFormValue('cidade', Cidade.toUpperCase())
+            window.setFormValue('uf', UF.toUpperCase())
+          }
+
           window.setFormValue('latitude', data[0].data[0].geo.latitude)
           window.setFormValue('longitude', data[0].data[0].geo.longitude)
         }
@@ -542,6 +546,13 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
       return
     }
 
+    if (values.latitude === '' || values.longitude === '' || 
+        values.latitude === undefined || values.longitude === undefined) {
+      toast('Verificando Latitude/Longitude para o CEP informado...', { type: 'warning' })
+      validaCEP(values.cep, 'latlng')
+      return
+    }
+
     // console.log('**** RotasModal.onSubmit-values-0', values)
     
     if (tipoCad === 'N') {
@@ -561,7 +572,7 @@ const RotasModal = ({ isShowRotas, hide, pedidoID, rotaID, tipoCad, disableEdit,
       values.valor_pago = val
     }
 
-    console.log('**** RotasModal.onSubmit-values-1', values)
+    // console.log('**** RotasModal.onSubmit-values-1', values)
     let apiParams = {}
     if (rotaID !== null && tipoCad === 'E') {
       apiParams = {
