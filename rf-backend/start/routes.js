@@ -113,4 +113,8 @@ Route.group(() => {
   Route.resource('numerador', 'NumeradorController')
     .apiOnly()
 
+  Route.post("/buscapatio", "PatioController.busca")
+  Route.resource('patios', 'PatioController')
+    .apiOnly()
+
 }).middleware('auth')

@@ -28,16 +28,20 @@ import useModal from '../GridPlaca/useModal'
 import GridOriDest from '../GridOriDest'
 import useModalOD from '../GridOriDest/useModal'
 
+import TabelaDespesas from '../../Parametros/TabelaDespesas'
+import useModalTabelaDespesas from '../../Parametros/TabelaDespesas/useModal'
+
+import TabelaGridPatios from '../../Parametros/GridPatios'
+import useModalGridPatios from '../../Parametros/GridPatios/useModal'
+
 import TabelaDeRotas from '../../Parametros/TabelaDeRotas'
 import useModalTabelaDeRotas from '../../Parametros/TabelaDeRotas/useModal'
 
 import TabelaDeSeguros from '../../Parametros/TabelaDeSeguros'
 import useModalTabelaDeSeguros from '../../Parametros/TabelaDeSeguros/useModal'
 
-import TabelaDespesas from '../../Parametros/TabelaDespesas'
-import useModalTabelaDespesas from '../../Parametros/TabelaDespesas/useModal'
-
 import './index.scss'
+import GridPatiosModal from '../../Parametros/GridPatios'
 
 const StyledToggleButtonGroup = withStyles((theme) => ({
   grouped: {
@@ -102,9 +106,11 @@ export default function Menu({ backMenu, backFilter }) {
 
   const { isShowPlaca, togglePlaca } = useModal()
   const { isShowOriDest, toggleOriDest } = useModalOD()
+  
+  const { isShowTabelaDespesas, toggleTabelaDespesas } = useModalTabelaDespesas()
+  const { isShowGridPatios, toggleGridPatios } = useModalGridPatios()
   const { isShowTabelaDeRotas, toggleTabelaDeRotas } = useModalTabelaDeRotas()
   const { isShowTabelaDeSeguros, toggleTabelaDeSeguros } = useModalTabelaDeSeguros()
-  const { isShowTabelaDespesas, toggleTabelaDespesas } = useModalTabelaDespesas()
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -172,16 +178,20 @@ export default function Menu({ backMenu, backFilter }) {
     // console.log('**** Menu.mudaPainel', opcao, e)
     setBtnOpen(false)
     switch (opcao) {
+      case 'DES': {
+        toggleTabelaDespesas()
+        return
+      }
+      case 'PAT': {
+        toggleGridPatios()
+        return
+      }
       case 'ROT': {
         toggleTabelaDeRotas()
         return
       }
       case 'SEG': {
         toggleTabelaDeSeguros()
-        return
-      }
-      case 'DES': {
-        toggleTabelaDespesas()
         return
       }
     }
@@ -564,9 +574,10 @@ export default function Menu({ backMenu, backFilter }) {
           </BotaoExit>
           { btnOpen && (
           <div className="dropdown">
+            <button className="btn-item" onClick={(e) => mudaPainel(e, "DES")}>Despesas</button>
+            <button className="btn-item" onClick={(e) => mudaPainel(e, "PAT")}>Patios</button>
             <button className="btn-item" onClick={(e) => mudaPainel(e, "ROT")}>Rotas</button>
             <button className="btn-item" onClick={(e) => mudaPainel(e, "SEG")}>Seguros</button>
-            <button className="btn-item" onClick={(e) => mudaPainel(e, "DES")}>Despesas</button>
           </div>
           )}
         </div>
@@ -590,6 +601,14 @@ export default function Menu({ backMenu, backFilter }) {
         rotas={rotas}
         tipo={tipo}
       />
+      <TabelaDespesas
+        isShowTabelaDespesas={isShowTabelaDespesas}
+        hide={toggleTabelaDespesas}
+      />
+      <GridPatiosModal
+        isShowingPatios={isShowGridPatios}
+        hide={toggleGridPatios}
+      />
       <TabelaDeRotas
         isShowTabelaDeRotas={isShowTabelaDeRotas}
         hide={toggleTabelaDeRotas}
@@ -597,10 +616,6 @@ export default function Menu({ backMenu, backFilter }) {
       <TabelaDeSeguros
         isShowTabelaDeSeguros={isShowTabelaDeSeguros}
         hide={toggleTabelaDeSeguros}
-      />
-      <TabelaDespesas
-        isShowTabelaDespesas={isShowTabelaDespesas}
-        hide={toggleTabelaDespesas}
       />
     </Container>
   )
