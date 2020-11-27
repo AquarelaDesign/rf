@@ -19,7 +19,6 @@ import CIcon from '@coreui/icons-react'
 
 import './login.scss'
 
-// import bgImage from '../../../assets/background1.png'
 import logo from '../../../assets/logo.png'
 
 const Login = () => {
@@ -63,7 +62,7 @@ const Login = () => {
                   </CForm>
                 </CCardBody>
               </CCard>
-              <CCard className="text-white bg-primary py-5 d-md-down-none" style={{ width: '44%' }}>
+              <CCard className="text-white py-5 d-md-down-none" style={{ width: '44%', backgroundColor: '#1C3954' }}>
                 <CCardBody className="text-center">
                   <div>
                     <h2>Cadastre-se</h2>
