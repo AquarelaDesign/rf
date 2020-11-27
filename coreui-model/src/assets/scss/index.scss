@@ -1,0 +1,74 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1)), url('../../assets/background.png') no-repeat;
+  background-color: #f4f6f8;
+  background-size: cover;
+  -webkit-font-smoothing: antialiased !important;
+  margin-top: 0px;
+  height: 80%;
+  width: 100%;
+}
+
+@font-face {
+  font-family: arial_regular;
+  src: url(../arial.ttf);
+}
+
+@font-face {
+  font-family: arial_bold;
+  src: url(../arial-bold.ttf);
+}
+
+@font-face {
+  font-family: arial_italic;
+  src: url(../arial-italic.ttf);
+}
+
+@font-face {
+  font-family: montserrat_bold;
+  src: url(../montserratbold.ttf);
+}
+
+@font-face {
+  font-family: montserrat_bolditalic;
+  src: url(../montserrat-bold-italic.ttf);
+}
+
+@font-face {
+  font-family: montserrat_lightitalic;
+  src: url(../montserrat-light-italic.ttf);
+}
+
+@font-face {
+  font-family: montserrat_mediumitalic;
+  src: url(../montserrat-medium-italic.ttf);
+}
+
+@font-face {
+  font-family: montserrat_semibold;
+  src: url(../montserrat-semi-bold.ttf);
+}
+
+@font-face {
+  font-family: neusanextstd_bold;
+  src: url(../NeusaNextStd-Bold.ttf);
+}
+
+a {
+  text-decoration: none;
+}
+
+#root {
+  height: 100%;
+}

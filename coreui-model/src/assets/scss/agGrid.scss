@@ -1,0 +1,28 @@
+// ag-grid.scss defines structural styles and should be imported first
+@import "ag-grid-community/dist/styles/ag-grid.scss";
+@import "ag-grid-community/dist/styles/ag-theme-alpine/sass/ag-theme-alpine.scss";
+
+.ag-theme-custom-react {
+  @include ag-theme-alpine((
+    odd-row-background-color: #f3f5fb,
+    row-border-color: transparent,
+    // row-selection-border-color: #2661ad,
+    row-hover-color: #beddf6,
+    checkbox-checked-color: #2661ad,
+    range-selection-border-color: transparent,
+    range-selection-background-color: #03305633,
+    header-height: 40px,
+    header-column-separator: true,
+    header-column-separator-color: #f3f5fb,
+    header-foreground-color: #f3f5fb,
+    header-background-color: #2699F8,
+    header-text-style: italic,
+    header-text-shadow: #B5B5B5 2px 3px 3px,
+    row-border: true,
+  ));
+
+  .ag-menu-option-active {
+    background-color: #2661ad;
+    color: white;
+  }
+}
