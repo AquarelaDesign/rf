@@ -29,6 +29,19 @@ const Login = () => {
         <CRow className="justify-content-center">
           <CCol md="8">
             <CCardGroup>
+
+              <CCard className="text-white py-5 d-md-down-none" style={{ width: '44%', backgroundColor: '#1C3954' }}>
+                <CCardBody className="text-center">
+                  <div>
+                    <h2>Cadastre-se</h2>
+                    <p>Com o objetivo de <strong>facilitar o transporte</strong> do seu veículo, o aplicativo <strong>RETORNO FÁCIL</strong> traz para você todas as rotas disponíveis e, rapidamente indica os melhor valor e prazo para o seu frete.</p>
+                    <Link to="/register">
+                      <CButton color="primary" className="mt-3" active tabIndex={-1}>Registrar agora!</CButton>
+                    </Link>
+                  </div>
+                </CCardBody>
+              </CCard>
+
               <CCard className="p-4">
                 <CCardBody>
                   <CImg src={logo} height={160} alt="" />
@@ -62,18 +75,7 @@ const Login = () => {
                   </CForm>
                 </CCardBody>
               </CCard>
-              <CCard className="text-white py-5 d-md-down-none" style={{ width: '44%', backgroundColor: '#1C3954' }}>
-                <CCardBody className="text-center">
-                  <div>
-                    <h2>Cadastre-se</h2>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut
-                      labore et dolore magna aliqua.</p>
-                    <Link to="/register">
-                      <CButton color="primary" className="mt-3" active tabIndex={-1}>Registrar agora!</CButton>
-                    </Link>
-                  </div>
-                </CCardBody>
-              </CCard>
+
             </CCardGroup>
           </CCol>
         </CRow>
